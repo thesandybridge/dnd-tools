@@ -1,0 +1,80 @@
+[
+    {
+        "type": "Airship",
+        "fare": "1 gp per mile",
+        "cargoRate": "1 sp / mile / 100 lbs",
+        "speed": "20 mph",
+        "perDay": "480 miles / 53 hexes"
+    },
+    {
+        "type": "Caravan (Orien)",
+        "fare": "1 sp per mile",
+        "cargoRate": "1 cp / mile / 200 lbs",
+        "speed": "2 mph",
+        "perDay": "16 miles / 2 hexes"
+    },
+    {
+        "type": "Coach (Orien)",
+        "fare": "1 sp per mile",
+        "cargoRate": "1 cp / mile / 100 lbs",
+        "speed": "5 mph",
+        "perDay": "40 miles / 4 hexes"
+    },
+    {
+        "type": "Lightning Rail Passenger - Standard",
+        "fare": "2 sp per mile",
+        "cargoRate": "5 cp / mile / 100 lbs",
+        "speed": "30 mph",
+        "perDay": "720 miles"
+    },
+    {
+        "type": "Lightning Rail Passenger - First Class",
+        "fare": "5 sp per mile",
+        "cargoRate": "",
+        "speed": "30 mph",
+        "perDay": "720 miles"
+    },
+    {
+        "type": "Lightning Rail Passenger - Steerage",
+        "fare": "3 cp per mile",
+        "cargoRate": "",
+        "speed": "30 mph",
+        "perDay": "720 miles"
+    },
+    {
+        "type": "Sailing Ship",
+        "fare": "3 cp per mile",
+        "cargoRate": "1 cp / mile / 100 lbs",
+        "speed": "2 mph",
+        "perDay": "48 miles / 5 hexes"
+    },
+    {
+        "type": "Sailing Ship (Lyrandar)",
+        "fare": "5 sp per mile",
+        "cargoRate": "3 sp / mile / 100 lbs",
+        "speed": "6 mph",
+        "perDay": "144 miles / 16 hexes"
+    },
+    {
+        "type": "Soarwood Sailing Ship",
+        "fare": "3 cp per mile",
+        "cargoRate": "2 cp / mile / 100 lbs",
+        "speed": "4 mph",
+        "perDay": "96 miles / 11 hexes"
+    },
+    {
+        "type": "Teleportation Circle (Orien)",
+        "fare": "2500 gp",
+        "cargoRate": "",
+        "speed": "Instant",
+        "perDay": ""
+    },
+    {
+        "type": "Wind Galleon",
+        "fare": "3 sp per mile",
+        "cargoRate": "1 sp / mile / 100 lbs",
+        "speed": "20 mph",
+        "perDay": "480 miles / 53 hexes"
+    }
+]
+

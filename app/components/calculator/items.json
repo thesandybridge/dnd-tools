@@ -1,0 +1,99 @@
+[
+    {
+        "item": "Camel",
+        "baseCost": 50,
+        "size": "L",
+        "carryingCapacity": 480,
+        "speed": "50 ft.",
+        "perDay": "45 miles"
+    },
+    {
+        "item": "Clawfoot",
+        "baseCost": 150,
+        "size": "M",
+        "carryingCapacity": 180,
+        "speed": "40 ft.",
+        "perDay": "36 miles"
+    },
+    {
+        "item": "Donkey / Mule",
+        "baseCost": 8,
+        "size": "M",
+        "carryingCapacity": 420,
+        "speed": "40 ft.",
+        "perDay": "36 miles"
+    },
+    {
+        "item": "Fastieth",
+        "baseCost": 50,
+        "size": "M",
+        "carryingCapacity": 180,
+        "speed": "50 ft.",
+        "perDay": "45 miles"
+    },
+    {
+        "item": "Giant Lizard",
+        "baseCost": 200,
+        "specials": [
+            {
+                "feature": "Hold Breath",
+                "additionalCost": 100
+            },
+            {
+                "feature": "Spider Climb",
+                "additionalCost": 200
+            }
+        ],
+        "size": "L",
+        "carryingCapacity": 450,
+        "speed": "30 ft.",
+        "perDay": "27 miles"
+    },
+    {
+        "item": "Griffon",
+        "baseCost": 2500,
+        "size": "L",
+        "carryingCapacity": 540,
+        "speed": "80 ft. fly",
+        "perDay": "81 miles"
+    },
+    {
+        "item": "Hippogriff",
+        "baseCost": 1500,
+        "size": "L",
+        "carryingCapacity": 510,
+        "speed": "60 ft. fly",
+        "perDay": "54 miles"
+    },
+    {
+        "item": "Horse",
+        "baseCost": 50,
+        "types": [
+            {"type": "Draft", "additionalCost": 0},
+            {"type": "Riding", "additionalCost": 25},
+            {"type": "Warhorse", "additionalCost": 350},
+            {"type": "Valenar Steed", "additionalCost": 450}
+        ],
+        "size": "L",
+        "carryingCapacity": 540,
+        "speed": "60 ft.",
+        "perDay": "54 miles"
+    },
+    {
+        "item": "Mastiff",
+        "baseCost": 25,
+        "size": "M",
+        "carryingCapacity": 195,
+        "speed": "40 ft.",
+        "perDay": "36 miles"
+    },
+    {
+        "item": "Pony",
+        "baseCost": 30,
+        "size": "M",
+        "carryingCapacity": 225,
+        "speed": "40 ft.",
+        "perDay": "36 miles"
+    }
+]
+

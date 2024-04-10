@@ -1,0 +1,156 @@
+[
+    {
+        "house": "House Cannith",
+        "services": [
+            {
+                "Commission Magic Item": {
+                    "type": "markup",
+                    "price": 0.1
+                },
+                "Mending": {
+                    "type": "currency",
+                    "price": 5
+                }
+            }
+        ]
+    },
+    {
+        "house": "House Jorasco",
+        "services": [
+            {
+                "Cure Wounds": {
+                    "type": "currency",
+                    "price": 25,
+                    "unit": "gp / level"
+                },
+                "Diagnosis / Nonmagical Treatment": {
+                    "type": "currency",
+                    "price": 0.3
+                },
+                "Greater Restoration": {
+                    "type": "currency",
+                    "price": 150
+                },
+                "Lesser Restoration": {
+                    "type": "currency",
+                    "price": 50
+                },
+                "Long-Term Care": {
+                    "type": "currency",
+                    "price": 1,
+                    "unit": "gp / day"
+                },
+                "Raise Dead": {
+                    "type": "currency",
+                    "price": 750
+                },
+                "Remove Curse": {
+                    "type": "currency",
+                    "price": 75
+                }
+            }
+        ]
+    },
+    {
+        "house": "House Kundarak",
+        "services": [
+            {
+                "Arcane Lock": {
+                    "type": "currency",
+                    "price": 20
+                },
+                "Glyph of Warding": {
+                    "type": "currency",
+                    "price": 350
+                },
+                "Knock": {
+                    "type": "currency",
+                    "price": 200
+                }
+            }
+        ]
+    },
+    {
+        "house": "House Orien",
+        "services": [
+            {
+                "Dragonmarked Courier": {
+                    "type": "currency",
+                    "price": 0.01,
+                    "unit": "sp / mile"
+                },
+                "Dimension Door": {
+                    "type": "currency",
+                    "price": 0.1,
+                    "unit": "sp / 10 ft."
+                },
+                "Mail Service": {
+                    "type": "currency",
+                    "price": 0.01,
+                    "unit": "cp / mile"
+                },
+                "Teleportation Circle Access": {
+                    "type": "currency",
+                    "price": 50
+                },
+                "Unmarked Courier": {
+                    "type": "currency",
+                    "price": 0.05,
+                    "unit": "cp / mile"
+                }
+            }
+        ]
+    },
+    {
+        "house": "House Sivis",
+        "services": [
+            {
+                "Arcane Mark": {
+                    "type": "currency",
+                    "price": 5
+                },
+                "Illusory Script": {
+                    "type": "currency",
+                    "price": 15
+                },
+                "Message Station": {
+                    "type": "currency",
+                    "price": 0.2,
+                    "unit": "gp / word",
+                    "additionalServices": [
+                        {
+                            "Including Courier Service": {
+                                "type": "currency",
+                                "price": 0.15
+                            }
+                        }
+                    ]
+                },
+
+                "Sending": {
+                    "type": "currency",
+                    "price": 250
+                },
+                "Translation": {
+                    "type": "currency",
+                    "price": 0.02,
+                    "unit": "cp / word"
+                }
+            }
+        ]
+    },
+    {
+        "house": "House Vadalis",
+        "services": [
+            {
+                "Gargoyle Courier": {
+                    "type": "currency",
+                    "price": 5,
+                    "unit": "gp / mile",
+                    "additionalCostPerUnit": 1
+                }
+            }
+        ]
+    }
+]
+
