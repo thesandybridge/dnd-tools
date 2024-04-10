@@ -94,10 +94,16 @@ function ServicesCalculator() {
                     .services.flatMap(service => Object.entries(service))
                     .find(([name]) => name === serviceName)[1];
 
-                if (service.type === 'currency') {
-                    cost += service.price + (unitInputs[key] || 0) * (service.additionalCostPerUnit || 0);
+                if (service.type === 'currency' && unitInputs[key]) {
+                    if (service.additionalCostPerUnit) {
+                        cost += service.price + (unitInputs[key] || 0) * (service.additionalCostPerUnit);
+                    } else {
+                        cost += service.price * (unitInputs[key] || 0);
+                    }
                 } else if (service.type === 'markup') {
-                    cost += (markupPrices[key] || 0) * (1 + service.price); // Assuming markupPrices holds the base cost for markup services
+                    cost += (markupPrices[key] || 0) * service.price;
+                } else {
+                    cost += service.price
                 }
             });
 
@@ -121,10 +127,10 @@ function ServicesCalculator() {
     return (
         <div className={styles.calculatorItem}>
             <h2>Services Calculator</h2>
-            {servicesData.map((house, houseIdx) => (
+            {servicesData.map((house, _) => (
                 <div key={house.house}> {/* Use house name for uniqueness */}
                     <h3>{house.house}</h3>
-                    {house.services.map((service, serviceIdx) => (
+                    {house.services.map((service, _) => (
                         Object.entries(service).map(([serviceName, serviceDetails]) => {
                             const serviceKey = `${house.house}|${serviceName}`; // Unique key for main services
                             return (
@@ -157,7 +163,7 @@ function ServicesCalculator() {
                                                     key={`markupInput-${serviceKey}`} // Ensure key uniqueness if needed
                                                 />
                                             )}
-                                            {serviceDetails.additionalServices?.map((additional, additionalIdx) => {
+                                            {serviceDetails.additionalServices?.map((additional, _) => {
                                                 const additionalServiceName = Object.keys(additional)[0];
                                                 const additionalServiceKey = `${serviceKey}|additional|${additionalServiceName}`;
                                                 return (

@@ -121,7 +121,7 @@
                         {
                             "Including Courier Service": {
                                 "type": "currency",
-                                "price": 0.15
+                                "price": 1.5
                             }
                         }
                     ]
