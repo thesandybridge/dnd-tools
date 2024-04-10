@@ -24,6 +24,10 @@
     overflow-y: auto;
     max-height: 65vh;
     max-width: 100%;
+
+    @media screen and (max-width: 900px) {
+        flex: 1 1 auto;
+    }
 }
 
 .calcGroup {
