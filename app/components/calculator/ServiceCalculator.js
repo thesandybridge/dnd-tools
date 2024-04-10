@@ -84,13 +84,13 @@ export default function ServicesCalculator() {
         <div className={styles.calculatorItem}>
             <h2>Services Calculator</h2>
             {servicesData.map((house, _) => (
-                <div key={house.house} className={styles.calcGroup}> {/* Use house name for uniqueness */}
+                <div key={house.house} className={styles.calcGroup}>
                     <h3>{house.house}</h3>
                     {house.services.map((service, _) => (
                         Object.entries(service).map(([serviceName, serviceDetails]) => {
-                            const serviceKey = `${house.house}|${serviceName}`; // Unique key for main services
+                            const serviceKey = `${house.house}|${serviceName}`;
                             return (
-                                <div key={serviceKey}> {/* This key is already unique */}
+                                <div key={serviceKey}>
                                     <label>
                                         <input
                                             type="checkbox"
@@ -98,45 +98,45 @@ export default function ServicesCalculator() {
                                             onChange={() => toggleMainService(house.house, serviceName, serviceDetails.type === 'markup')}
                                         />
                                         {serviceName}
+                                        {serviceSelections[serviceKey] && (
+                                            <>
+                                                {serviceDetails.unit && (
+                                                    <input
+                                                        type="number"
+                                                        placeholder={`${serviceDetails.unit.split(' / ')[1]}`}
+                                                        value={unitInputs[serviceKey] || ''}
+                                                        onChange={(e) => setUnitInputs({ ...unitInputs, [serviceKey]: parseFloat(e.target.value) })}
+                                                        key={`unitInput-${serviceKey}`}
+                                                    />
+                                                )}
+                                                {serviceDetails.type === 'markup' && (
+                                                    <input
+                                                        type="number"
+                                                        placeholder="Base cost"
+                                                        value={markupPrices[serviceKey] || ''}
+                                                        onChange={(e) => setMarkupPrices({ ...markupPrices, [serviceKey]: parseFloat(e.target.value) })}
+                                                        key={`markupInput-${serviceKey}`}
+                                                    />
+                                                )}
+                                                {serviceDetails.additionalServices?.map((additional, _) => {
+                                                    const additionalServiceName = Object.keys(additional)[0];
+                                                    const additionalServiceKey = `${serviceKey}|additional|${additionalServiceName}`;
+                                                    return (
+                                                        <div key={additionalServiceKey} className={styles.additionalService}>
+                                                            <label>
+                                                                <input
+                                                                    type="checkbox"
+                                                                    checked={!!additionalServicesSelected[additionalServiceKey]}
+                                                                    onChange={() => toggleAdditionalService(house.house, serviceName, additionalServiceName)}
+                                                                />
+                                                                {additionalServiceName}
+                                                            </label>
+                                                        </div>
+                                                    );
+                                                })}
+                                            </>
+                                        )}
                                     </label>
-                                    {serviceSelections[serviceKey] && (
-                                        <>
-                                            {serviceDetails.unit && (
-                                                <input
-                                                    type="number"
-                                                    placeholder={`${serviceDetails.unit.split(' / ')[1]}`}
-                                                    value={unitInputs[serviceKey] || ''}
-                                                    onChange={(e) => setUnitInputs({ ...unitInputs, [serviceKey]: parseFloat(e.target.value) })}
-                                                    key={`unitInput-${serviceKey}`} // Ensure key uniqueness if needed
-                                                />
-                                            )}
-                                            {serviceDetails.type === 'markup' && (
-                                                <input
-                                                    type="number"
-                                                    placeholder="Base cost"
-                                                    value={markupPrices[serviceKey] || ''}
-                                                    onChange={(e) => setMarkupPrices({ ...markupPrices, [serviceKey]: parseFloat(e.target.value) })}
-                                                    key={`markupInput-${serviceKey}`} // Ensure key uniqueness if needed
-                                                />
-                                            )}
-                                            {serviceDetails.additionalServices?.map((additional, _) => {
-                                                const additionalServiceName = Object.keys(additional)[0];
-                                                const additionalServiceKey = `${serviceKey}|additional|${additionalServiceName}`;
-                                                return (
-                                                    <div key={additionalServiceKey} className={styles.additionalService}>
-                                                        <label>
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={!!additionalServicesSelected[additionalServiceKey]}
-                                                                onChange={() => toggleAdditionalService(house.house, serviceName, additionalServiceName)}
-                                                            />
-                                                            {additionalServiceName}
-                                                        </label>
-                                                    </div>
-                                                );
-                                            })}
-                                        </>
-                                    )}
                                 </div>
                             );
                         })
