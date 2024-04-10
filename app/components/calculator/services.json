@@ -38,7 +38,7 @@
                 "Long-Term Care": {
                     "type": "currency",
                     "price": 1,
-                    "unit": "gp / day"
+                    "unit": "gp / days"
                 },
                 "Raise Dead": {
                     "type": "currency",
@@ -77,7 +77,7 @@
                 "Dragonmarked Courier": {
                     "type": "currency",
                     "price": 0.01,
-                    "unit": "sp / mile"
+                    "unit": "sp / miles"
                 },
                 "Dimension Door": {
                     "type": "currency",
@@ -87,7 +87,7 @@
                 "Mail Service": {
                     "type": "currency",
                     "price": 0.01,
-                    "unit": "cp / mile"
+                    "unit": "cp / miles"
                 },
                 "Teleportation Circle Access": {
                     "type": "currency",
@@ -96,7 +96,7 @@
                 "Unmarked Courier": {
                     "type": "currency",
                     "price": 0.05,
-                    "unit": "cp / mile"
+                    "unit": "cp / miles"
                 }
             }
         ]
@@ -116,7 +116,7 @@
                 "Message Station": {
                     "type": "currency",
                     "price": 0.2,
-                    "unit": "gp / word",
+                    "unit": "gp / words",
                     "additionalServices": [
                         {
                             "Including Courier Service": {
@@ -134,7 +134,7 @@
                 "Translation": {
                     "type": "currency",
                     "price": 0.02,
-                    "unit": "cp / word"
+                    "unit": "cp / words"
                 }
             }
         ]
@@ -146,7 +146,7 @@
                 "Gargoyle Courier": {
                     "type": "currency",
                     "price": 5,
-                    "unit": "gp / mile",
+                    "unit": "gp / miles",
                     "additionalCostPerUnit": 1
                 }
             }

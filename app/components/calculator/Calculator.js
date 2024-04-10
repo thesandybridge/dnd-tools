@@ -148,7 +148,7 @@ function ServicesCalculator() {
                                             {serviceDetails.unit && (
                                                 <input
                                                     type="number"
-                                                    placeholder={`Enter ${serviceDetails.unit.split(' / ')[1]}`}
+                                                    placeholder={`${serviceDetails.unit.split(' / ')[1]}`}
                                                     value={unitInputs[serviceKey] || ''}
                                                     onChange={(e) => setUnitInputs({ ...unitInputs, [serviceKey]: parseFloat(e.target.value) })}
                                                     key={`unitInput-${serviceKey}`} // Ensure key uniqueness if needed
@@ -167,7 +167,7 @@ function ServicesCalculator() {
                                                 const additionalServiceName = Object.keys(additional)[0];
                                                 const additionalServiceKey = `${serviceKey}|additional|${additionalServiceName}`;
                                                 return (
-                                                    <div key={additionalServiceKey}> {/* Unique key for additional services */}
+                                                    <div key={additionalServiceKey} className={styles.additionalService}>
                                                         <label>
                                                             <input
                                                                 type="checkbox"
@@ -188,8 +188,7 @@ function ServicesCalculator() {
                 </div>
             ))}
             <div className={styles.totals}>
-                Total Cost:
-                {convertToDnDCurrency(totalCost)}
+                Total Cost: {convertToDnDCurrency(totalCost)}
             </div>
         </div>
     );
@@ -284,8 +283,7 @@ function TransportationCalculator() {
             )}
 
             <div className={styles.totals}>
-                Total Cost:
-                {convertToDnDCurrency(totalCost)}
+                Total Cost: {convertToDnDCurrency(totalCost)}
             </div>
         </div>
     );
@@ -385,8 +383,7 @@ function ItemCalculator() {
             </label>
 
             <div className={styles.totals}>
-                Total Cost:
-                {convertToDnDCurrency(totalCost)}
+                Total Cost: {convertToDnDCurrency(totalCost)}
             </div>
         </div>
     );
