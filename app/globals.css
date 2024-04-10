@@ -76,3 +76,15 @@ nav {
         color-scheme: dark;
     }
 }
+
+.calcGroup{
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+h2 {
+    text-align: center;
+}

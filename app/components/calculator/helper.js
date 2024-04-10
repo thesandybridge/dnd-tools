@@ -1,8 +1,8 @@
 function convertToDnDCurrency(goldPieces) {
-    let totalCopper = Math.round(goldPieces * 100); // Convert all to copper first to avoid floating point issues
-    let gp = Math.floor(totalCopper / 100); // Determine gold pieces
-    let sp = Math.floor((totalCopper % 100) / 10); // Determine silver pieces
-    let cp = totalCopper % 10; // Remaining copper pieces
+    let totalCopper = Math.round(goldPieces * 100);
+    let gp = Math.floor(totalCopper / 100);
+    let sp = Math.floor((totalCopper % 100) / 10);
+    let cp = totalCopper % 10;
 
     let result = [];
     if (gp > 0) {
