@@ -18,5 +18,14 @@ function convertToDnDCurrency(goldPieces) {
     return result.join(' ');
 }
 
-export {convertToDnDCurrency};
+function formatDuration(days, hours, minutes, seconds) {
+    let parts = []
+    if (days > 0) days > 1 ? parts.push(`${days} Days`) : parts.push(`${days} Day`)
+    if (hours > 0) parts.push(`${hours} hours`)
+    if (minutes > 0) parts.push(`${minutes} minutes`)
+    if (seconds > 0) parts.push(`${seconds} seconds`)
+    return parts.join(", ")
+}
+
+export {convertToDnDCurrency, formatDuration};
 

@@ -3,7 +3,7 @@
 import styles from "./calculator.module.css";
 import {useState, useEffect} from "react";
 import itemsData from './items.json';
-import { convertToDnDCurrency } from "./helper";
+import { convertToDnDCurrency, formatDuration } from "./helper";
 
 export default function ItemCalculator() {
     const [selectedItem, setSelectedItem] = useState('');
@@ -11,6 +11,7 @@ export default function ItemCalculator() {
     const [selectedFeatures, setSelectedFeatures] = useState([]);
     const [miles, setMiles] = useState(0);
     const [totalCost, setTotalCost] = useState(0);
+    const [totalDays, setTotalDays] = useState("");
 
     useEffect(() => {
         setSelectedType('');
@@ -47,6 +48,26 @@ export default function ItemCalculator() {
             const perDayMiles = parseInt(item.perDay.split(' ')[0], 10);
             const perMileCost = item.baseCost / perDayMiles;
             cost += perMileCost * miles;
+        }
+
+        if (item.perDay) {
+            const [distance, _] = item.perDay.split(' ');
+
+            if (miles < distance) {
+                let hours = Math.floor(miles / distance)
+                let totalMinutes = (miles / distance* 60)
+                let minutes = Math.floor(totalMinutes % 60)
+                let seconds = Math.floor((totalMinutes * 60) % 60)
+                setTotalDays(formatDuration(0, hours, minutes, seconds))
+            } else {
+                let days = Math.floor(miles / distance)
+                let totalHours = (miles / distance * 24)
+                let hours = Math.floor(totalHours % 24)
+                let totalMinutes = (totalHours * 60)
+                let minutes = Math.floor(totalMinutes % 60)
+                let seconds = Math.floor((totalMinutes * 60) % 60)
+                setTotalDays(formatDuration(days, hours, minutes, seconds))
+            }
         }
 
         setTotalCost(cost);
@@ -100,6 +121,9 @@ export default function ItemCalculator() {
 
             <div className={styles.totals}>
                 Total Cost: {convertToDnDCurrency(totalCost)}
+            </div>
+            <div className={styles.totals}>
+                Total Time: {totalDays}
             </div>
         </div>
     );

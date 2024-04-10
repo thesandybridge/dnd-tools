@@ -3,13 +3,14 @@
 import styles from "./calculator.module.css";
 import {useState, useEffect} from "react";
 import transportationData from "./travel.json";
-import { convertToDnDCurrency } from "./helper";
+import { convertToDnDCurrency, formatDuration } from "./helper";
 
 export default function TransportationCalculator() {
     const [selectedTransport, setSelectedTransport] = useState('');
     const [distance, setDistance] = useState(0);
     const [cargoWeight, setCargoWeight] = useState(0);
     const [totalCost, setTotalCost] = useState(0);
+    const [totalDays, setTotalDays] = useState("");
 
     const selectedTransportData = transportationData.find(t => t.type === selectedTransport) || {};
 
@@ -20,32 +21,50 @@ export default function TransportationCalculator() {
     const calculateCost = () => {
         if (!selectedTransport) {
             setTotalCost(0);
+            setTotalDays(0);
             return;
         }
 
         const fareRate = parseRate(selectedTransportData.fare);
         let fareCost = 0;
         if (selectedTransportData.speed === "Instant") {
-            fareCost = fareRate.value; // Assuming instant fares are fixed per use
+            fareCost = fareRate.value;
         } else {
-            fareCost = fareRate.value * distance * fareRate.multiplier; // Fare cost based on distance
+            fareCost = fareRate.value * distance * fareRate.multiplier;
         }
 
-        // Handling cargo cost
         let cargoCostGP = 0;
         if (selectedTransportData.cargoRate) {
             const cargoRate = parseRate(selectedTransportData.cargoRate);
-            // Check if cargo weight is less than the specified unit weight for the rate
             if (cargoWeight >= cargoRate.unitWeight) {
                 const totalCargoCost = (cargoRate.value * distance * cargoWeight) / cargoRate.unitWeight;
-                cargoCostGP = totalCargoCost * cargoRate.multiplier; // Convert cargo cost to GP
+                cargoCostGP = totalCargoCost * cargoRate.multiplier;
+            }
+        }
+
+        if (selectedTransportData.perDay) {
+            const [miles, _] = selectedTransportData.perDay.split(' ');
+
+            if (distance < miles) {
+                let hours = Math.floor(distance / miles)
+                let totalMinutes = (distance / miles * 60)
+                let minutes = Math.floor(totalMinutes % 60)
+                let seconds = Math.floor((totalMinutes * 60) % 60)
+                setTotalDays(formatDuration(0, hours, minutes, seconds))
+            } else {
+                let days = Math.floor(distance / miles)
+                let totalHours = (distance / miles * 24)
+                let hours = Math.floor(totalHours % 24)
+                let totalMinutes = (totalHours * 60)
+                let minutes = Math.floor(totalMinutes % 60)
+                let seconds = Math.floor((totalMinutes * 60) % 60)
+                setTotalDays(formatDuration(days, hours, minutes, seconds))
             }
         }
 
         setTotalCost(fareCost + cargoCostGP);
     };
 
-    // Helper function to parse rate strings
     const parseRate = (rateString) => {
         if (!rateString) return { value: 0, multiplier: 0, unitWeight: Infinity }; // Handle no rate case
         const parts = rateString.split(' ');
@@ -95,6 +114,9 @@ export default function TransportationCalculator() {
 
             <div className={styles.totals}>
                 Total Cost: {convertToDnDCurrency(totalCost)}
+            </div>
+            <div className={styles.totals}>
+                Total Time: {totalDays}
             </div>
         </div>
     );
