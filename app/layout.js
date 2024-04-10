@@ -10,12 +10,17 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+    const year = new Date().getFullYear()
     return (
         <html lang="en">
             <body className={inter.className}>
                 <Nav />
                 {children}
+                <footer>
+                    <p>© {year} - made with ♥ by sandybridge</p>
+                </footer>
             </body>
+
         </html>
     );
 }
