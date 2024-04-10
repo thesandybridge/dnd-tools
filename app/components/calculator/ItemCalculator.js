@@ -62,28 +62,24 @@ export default function ItemCalculator() {
     return (
         <div className={styles.calculatorItem}>
             <h2>Item Price Calculator</h2>
-            <div className={styles.calcWrap}>
-                <label>Rarity:
-                    <select value={rarity} onChange={(e) => setRarity(e.target.value)}>
-                        <option value="">Select Rarity</option>
-                        <option value="Common">Common</option>
-                        <option value="Uncommon">Uncommon</option>
-                        <option value="Rare">Rare</option>
-                        <option value="Very Rare">Very Rare</option>
-                        <option value="Legendary">Legendary</option>
-                    </select>
-                </label>
-                <label>Consumable:
-                    <input type="checkbox" checked={isConsumable} onChange={(e) => setIsConsumable(e.target.checked)} />
-                </label>
-                <div className={styles.calcGroup}>
-                    {Object.keys(attributes).map((attr) => (
-                        <label key={attr} className={styles.label}>
-                            {attr.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}:
-                            <input type="number" value={attributes[attr]} onChange={handleAttributeChange(attr)} />
-                        </label>
-                    ))}
-                </div>
+            <select value={rarity} onChange={(e) => setRarity(e.target.value)}>
+                <option value="">Select Rarity</option>
+                <option value="Common">Common</option>
+                <option value="Uncommon">Uncommon</option>
+                <option value="Rare">Rare</option>
+                <option value="Very Rare">Very Rare</option>
+                <option value="Legendary">Legendary</option>
+            </select>
+            <label>Consumable:
+                <input type="checkbox" checked={isConsumable} onChange={(e) => setIsConsumable(e.target.checked)} />
+            </label>
+            <div className={styles.calcGroup}>
+                {Object.keys(attributes).map((attr) => (
+                    <label key={attr} className={styles.label}>
+                        {attr.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}:
+                        <input type="number" value={attributes[attr]} onChange={handleAttributeChange(attr)} />
+                    </label>
+                ))}
             </div>
             {gp > 0 && (
                 <div className={styles.totals} style={{ marginTop: '20px' }}>
