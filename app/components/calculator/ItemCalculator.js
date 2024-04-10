@@ -61,7 +61,7 @@ export default function ItemCalculator() {
 
     return (
         <div className={styles.calculatorItem}>
-            <h2>Item Attributes Calculator</h2>
+            <h2>Item Price Calculator</h2>
             <div className={styles.calcWrap}>
                 <label>Rarity:
                     <select value={rarity} onChange={(e) => setRarity(e.target.value)}>
