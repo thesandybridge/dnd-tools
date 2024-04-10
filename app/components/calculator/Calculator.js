@@ -187,7 +187,10 @@ function ServicesCalculator() {
                     ))}
                 </div>
             ))}
-            <div>Total Cost: {convertToDnDCurrency(totalCost)}</div>
+            <div className={styles.totals}>
+                Total Cost:
+                {convertToDnDCurrency(totalCost)}
+            </div>
         </div>
     );
 }
@@ -281,6 +284,7 @@ function TransportationCalculator() {
             )}
 
             <div className={styles.totals}>
+                Total Cost:
                 {convertToDnDCurrency(totalCost)}
             </div>
         </div>
@@ -381,6 +385,7 @@ function ItemCalculator() {
             </label>
 
             <div className={styles.totals}>
+                Total Cost:
                 {convertToDnDCurrency(totalCost)}
             </div>
         </div>
