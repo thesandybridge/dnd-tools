@@ -23,6 +23,23 @@
     position: relative;
 }
 
+.calcGroup {
+    display: flex;
+    flex-direction: column;
+}
+
+.label {
+    display: flex;
+    justify-content: space-between;
+}
+
+.calcWrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
 .totals {
     border: solid 1px #928374;
     padding: 1rem;

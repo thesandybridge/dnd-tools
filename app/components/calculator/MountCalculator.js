@@ -5,7 +5,7 @@ import {useState, useEffect} from "react";
 import itemsData from './items.json';
 import { convertToDnDCurrency, formatDuration } from "./helper";
 
-export default function ItemCalculator() {
+export default function MountCalculator() {
     const [selectedItem, setSelectedItem] = useState('');
     const [selectedType, setSelectedType] = useState('');
     const [selectedFeatures, setSelectedFeatures] = useState([]);

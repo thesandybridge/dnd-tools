@@ -88,3 +88,9 @@ nav {
 h2 {
     text-align: center;
 }
+
+
+.totals {
+    border: solid 1px #928374;
+    padding: 1rem;
+}
