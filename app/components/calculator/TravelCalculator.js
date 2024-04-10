@@ -1,7 +1,7 @@
 "use client"
 
 import styles from "./calculator.module.css";
-import {useState, useEffect} from "react";
+import {useState, useEffect, useCallback, useMemo} from "react";
 import transportationData from "./travel.json";
 import { convertToDnDCurrency, formatDuration } from "./helper";
 
@@ -12,13 +12,39 @@ export default function TransportationCalculator() {
     const [totalCost, setTotalCost] = useState(0);
     const [totalDays, setTotalDays] = useState("");
 
-    const selectedTransportData = transportationData.find(t => t.type === selectedTransport) || {};
+    const selectedTransportData = useMemo(() => {
+        return transportationData.find(t => t.type === selectedTransport) || {};
+    }, [selectedTransport]);
 
-    useEffect(() => {
-        calculateCost();
-    }, [selectedTransport, distance, cargoWeight]);
+    const calculateTotalTime = useCallback((data) => {
+        if (data.speed === "Instant") {
+            setTotalDays("Instant");
+            return;
+        }
 
-    const calculateCost = () => {
+        if (data.perDay) {
+            const [milesPerDay, _] = data.perDay.split(' ');
+            const miles = parseInt(milesPerDay, 10);
+
+            if (distance < miles) {
+                let hours = Math.floor(distance / miles)
+                let totalMinutes = (distance / miles * 60)
+                let minutes = Math.floor(totalMinutes % 60)
+                let seconds = Math.floor((totalMinutes * 60) % 60)
+                setTotalDays(formatDuration(0, hours, minutes, seconds))
+            } else {
+                let days = Math.floor(distance / miles)
+                let totalHours = (distance / miles * 24)
+                let hours = Math.floor(totalHours % 24)
+                let totalMinutes = (totalHours * 60)
+                let minutes = Math.floor(totalMinutes % 60)
+                let seconds = Math.floor((totalMinutes * 60) % 60)
+                setTotalDays(formatDuration(days, hours, minutes, seconds))
+            }
+        }
+    }, [distance]);
+
+    const calculateCost = useCallback(() => {
         if (!selectedTransport) {
             setTotalCost(0);
             setTotalDays(0);
@@ -42,28 +68,16 @@ export default function TransportationCalculator() {
             }
         }
 
-        if (selectedTransportData.perDay) {
-            const [miles, _] = selectedTransportData.perDay.split(' ');
-
-            if (distance < miles) {
-                let hours = Math.floor(distance / miles)
-                let totalMinutes = (distance / miles * 60)
-                let minutes = Math.floor(totalMinutes % 60)
-                let seconds = Math.floor((totalMinutes * 60) % 60)
-                setTotalDays(formatDuration(0, hours, minutes, seconds))
-            } else {
-                let days = Math.floor(distance / miles)
-                let totalHours = (distance / miles * 24)
-                let hours = Math.floor(totalHours % 24)
-                let totalMinutes = (totalHours * 60)
-                let minutes = Math.floor(totalMinutes % 60)
-                let seconds = Math.floor((totalMinutes * 60) % 60)
-                setTotalDays(formatDuration(days, hours, minutes, seconds))
-            }
-        }
 
         setTotalCost(fareCost + cargoCostGP);
-    };
+    }, [selectedTransportData, distance, cargoWeight, selectedTransport]);
+
+    useEffect(() => {
+        calculateCost();
+        calculateTotalTime(selectedTransportData);
+    }, [selectedTransportData, calculateCost, calculateTotalTime]);
+
+
 
     const parseRate = (rateString) => {
         if (!rateString) return { value: 0, multiplier: 0, unitWeight: Infinity }; // Handle no rate case
