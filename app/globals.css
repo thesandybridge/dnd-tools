@@ -41,7 +41,10 @@ label {
 
 input, select {
     cursor: pointer;
-    padding: .25rem;
+    padding: 1rem;
+    background: var(--bg);
+    color: var(--fg);
+    border: solid 1px var(--fg);
 }
 
 button {
@@ -93,4 +96,9 @@ h2 {
 .totals {
     border: solid 1px #928374;
     padding: 1rem;
+}
+
+label {
+    display: flex;
+    align-items: center;
 }
