@@ -53,6 +53,12 @@ nav {
     justify-content: center;
     padding: 1rem;
     gap: 1rem;
+
+    a {
+        &:hover {
+            color: gold;
+        }
+    }
 }
 
 @media (prefers-color-scheme: dark) {
