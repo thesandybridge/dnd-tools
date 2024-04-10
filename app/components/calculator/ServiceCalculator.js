@@ -84,7 +84,7 @@ export default function ServicesCalculator() {
         <div className={styles.calculatorItem}>
             <h2>Services Calculator</h2>
             {servicesData.map((house, _) => (
-                <div key={house.house}> {/* Use house name for uniqueness */}
+                <div key={house.house} className={styles.calcGroup}> {/* Use house name for uniqueness */}
                     <h3>{house.house}</h3>
                     {house.services.map((service, _) => (
                         Object.entries(service).map(([serviceName, serviceDetails]) => {
