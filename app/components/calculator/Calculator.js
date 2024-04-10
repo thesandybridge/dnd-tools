@@ -25,7 +25,7 @@ function convertCurrency(type, amount) {
 
 
 export default function Calculator() {
-    const [currency, setCurrency] = useState(0)
+    const [currency, setCurrency] = useState(1)
     const [selectedCurrency, setSelectedCurrency] = useState('GP')
     const [conversionResult, setConversionResult] = useState('')
 
