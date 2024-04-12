@@ -1,5 +1,7 @@
+import MapComponent from "../components/map/Map";
+
 export default function Map() {
     return (
-        <div>Test</div>
-    )
+        <MapComponent/>
+    );
 }
