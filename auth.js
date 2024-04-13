@@ -9,5 +9,5 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     adapter: SupabaseAdapter({
         url: process.env.SUPABASE_URL,
         secret: process.env.SUPABASE_SERVICE_ROLE_KEY,
-    }),
+    })
 })

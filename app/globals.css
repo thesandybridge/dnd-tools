@@ -77,6 +77,7 @@ nav {
     justify-content: center;
     padding: 1rem;
     gap: 1rem;
+    align-items: center;
 
     a {
         &:hover {
@@ -120,4 +121,12 @@ label {
 
 .mapContainer {
     background-color: var(--bg) !important;
+}
+
+.user_profile {
+    border-radius: 50%;
+}
+
+.user-control {
+    cursor: pointer;
 }

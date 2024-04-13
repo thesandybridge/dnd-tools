@@ -2,6 +2,9 @@ import { Inter } from "next/font/google";
 import Nav from "./components/navigation/Nav";
 import "./globals.css";
 import 'leaflet/dist/leaflet.css';
+import "@fortawesome/fontawesome-svg-core/styles.css"; // import Font Awesome CSS
+import { config } from "@fortawesome/fontawesome-svg-core";
+config.autoAddCss = false;
 
 const inter = Inter({ subsets: ["latin"] });
 

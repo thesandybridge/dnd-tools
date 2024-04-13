@@ -1,14 +1,16 @@
-import { signOut } from "@/auth.js"
+"use client"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"; // Import the FontAwesomeIcon component
+import { faRightFromBracket} from "@fortawesome/free-solid-svg-icons";
+import { signOut } from "next-auth/react"
 
 export function SignOut() {
-  return (
-    <form
-      action={async () => {
-        "use server"
-        await signOut()
-      }}
-    >
-      <button type="submit">Sign Out</button>
-    </form>
-  )
+    return (
+        <FontAwesomeIcon
+            className="user-control"
+            title={"Sign Out"}
+            onClick={() => signOut()}
+            style={{fontSize:"25px"}}
+            icon={faRightFromBracket}
+        ></FontAwesomeIcon>
+    )
 }
