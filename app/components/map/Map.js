@@ -4,7 +4,7 @@ import L from "leaflet";
 
 export default function MapComponent() {
 
-    const url = "/images/eberron";
+    const url = "https://dndeberron.s3.amazonaws.com/eberron";
 
     return (
         <MapContainer
