@@ -3,6 +3,9 @@ import { MapContainer, TileLayer } from 'react-leaflet'
 import L from "leaflet";
 
 export default function MapComponent() {
+
+    const url = "/images/eberron";
+
     return (
         <MapContainer
             center={[-80,117]}
@@ -14,7 +17,7 @@ export default function MapComponent() {
             crs={L.CRS.Simple}
         >
             <TileLayer
-                url="/images/eberron/{z}/{x}/{y}.png"
+                url={`${url}/{z}/{x}/{y}.png`}
                 noWrap={true}
                 tms={false}
                 tileSize={256}
