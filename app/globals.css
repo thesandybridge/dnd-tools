@@ -117,3 +117,7 @@ label {
     color: var(--fg);
     border: solid 1px var(--fg);
 }
+
+.mapContainer {
+    background-color: var(--bg) !important;
+}

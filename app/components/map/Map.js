@@ -1,16 +1,23 @@
 "use client"
 import { MapContainer, TileLayer } from 'react-leaflet'
+import L from "leaflet";
 
 export default function MapComponent() {
-    const bounds = [
-        [0, -75], // Southwest coordinates
-        [0, 85]    // Northeast coordinates
-    ];
-
     return (
-        <MapContainer minZoom={0} bounds={bounds} zoom={3} maxZoom={5} style={{ height: '100vh', width: '100%' }}>
+        <MapContainer
+            center={[-80,117]}
+            className="mapContainer"
+            zoom={2}
+            minZoom={0}
+            maxZoom={5}
+            style={{ height: '100vh', width: '100%' }}
+            crs={L.CRS.Simple}
+        >
             <TileLayer
                 url="/images/eberron/{z}/{x}/{y}.png"
+                noWrap={true}
+                tms={false}
+                tileSize={256}
             />
         </MapContainer>
     );
