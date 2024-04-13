@@ -3,7 +3,6 @@ import Nav from "./components/navigation/Nav";
 import "./globals.css";
 import 'leaflet/dist/leaflet.css';
 
-
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
