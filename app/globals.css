@@ -1,6 +1,7 @@
 :root {
     --bg: #282828;
     --fg: #928374;
+    --alt: #8ec07c;
 }
 * {
     box-sizing: border-box;
@@ -78,12 +79,6 @@ nav {
     padding: 1rem;
     gap: 1rem;
     align-items: center;
-
-    a {
-        &:hover {
-            color: gold;
-        }
-    }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -129,6 +124,10 @@ label {
 
 .user-control {
     cursor: pointer;
+
+    &:hover {
+        color: var(--alt);
+    }
 }
 
 .toggleControls {
