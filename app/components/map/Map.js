@@ -4,9 +4,18 @@ import {useState} from "react"
 import { MapContainer, TileLayer, Polyline, Marker, Popup, useMapEvents } from 'react-leaflet'
 import L from "leaflet";
 
-const calculateDistance = (pointA, pointB) => {
-    return pointA.distanceTo(pointB) / 1000;
-};
+const MILES_PER_MAP_UNIT = 15.644; // Miles per each map unit
+
+function calculateDistanceInMiles(mapUnits) {
+    return mapUnits * MILES_PER_MAP_UNIT; // Convert map units directly to miles
+}
+
+function calculateDistance(pointA, pointB) {
+    const dx = pointB.lng - pointA.lng; // difference in longitude units
+    const dy = pointB.lat - pointA.lat; // difference in latitude units
+    const distanceInMapUnits = Math.sqrt(dx * dx + dy * dy); // Euclidean distance in map units
+    return calculateDistanceInMiles(distanceInMapUnits).toFixed(2); // Convert to miles and format
+}
 
 function ClickHandler({ setMarkers }) {
     useMapEvents({
@@ -16,7 +25,7 @@ function ClickHandler({ setMarkers }) {
                 {
                     position: e.latlng,
                     distance: prevMarkers.length > 0
-                        ? calculateDistance(prevMarkers[prevMarkers.length - 1].position, e.latlng).toFixed(2)
+                        ? calculateDistance(prevMarkers[prevMarkers.length - 1].position, e.latlng)
                         : "Start"
                 }
             ]);
@@ -52,7 +61,7 @@ export default function MapComponent() {
             {markers.map((marker, idx) => (
                 <Marker position={marker.position} key={idx}>
                     <Popup>
-                        {idx === 0 ? "Starting Point" : `Marker ${idx + 1} - ${marker.distance} km from last marker`}
+                        {idx === 0 ? "Starting Point" : `Marker ${idx + 1} - ${marker.distance} miles from last marker`}
                     </Popup>
                 </Marker>
             ))}
