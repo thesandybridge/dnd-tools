@@ -94,7 +94,7 @@ export default function MapComponent() {
             crs={L.CRS.Simple}
         >
             <TileLayer
-                url={`${local}/{z}/{x}/{y}.png`}
+                url={`${url}/{z}/{x}/{y}.png`}
                 noWrap={true}
                 tms={false}
                 tileSize={256}
