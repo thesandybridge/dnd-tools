@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import SignIn from "./Login";
-import { SignOut } from "./Logout";
+import SignOut from "./Logout";
 import { auth } from "@/auth"
 
 export default async function Nav() {

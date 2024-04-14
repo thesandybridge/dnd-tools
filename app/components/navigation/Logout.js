@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"; // Import the 
 import { faRightFromBracket} from "@fortawesome/free-solid-svg-icons";
 import { signOut } from "next-auth/react"
 
-export function SignOut() {
+export default function SignOut() {
     return (
         <FontAwesomeIcon
             className="user-control"
