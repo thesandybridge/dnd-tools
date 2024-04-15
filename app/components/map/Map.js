@@ -67,18 +67,50 @@ const customIcon = new L.Icon({
     iconAnchor: [11.5, 15],
 });
 
+/**
+ * Represents a map component using Leaflet. This component manages markers on a map,
+ * allowing users to add, view, and delete markers. The map's geographical bounds are
+ * predefined, and the component supports toggling additional map interactions.
+ *
+ * @returns {JSX.Element} The map component rendered with Leaflet.
+ */
 export default function MapComponent() {
+    /**
+     * State for managing markers on the map.
+     * @type {Array.<L.Marker>}
+     */
     const [markers, setMarkers] = useState([])
+
+    /**
+     * State to manage additional interaction handlers on the map.
+     * @type {boolean}
+     */
     const [handler, setHandler] = useState(false)
 
     const url = "https://dndeberron.s3.amazonaws.com/eberron";
-    const local = "/images/eberron";
+    //const local = "/images/eberron"; // for local development
+
+    /**
+    * Represents the geographical bounds of the map area.
+    * @type {L.LatLngBounds}
+    *
+    * The bounds are defined by two corner points:
+    * - The southwest corner at latitude 0, longitude 0.
+    * - The northeast corner at latitude 9674, longitude 15360.
+    */
     const mapBounds = new L.LatLngBounds([0, 0], [9674, 15360]);
 
+    /**
+     * Toggles the handler state.
+     */
     const toggleHandler = () => {
         setHandler(!handler)
     }
 
+    /**
+     * Handles the removal of a marker from the state.
+     * @param {L.Marker} markerToRemove - The marker to remove.
+     */
     function handleClickMarker(markerToRemove) {
         setMarkers((currentMarkers) => currentMarkers.filter(marker => marker !== markerToRemove));
     }
