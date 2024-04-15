@@ -8,7 +8,7 @@ const s3Client = new S3Client({
     }
 });
 
-export async function GET(request, {params}) {
+export async function GET(_, {params}) {
     const { z, x, y } = params;
     const fileName = `${y}`;
 
