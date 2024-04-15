@@ -111,7 +111,7 @@ export default function MapComponent() {
      * Handles the removal of a marker from the state.
      * @param {L.Marker} markerToRemove - The marker to remove.
      */
-    function handleClickMarker(markerToRemove) {
+    function handleRemoveMarker(markerToRemove) {
         setMarkers((currentMarkers) => currentMarkers.filter(marker => marker !== markerToRemove));
     }
 
@@ -144,7 +144,7 @@ export default function MapComponent() {
                             {idx === 0 ? "Starting Point" : `Marker ${idx + 1} - ${marker.distance} miles from last marker`}
                             <button onClick={(e) => {
                                 e.stopPropagation();
-                                handleClickMarker(marker);
+                                handleRemoveMarker(marker);
                             }}>
                                 Delete Marker
                             </button>
