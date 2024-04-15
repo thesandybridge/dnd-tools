@@ -105,8 +105,8 @@ export default function MapComponent() {
      */
     const [handler, setHandler] = useState(false)
 
-    const url= "/images/eberron"; // for local development
-    //const url = "/api/tiles";
+    //const url= "/images/eberron"; // for local development
+    const url = "/api/tiles";
 
     /**
     * Represents the geographical bounds of the map area.
