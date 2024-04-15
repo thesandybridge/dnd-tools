@@ -77,6 +77,7 @@ const updateMarkerDistance = async (markerId, newDistance) => {
     }
 };
 
+
 /**
  * Represents a map component using Leaflet. This component manages markers on a map,
  * allowing users to add, view, and delete markers. The map's geographical bounds are
@@ -97,18 +98,13 @@ export default function MapComponent() {
     const [rulerHandler, setRulerHandler] = useState(false)
     const [rulerPoints, setRulerPoints] = useState([])
 
-    const url= "/images/eberron"; // for local development
-    //const url = "/api/tiles";
+    //const url= "/images/eberron"; // for local development
+    const url = "/api/tiles";
 
-    /**
-    * Represents the geographical bounds of the map area.
-    * @type {L.LatLngBounds}
-    *
-    * The bounds are defined by two corner points:
-    * - The southwest corner at latitude 0, longitude 0.
-    * - The northeast corner at latitude 9674, longitude 15360.
-    */
-    const mapBounds = new L.LatLngBounds([0, 0], [9674, 15360]);
+    const mapBounds = [
+        [19.25, 200],
+        [-172.25, -123.5],
+    ];
 
 
     const toggleMarkers = () => {
@@ -215,7 +211,7 @@ export default function MapComponent() {
             center={[-80,117]}
             className={`mapContainer crosshair`}
             zoom={2}
-            minZoom={0}
+            minZoom={2}
             maxZoom={5}
             bounds={mapBounds}
             zoomSnap={0.5}
@@ -227,6 +223,7 @@ export default function MapComponent() {
                 noWrap={true}
                 tms={false}
                 tileSize={256}
+                bounds={mapBounds}
             />
             {markers.map((marker, idx) => (
                 <Marker
