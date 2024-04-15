@@ -1,44 +1,38 @@
 "use client"
 
 import {useState, useEffect} from "react"
-import { MapContainer, TileLayer, Polyline, Marker, Popup, useMapEvents, useMap } from 'react-leaflet'
+import {
+    MapContainer,
+    TileLayer,
+    Polyline,
+    Marker,
+    Popup,
+    Tooltip,
+    useMapEvents,
+    useMap
+} from 'react-leaflet'
 import L from "leaflet";
 import CustomControls from "./Controls";
-import ControlButton from "./ControlButton";
+import MarkerButton from "./MarkerButton";
 
-const MILES_PER_MAP_UNIT = 15.644;
+import { calculateDistance } from "./utils";
+import RulerButton from "./RulerButton";
 
-/**
- * @typedef {Object} Coordinates
- * @property {number} lat - Latitude value
- * @property {number} lng - Longitude value
- */
+const RulerHandler = ({ addRulerPoint, rulerPoints }) => {
+    const map = useMap();
 
-/**
- * Convert map units to total distance in miles
- *
- * @param {number} mapUnits - Map units
- * @returns {number} Map units converted to miles
- */
-function calculateDistanceInMiles(mapUnits) {
-    return mapUnits * MILES_PER_MAP_UNIT;
+    useMapEvents({
+        click: async (e) => {
+            if (map.getBounds().contains(e.latlng)) {
+                addRulerPoint(e.latlng)
+            }
+        }
+    })
+
+    return null;
 }
 
-/**
- * Calculates the distance between two points on the map
- *
- * @param {Coordinates} pointA
- * @param {Coordinates} pointB
- * @returns {number} The distance between pointA and pointB in miles
- */
-function calculateDistance(pointA, pointB) {
-    const dx = pointB.lng - pointA.lng; // difference in longitude units
-    const dy = pointB.lat - pointA.lat; // difference in latitude units
-    const distanceInMapUnits = Math.sqrt(dx * dx + dy * dy); // Euclidean distance in map units
-    return calculateDistanceInMiles(distanceInMapUnits).toFixed(2); // Convert to miles and format
-}
-
-const ClickHandler = ({ addMarker, markers, lastMarkerId }) => {
+const MarkerHandler = ({ addMarker, markers, lastMarkerId }) => {
     const map = useMap();
 
     useMapEvents({
@@ -99,14 +93,12 @@ export default function MapComponent() {
 
     const [lastMarkerId, setLastMarkerId] = useState(null);
 
-    /**
-     * State to manage additional interaction handlers on the map.
-     * @type {boolean}
-     */
-    const [handler, setHandler] = useState(false)
+    const [markerHandler, setMarkerHandler] = useState(false)
+    const [rulerHandler, setRulerHandler] = useState(false)
+    const [rulerPoints, setRulerPoints] = useState([])
 
-    //const url= "/images/eberron"; // for local development
-    const url = "/api/tiles";
+    const url= "/images/eberron"; // for local development
+    //const url = "/api/tiles";
 
     /**
     * Represents the geographical bounds of the map area.
@@ -118,11 +110,16 @@ export default function MapComponent() {
     */
     const mapBounds = new L.LatLngBounds([0, 0], [9674, 15360]);
 
-    /**
-     * Toggles the handler state.
-     */
-    const toggleHandler = () => {
-        setHandler(!handler)
+
+    const toggleMarkers = () => {
+        setMarkerHandler(!markerHandler)
+    }
+
+    const toggleRuler = () => {
+        if (rulerHandler) {
+            setRulerPoints([])
+        }
+        setRulerHandler(!rulerHandler)
     }
 
     useEffect(() => {
@@ -203,6 +200,16 @@ export default function MapComponent() {
         }
     };
 
+    const addRulerPoint = (latlng) => {
+        setRulerPoints(prevPoints => {
+            if (prevPoints.length === 2) {
+                return [latlng]
+            } else {
+                return [...prevPoints, latlng]
+            }
+        })
+    }
+
     return (
         <MapContainer
             center={[-80,117]}
@@ -246,14 +253,38 @@ export default function MapComponent() {
                     pathOptions={{ color: '#fabd2f', dashArray: '10, 20' }}
                 />
             )}
-            <CustomControls position="topleft">
-                <ControlButton onClick={toggleHandler} isActive={handler}/>
+            {rulerPoints.map((point, idx) => (
+                <Marker
+                    position={point}
+                    key={idx}
+                    icon={customIcon}
+                >
+                    <Popup>{`Ruler Point ${idx + 1}`}</Popup>
+                </Marker>
+            ))}
+            {rulerPoints.length === 2 && (
+                <Polyline
+                    positions={rulerPoints}
+                    pathOptions={{ color: 'blue', weight: 2 }}
+                >
+                    <Tooltip permanent>{`Distance: ${calculateDistance(rulerPoints[0], rulerPoints[1])} miles`}</Tooltip>
+                </Polyline>
+            )}
+            <CustomControls position="topleft" className="custom-controls">
+                <MarkerButton onClick={toggleMarkers} isActive={markerHandler}/>
+                <RulerButton onClick={toggleRuler} isActive={rulerHandler} />
             </CustomControls>
-            {handler && (
-                <ClickHandler
+            {markerHandler && (
+                <MarkerHandler
                     addMarker={addMarker}
                     markers={markers}
                     lastMarkerId={lastMarkerId}
+                />
+            )}
+            {rulerHandler && (
+                <RulerHandler
+                    addRulerPoint={addRulerPoint}
+                    rulerPoints={rulerPoints}
                 />
             )}
         </MapContainer>

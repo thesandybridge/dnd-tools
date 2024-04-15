@@ -193,3 +193,9 @@ label {
         border-bottom: solid 1px var(--bg) !important;
     }
 }
+
+.custom-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}

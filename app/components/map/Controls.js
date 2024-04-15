@@ -18,13 +18,13 @@ import L from 'leaflet';
  * @returns {React.ReactPortal|null} A portal that renders the children into the Leaflet map control,
  *   or null if the control element is not yet initialized.
  */
-const CustomControls = ({ position = 'topleft', children }) => {
+const CustomControls = ({ position = 'topleft', children, className }) => {
     const map = useMap();
     const [controlElement, setControlElement] = useState(null);
 
     useEffect(() => {
         const controlDiv = L.DomUtil.create('div', 'leaflet-control');
-
+        controlDiv.classList.add(className)
         const control = new L.Control({ position });
         control.onAdd = function() {
             return controlDiv;
@@ -38,7 +38,7 @@ const CustomControls = ({ position = 'topleft', children }) => {
             control.remove();
             controlDiv.remove();
         };
-    }, [map, position]);
+    }, [map, position, className]);
 
     return controlElement ? createPortal(children, controlElement) : null;
 };

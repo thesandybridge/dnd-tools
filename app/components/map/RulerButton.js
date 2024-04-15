@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMap, faMapLocationDot } from "@fortawesome/free-solid-svg-icons";
+import { faRuler} from "@fortawesome/free-solid-svg-icons";
 
 /**
  * @typedef {Object} ControlButtonProps
@@ -15,7 +15,7 @@ import { faMap, faMapLocationDot } from "@fortawesome/free-solid-svg-icons";
  * @param {ControlButtonProps} props - The props for the component.
  * @returns {JSX.Element} The FontAwesomeIcon wrapped in a div as a button.
  */
-const ControlButton = ({onClick, isActive}) => {
+const RulerButton = ({onClick, isActive}) => {
     /**
      * Handles click events for the control button. Prevents event propagation to higher components
      * and triggers the onClick callback provided in the props.
@@ -32,10 +32,10 @@ const ControlButton = ({onClick, isActive}) => {
                 title={"Set pins"}
                 onClick={handleClick}
                 style={{fontSize:"25px"}}
-                icon={isActive ? faMapLocationDot : faMap}
+                icon={faRuler}
             ></FontAwesomeIcon>
         </div>
     )
 }
 
-export default ControlButton
+export default RulerButton
