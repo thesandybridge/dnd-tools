@@ -38,7 +38,7 @@ function calculateDistance(pointA, pointB) {
     return calculateDistanceInMiles(distanceInMapUnits).toFixed(2); // Convert to miles and format
 }
 
-const ClickHandler = ({ setMarkers, markers, setLastMarkerId, lastMarkerId }) => {
+const ClickHandler = ({ addMarker, markers, lastMarkerId }) => {
     const map = useMap();
 
     useMapEvents({
@@ -52,37 +52,8 @@ const ClickHandler = ({ setMarkers, markers, setLastMarkerId, lastMarkerId }) =>
                     prev_marker: lastMarkerId
                 };
 
-                console.log("New marker created:", newMarker);
+                await addMarker(newMarker)
 
-                setMarkers([...markers, newMarker]);
-
-                fetch('/api/markers', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        position: newMarker.position,
-                        prev_marker: newMarker.prev_marker,
-                        distance: newMarker.distance
-                    })
-                })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
-                        setLastMarkerId(data[0].id);
-                        const updatedMarker = { ...newMarker, id: data[0].id };
-                        setMarkers(prevMarkers => [...prevMarkers.filter(m => !m.temp), updatedMarker]);
-                        console.log('Marker added successfully:', data);
-                    })
-                    .catch(error => {
-                        console.error('Error adding marker:', error.message);
-                        setMarkers(markers => markers.filter(m => !m.temp));
-                    });
             } else {
                 console.log("Outside the bounds of the map");
             }
@@ -98,30 +69,19 @@ const customIcon = new L.Icon({
     iconAnchor: [11.5, 15],
 });
 
-function handleRemoveMarker(setMarkers, markerId) {
-    // Send a DELETE request to the backend
-    fetch(`/api/markers/${markerId}`, {
-        method: 'DELETE',
-        headers: {
-            'Content-Type': 'application/json',
-        }
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        setMarkers(currentMarkers => currentMarkers.filter(marker => marker.id !== markerId));
-        return response.json();  // Assuming the server sends back some JSON response
-    })
-    .then(data => {
-        console.log("Delete successful:", data);
-        // Remove the marker from the state
-        setMarkers(currentMarkers => currentMarkers.filter(marker => marker.id !== markerId));
-    })
-    .catch(error => {
-        console.error("Failed to delete marker:", error.message);
-    });
-}
+const updateMarkerDistance = async (markerId, newDistance) => {
+    try {
+        const response = await fetch(`/api/markers/${markerId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ distance: newDistance })
+        });
+        if (!response.ok) throw new Error('Failed to update marker distance');
+        console.log("Distance update successful");
+    } catch (error) {
+        console.error("Failed to update marker distance:", error.message);
+    }
+};
 
 /**
  * Represents a map component using Leaflet. This component manages markers on a map,
@@ -174,23 +134,6 @@ export default function MapComponent() {
                 }
                 const data = await response.json();
                 setMarkers(data || []);
-            } catch (error) {
-                console.error("Failed to load markers:", error.message);
-                // Optionally, implement a retry logic or display a message to the user
-            }
-        }
-        fetchMarkers();
-    }, []);
-
-    useEffect(() => {
-        async function fetchMarkers() {
-            try {
-                const response = await fetch('/api/markers');
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                setMarkers(data || []);
                 const lastMarker = data.length > 1 ? data[data.length - 1] : null;
                 if (lastMarker) {
                     setLastMarkerId(lastMarker.id);
@@ -201,6 +144,64 @@ export default function MapComponent() {
         }
         fetchMarkers();
     }, []);
+
+    const handleRemoveMarker = async (markerId) => {
+        const markerToRemove = markers.find(marker => marker.id === markerId);
+        const affectedMarker = markers.find(marker => marker.prev_marker === markerId);
+
+        let newMarkers = markers.filter(marker => marker.id !== markerId);
+
+        if (affectedMarker && markerToRemove) {
+            const newPrevMarker = markers.find(marker => marker.id === markerToRemove.prev_marker);
+            const updatedDistance = newPrevMarker ? calculateDistance(newPrevMarker.position, affectedMarker.position) : "Start";
+
+            newMarkers = newMarkers.map(marker => {
+                if (marker.id === affectedMarker.id) {
+                    return { ...marker, prev_marker: markerToRemove.prev_marker, distance: updatedDistance };
+                }
+                return marker;
+            });
+
+            updateMarkerDistance(affectedMarker.id, updatedDistance);
+        }
+
+        setMarkers(newMarkers);
+
+        try {
+            const response = await fetch(`/api/markers/${markerId}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+            });
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            console.log("Delete successful");
+        } catch (error) {
+            console.error("Failed to delete marker:", error.message);
+            setMarkers(markers);
+        }
+    };
+
+    const addMarker = async (newMarkerData) => {
+        const optimisticNewMarker = { ...newMarkerData, id: Date.now() };
+        setMarkers([...markers, optimisticNewMarker]);
+
+        try {
+            const response = await fetch('/api/markers', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newMarkerData)
+            });
+            const data = await response.json();
+            if (!response.ok) throw new Error('Network response was not ok');
+            setLastMarkerId(data[0].id)
+            setMarkers(prevMarkers => prevMarkers.map(marker =>
+                marker.id === optimisticNewMarker.id ? { ...marker, id: data[0].id } : marker
+            ));
+            console.log("New marker successfully added")
+        } catch (error) {
+            console.error('Error adding marker:', error.message);
+            setMarkers(markers.filter(marker => marker.id !== optimisticNewMarker.id));  // Revert if failed
+        }
+    };
 
     return (
         <MapContainer
@@ -231,7 +232,7 @@ export default function MapComponent() {
                             {idx === 0 ? "Starting Point" : `Marker ${idx + 1} - ${marker.distance} miles from last marker`}
                             <button onClick={(e) => {
                                 e.stopPropagation();
-                                handleRemoveMarker(setMarkers, marker.id);
+                                handleRemoveMarker(marker.id);
                             }}>
                                 Delete Marker
                             </button>
@@ -250,9 +251,8 @@ export default function MapComponent() {
             </CustomControls>
             {handler && (
                 <ClickHandler
-                    setMarkers={setMarkers}
+                    addMarker={addMarker}
                     markers={markers}
-                    setLastMarkerId={setLastMarkerId}
                     lastMarkerId={lastMarkerId}
                 />
             )}
