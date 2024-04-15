@@ -87,8 +87,8 @@ export default function MapComponent() {
      */
     const [handler, setHandler] = useState(false)
 
-    const url = "https://dndeberron.s3.amazonaws.com/eberron";
-    //const local = "/images/eberron"; // for local development
+    //const url = "https://dndeberron.s3.amazonaws.com/eberron";
+    const url= "/images/eberron"; // for local development
 
     /**
     * Represents the geographical bounds of the map area.

@@ -3,35 +3,43 @@ import { useMap } from 'react-leaflet';
 import { createPortal } from 'react-dom';
 import L from 'leaflet';
 
+/**
+ * @typedef {Object} CustomControlsProps
+ * @property {string} [position='topleft'] - The position of the control on the map.
+ *   Standard Leaflet control positions include 'topleft', 'topright', 'bottomleft', 'bottomright'.
+ * @property {React.ReactNode} children - The React children to be rendered inside the Leaflet control.
+ */
+
+/**
+ * CustomControls creates a custom control element on a Leaflet map.
+ * This component utilizes React portals to render React children into a Leaflet control.
+ *
+ * @param {CustomControlsProps} props - The props for the component.
+ * @returns {React.ReactPortal|null} A portal that renders the children into the Leaflet map control,
+ *   or null if the control element is not yet initialized.
+ */
 const CustomControls = ({ position = 'topleft', children }) => {
     const map = useMap();
     const [controlElement, setControlElement] = useState(null);
 
     useEffect(() => {
-        // Create a div to serve as the control container
         const controlDiv = L.DomUtil.create('div', 'leaflet-control');
 
-        // Define a new Leaflet control with the specified position
         const control = new L.Control({ position });
         control.onAdd = function() {
             return controlDiv;
         };
 
-        // Add the control to the map
         control.addTo(map);
 
-        // Set the control element state to the created div
         setControlElement(controlDiv);
 
         return () => {
             control.remove();
-            // Clean up the div element
             controlDiv.remove();
         };
-    }, [map, position]); // Re-run this effect if map or position changes
+    }, [map, position]);
 
-    // Render the children inside the control element via a React portal
-    // Only render the portal when controlElement is not null
     return controlElement ? createPortal(children, controlElement) : null;
 };
 
