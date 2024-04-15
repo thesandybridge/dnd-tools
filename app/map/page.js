@@ -7,8 +7,11 @@ export default async function Map() {
     if (!session?.user) {
         redirect('/')
     }
+
     const MapComponent = dynamic(() => import("../components/map/Map"), {ssr: false})
     return (
-        <MapComponent/>
+        <>
+            <MapComponent user_id={session?.user.id}/>
+        </>
     );
 }
