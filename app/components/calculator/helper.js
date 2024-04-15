@@ -1,3 +1,9 @@
+/**
+ * Covert number to formatted D&D currency
+ *
+ * @param {number} goldPieces - an amount of Gold pieces
+ * @returns {string} formatted string of currency
+ */
 function convertToDnDCurrency(goldPieces) {
     let totalCopper = Math.round(goldPieces * 100);
     let gp = Math.floor(totalCopper / 100);
@@ -18,6 +24,18 @@ function convertToDnDCurrency(goldPieces) {
     return result.join(' ');
 }
 
+
+/**
+ * Formats a duration into a human-readable string.
+ * Each time component (days, hours, minutes, seconds) is only included in the result if it is greater than zero.
+ * The result is a comma-separated list of each component that is greater than zero, properly pluralized.
+ *
+ * @param {number} days - The number of days.
+ * @param {number} hours - The number of hours.
+ * @param {number} minutes - The number of minutes.
+ * @param {number} seconds - The number of seconds.
+ * @returns {string} A human-readable duration string.
+ */
 function formatDuration(days, hours, minutes, seconds) {
     let parts = []
     if (days > 0) days > 1 ? parts.push(`${days} Days`) : parts.push(`${days} Day`)

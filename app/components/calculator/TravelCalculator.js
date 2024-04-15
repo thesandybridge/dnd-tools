@@ -5,6 +5,20 @@ import {useState, useEffect, useCallback, useMemo} from "react";
 import transportationData from "./travel.json";
 import { convertToDnDCurrency, formatDuration } from "./helper";
 
+/**
+ * @typedef {Object} Rate
+ * @property {number} value - The numeric value of the rate.
+ * @property {number} multiplier - Multiplier for converting between different currency units.
+ * @property {number} unitWeight - The unit weight for which the rate is applicable, default is 100 lbs.
+ */
+
+/**
+ * TransportationCalculator is a React component that calculates the cost and duration of transportation
+ * based on user inputs for distance and cargo weight. It uses a selected transportation type from a predefined
+ * dataset to determine specific rates and speeds.
+ *
+ * @returns {JSX.Element} The rendered component which includes input fields for distance and weight, and displays the calculated total cost and time.
+ */
 export default function TransportationCalculator() {
     const [selectedTransport, setSelectedTransport] = useState('');
     const [distance, setDistance] = useState(0);
