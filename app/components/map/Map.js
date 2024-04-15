@@ -4,19 +4,38 @@ import {useState} from "react"
 import { MapContainer, TileLayer, Polyline, Marker, Popup, useMapEvents, useMap } from 'react-leaflet'
 import L from "leaflet";
 import CustomControls from "./Controls";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"; // Import the FontAwesomeIcon component
-import { faMap, faMapLocationDot } from "@fortawesome/free-solid-svg-icons";
+import ControlButton from "./ControlButton";
 
 const MILES_PER_MAP_UNIT = 15.644;
 
+/**
+ * @typedef {Object} Coordinates
+ * @property {number} lat - Latitude value
+ * @property {number} lng - Longitude value
+ */
+
+/**
+ * Convert map units to total distance in miles
+ *
+ * @param {number} mapUnits - Map units
+ * @returns {number} Map units converted to miles
+ */
 function calculateDistanceInMiles(mapUnits) {
     return mapUnits * MILES_PER_MAP_UNIT;
 }
 
+/**
+ * Calculates the distance between two points on the map
+ *
+ * @param {Coordinates} pointA
+ * @param {Coordinates} pointB
+ * @returns {number} The distance between pointA and pointB in miles
+ */
 function calculateDistance(pointA, pointB) {
     const dx = pointB.lng - pointA.lng; // difference in longitude units
     const dy = pointB.lat - pointA.lat; // difference in latitude units
     const distanceInMapUnits = Math.sqrt(dx * dx + dy * dy); // Euclidean distance in map units
+    console.log(pointA, pointB)
     return calculateDistanceInMiles(distanceInMapUnits).toFixed(2); // Convert to miles and format
 }
 
@@ -47,23 +66,6 @@ const customIcon = new L.Icon({
     iconSize: [25, 25],
     iconAnchor: [11.5, 15],
 });
-
-const ControlButton = ({onClick, isActive}) => {
-    const handleClick = (e) => {
-        e.stopPropagation();
-        onClick();
-    };
-    return (
-        <div className={`map-btn ${isActive ? 'active-markers' : ''}`}>
-            <FontAwesomeIcon
-                title={"Set pins"}
-                onClick={handleClick}
-                style={{fontSize:"25px"}}
-                icon={isActive ? faMapLocationDot : faMap}
-            ></FontAwesomeIcon>
-        </div>
-    )
-}
 
 export default function MapComponent() {
     const [markers, setMarkers] = useState([])
