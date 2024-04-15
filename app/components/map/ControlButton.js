@@ -2,7 +2,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMap, faMapLocationDot } from "@fortawesome/free-solid-svg-icons";
 
 /**
- * @typedef {Object} Props
+ * @typedef {Object} ControlButtonProps
  * @property {Function} onClick - Callback function that is called when the button is clicked.
  * @property {boolean} isActive - Flag to indicate if the button is active, which changes the icon displayed.
  */
@@ -12,7 +12,7 @@ import { faMap, faMapLocationDot } from "@fortawesome/free-solid-svg-icons";
  * This button can be used to toggle map-related functionalities such as setting pins.
  * The icon changes based on whether the button is active or not.
  *
- * @param {Props} props - The props for the component.
+ * @param {ControlButtonProps} props - The props for the component.
  * @returns {JSX.Element} The FontAwesomeIcon wrapped in a div as a button.
  */
 const ControlButton = ({onClick, isActive}) => {
