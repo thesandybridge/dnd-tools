@@ -18,7 +18,7 @@ import MarkerButton from "./MarkerButton";
 import { calculateDistance } from "./utils";
 import RulerButton from "./RulerButton";
 
-const RulerHandler = ({ addRulerPoint, rulerPoints }) => {
+const RulerHandler = ({ addRulerPoint }) => {
     const map = useMap();
 
     useMapEvents({
