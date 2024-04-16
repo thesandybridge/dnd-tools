@@ -3,7 +3,7 @@
 import styles from "./calculator.module.css";
 import {useState, useEffect, useCallback, useMemo} from "react";
 import transportationData from "./travel.json";
-import { convertToDnDCurrency, formatDuration } from "./helper";
+import { convertToDnDCurrency, formatDuration, handleFocus } from "./helper";
 
 /**
  * @typedef {Object} Rate
@@ -29,6 +29,20 @@ export default function TransportationCalculator() {
     const selectedTransportData = useMemo(() => {
         return transportationData.find(t => t.type === selectedTransport) || {};
     }, [selectedTransport]);
+
+    const resetDistance = () => (e) => {
+        if (e.target.value === '') {
+            setDistance(0);
+            e.target.value = '0';
+        }
+    };
+
+    const resetWeight = () => (e) => {
+        if (e.target.value === '') {
+            setCargoWeight(0);
+            e.target.value = '0';
+        }
+    };
 
     const calculateTotalTime = useCallback((data) => {
         if (data.speed === "Instant") {
@@ -122,6 +136,8 @@ export default function TransportationCalculator() {
                             value={distance}
                             onChange={(e) => setDistance(parseFloat(e.target.value) || 0)}
                             placeholder="Distance in miles"
+                            onFocus={handleFocus}
+                            onBlur={resetDistance}
                         />
                         Miles
                     </label>
@@ -133,6 +149,8 @@ export default function TransportationCalculator() {
                                 value={cargoWeight}
                                 onChange={(e) => setCargoWeight(parseFloat(e.target.value) || 0)}
                                 placeholder="Cargo weight in lbs"
+                                onFocus={handleFocus}
+                                onBlur={resetWeight}
                             />
                             Weight (lbs)
                         </label>

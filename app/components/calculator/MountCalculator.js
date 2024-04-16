@@ -3,7 +3,12 @@
 import styles from "./calculator.module.css";
 import {useState, useEffect} from "react";
 import itemsData from './items.json';
-import { convertToDnDCurrency, formatDuration } from "./helper";
+import {
+    convertToDnDCurrency,
+    formatDuration,
+    handleFocus,
+    handleBlur
+} from "./helper";
 
 export default function MountCalculator() {
     const [selectedItem, setSelectedItem] = useState('');
@@ -27,6 +32,13 @@ export default function MountCalculator() {
         setSelectedFeatures(prev =>
             isChecked ? [...prev, feature] : prev.filter(f => f !== feature)
         );
+    };
+
+    const handleBlur = (attribute) => (e) => {
+        if (e.target.value === '') {
+            setMiles(0);
+            e.target.value = '0';
+        }
     };
 
     const calculateTotalCost = () => {
@@ -115,6 +127,8 @@ export default function MountCalculator() {
                     value={miles}
                     onChange={(e) => setMiles(parseInt(e.target.value, 10) || 0)}
                     placeholder="Miles (if applicable)"
+                    onBlur={handleBlur(miles)}
+                    onFocus={handleFocus}
                 />
                 Miles
             </label>

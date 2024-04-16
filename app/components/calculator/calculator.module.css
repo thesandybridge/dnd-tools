@@ -54,6 +54,7 @@
     position: sticky;
     bottom: 0;
     background-color: #282828;
+    box-shadow: 0 0 4px 4px #928374;
 }
 
 .additionalService {

@@ -45,5 +45,15 @@ function formatDuration(days, hours, minutes, seconds) {
     return parts.join(", ")
 }
 
-export {convertToDnDCurrency, formatDuration};
+const handleFocus = (e) => {
+    if (e.target.value === '0') {
+        e.target.value = '';
+    }
+};
+
+export {
+    convertToDnDCurrency,
+    formatDuration,
+    handleFocus,
+};
 
