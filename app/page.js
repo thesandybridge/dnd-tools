@@ -10,7 +10,7 @@ const chars = [
     {
         "name": "Syllari",
         "type": "rogue",
-        "id": 112834539,
+        "id": 114708176,
     },
     {
         "name": "Eins",
