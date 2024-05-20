@@ -126,8 +126,11 @@ export default function MapComponent() {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
-                setMarkers(data || []);
-                const lastMarker = data.length > 1 ? data[data.length - 1] : null;
+
+                const sortedData = data.sort((a, b) => a.id - b.id);
+
+                setMarkers(sortedData);
+                const lastMarker = sortedData.length > 0 ? sortedData[sortedData.length - 1] : null;
                 if (lastMarker) {
                     setLastMarkerId(lastMarker.id);
                 }
@@ -169,9 +172,10 @@ export default function MapComponent() {
             console.log("Delete successful");
         } catch (error) {
             console.error("Failed to delete marker:", error.message);
-            setMarkers(markers);
+            setMarkers(markers); // Revert markers if deletion fails
         }
     };
+
 
     const addMarker = async (newMarkerData) => {
         const optimisticNewMarker = { ...newMarkerData, id: Date.now() };
@@ -185,16 +189,17 @@ export default function MapComponent() {
             });
             const data = await response.json();
             if (!response.ok) throw new Error('Network response was not ok');
-            setLastMarkerId(data[0].id)
+            setLastMarkerId(data[0].id);
             setMarkers(prevMarkers => prevMarkers.map(marker =>
                 marker.id === optimisticNewMarker.id ? { ...marker, id: data[0].id } : marker
             ));
-            console.log("New marker successfully added")
+            console.log("New marker successfully added");
         } catch (error) {
             console.error('Error adding marker:', error.message);
-            setMarkers(markers.filter(marker => marker.id !== optimisticNewMarker.id));  // Revert if failed
+            setMarkers(markers.filter(marker => marker.id !== optimisticNewMarker.id));
         }
     };
+
 
     const addRulerPoint = (latlng) => {
         setRulerPoints(prevPoints => {
