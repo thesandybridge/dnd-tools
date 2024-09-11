@@ -29,7 +29,7 @@ const MarkerButton = ({ onClick, isActive }) => {
   return (
     <div className={`map-btn ${isActive ? 'active-markers' : ''}`}>
       <FontAwesomeIcon
-        title={"Set pins"}
+        title={isActive ? "Add Pins" : "Navigate"}
         onClick={handleClick}
         style={{ fontSize: "25px" }}
         icon={isActive ? faMapLocationDot : faMap}

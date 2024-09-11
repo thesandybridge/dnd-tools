@@ -25,7 +25,7 @@ const chars = [
   {
     "name": "Moriko",
     "type": "druid",
-    "id": 114788761,
+    "id": "moriko",
   }
 ]
 export default function Home() {
