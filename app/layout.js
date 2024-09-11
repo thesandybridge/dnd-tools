@@ -9,22 +9,22 @@ config.autoAddCss = false;
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Dicks and Dragons",
+  title: "Dungeon Syndrome",
   description: "Our Dungeons and Dragons Campaign",
 };
 
 export default function RootLayout({ children }) {
-    const year = new Date().getFullYear()
-    return (
-        <html lang="en">
-            <body className={inter.className}>
-                <Nav />
-                {children}
-                <footer>
-                    <p>© {year} - made with ♥ by sandybridge</p>
-                </footer>
-            </body>
+  const year = new Date().getFullYear()
+  return (
+    <html lang="en">
+      <body className={inter.className}>
+        <Nav />
+        {children}
+        <footer>
+          <p>© {year} - made with ♥ by sandybridge</p>
+        </footer>
+      </body>
 
-        </html>
-    );
+    </html>
+  );
 }

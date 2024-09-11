@@ -19,28 +19,28 @@ import L from 'leaflet';
  *   or null if the control element is not yet initialized.
  */
 const CustomControls = ({ position = 'topleft', children, className }) => {
-    const map = useMap();
-    const [controlElement, setControlElement] = useState(null);
+  const map = useMap();
+  const [controlElement, setControlElement] = useState(null);
 
-    useEffect(() => {
-        const controlDiv = L.DomUtil.create('div', 'leaflet-control');
-        controlDiv.classList.add(className)
-        const control = new L.Control({ position });
-        control.onAdd = function() {
-            return controlDiv;
-        };
+  useEffect(() => {
+    const controlDiv = L.DomUtil.create('div', 'leaflet-control');
+    controlDiv.classList.add(className)
+    const control = new L.Control({ position });
+    control.onAdd = function() {
+      return controlDiv;
+    };
 
-        control.addTo(map);
+    control.addTo(map);
 
-        setControlElement(controlDiv);
+    setControlElement(controlDiv);
 
-        return () => {
-            control.remove();
-            controlDiv.remove();
-        };
-    }, [map, position, className]);
+    return () => {
+      control.remove();
+      controlDiv.remove();
+    };
+  }, [map, position, className]);
 
-    return controlElement ? createPortal(children, controlElement) : null;
+  return controlElement ? createPortal(children, controlElement) : null;
 };
 
 export default CustomControls;

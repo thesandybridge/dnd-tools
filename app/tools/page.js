@@ -5,15 +5,15 @@ import ServicesCalculator from "../components/calculator/ServiceCalculator";
 import TransportationCalculator from "../components/calculator/TravelCalculator";
 
 export default function Tools() {
-    return (
-        <main>
-            <Calculator/>
-            <div className="calcGroup">
-                <ServicesCalculator/>
-                <TransportationCalculator/>
-                <MountCalculator/>
-                <ItemCalculator/>
-            </div>
-        </main>
-    )
+  return (
+    <main>
+      <Calculator />
+      <div className="calcGroup">
+        <ServicesCalculator />
+        <TransportationCalculator />
+        <MountCalculator />
+        <ItemCalculator />
+      </div>
+    </main>
+  )
 }
