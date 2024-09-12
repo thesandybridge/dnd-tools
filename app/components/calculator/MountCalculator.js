@@ -1,13 +1,12 @@
 "use client"
 
 import styles from "./calculator.module.css";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import itemsData from './items.json';
 import {
   convertToDnDCurrency,
   formatDuration,
   handleFocus,
-  handleBlur
 } from "./helper";
 
 export default function MountCalculator() {
@@ -24,24 +23,20 @@ export default function MountCalculator() {
     setTotalCost(0);
   }, [selectedItem]);
 
-  useEffect(() => {
-    calculateTotalCost();
-  }, [selectedItem, selectedType, selectedFeatures, miles]);
-
   const handleFeatureChange = (feature, isChecked) => {
     setSelectedFeatures(prev =>
       isChecked ? [...prev, feature] : prev.filter(f => f !== feature)
     );
   };
 
-  const handleBlur = (attribute) => (e) => {
+  const handleBlur = () => (e) => {
     if (e.target.value === '') {
       setMiles(0);
       e.target.value = '0';
     }
   };
 
-  const calculateTotalCost = () => {
+  const calculateTotalCost = useCallback(() => {
     const item = itemsData.find(i => i.item === selectedItem);
     if (!item) return;
 
@@ -83,8 +78,11 @@ export default function MountCalculator() {
     }
 
     setTotalCost(cost);
-  };
+  }, [miles, selectedFeatures, selectedItem, selectedType]);
 
+  useEffect(() => {
+    calculateTotalCost();
+  }, [selectedItem, selectedType, selectedFeatures, miles, calculateTotalCost]);
 
   return (
     <div className={styles.calculatorItem}>

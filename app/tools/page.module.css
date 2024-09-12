@@ -1,0 +1,11 @@
+.main {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  align-items: center;
+}
+
+.tools {
+  max-width: 900px;
+  width: 100%;
+}

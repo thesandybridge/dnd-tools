@@ -5,6 +5,70 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import transportationData from "./travel.json";
 import { convertToDnDCurrency, formatDuration, handleFocus } from "./helper";
 
+const View = ({
+  selectedTransport,
+  setSelectedTransport,
+  transportationData,
+  selectedTransportData,
+  setDistance,
+  resetDistance,
+  distance,
+  resetWeight,
+  cargoWeight,
+  setCargoWeight,
+  totalCost,
+  totalDays,
+}) => {
+  return (
+    <div className={styles.calculatorItem}>
+      <h2>Transportation Calculator</h2>
+      <select value={selectedTransport} onChange={(e) => setSelectedTransport(e.target.value)}>
+        <option value="">Select Transportation</option>
+        {transportationData.map((option, index) => (
+          <option key={index} value={option.type}>{option.type}</option>
+        ))}
+      </select>
+
+      {selectedTransportData.speed !== "Instant" && (
+        <>
+          <label>
+            <input
+              type="number"
+              value={distance}
+              onChange={(e) => setDistance(parseFloat(e.target.value) || 0)}
+              placeholder="Distance in miles"
+              onFocus={handleFocus}
+              onBlur={resetDistance}
+            />
+            Miles
+          </label>
+
+          {selectedTransportData.cargoRate && (
+            <label>
+              <input
+                type="number"
+                value={cargoWeight}
+                onChange={(e) => setCargoWeight(parseFloat(e.target.value) || 0)}
+                placeholder="Cargo weight in lbs"
+                onFocus={handleFocus}
+                onBlur={resetWeight}
+              />
+              Weight (lbs)
+            </label>
+          )}
+        </>
+      )}
+
+      <div className={styles.totals}>
+        Total Cost: {convertToDnDCurrency(totalCost)}
+      </div>
+      <div className={styles.totals}>
+        Total Time: {totalDays}
+      </div>
+    </div>
+  )
+}
+
 /**
  * @typedef {Object} Rate
  * @property {number} value - The numeric value of the rate.
@@ -19,7 +83,7 @@ import { convertToDnDCurrency, formatDuration, handleFocus } from "./helper";
  *
  * @returns {JSX.Element} The rendered component which includes input fields for distance and weight, and displays the calculated total cost and time.
  */
-export default function TransportationCalculator() {
+const TransportationCalculator = () => {
   const [selectedTransport, setSelectedTransport] = useState('');
   const [distance, setDistance] = useState(0);
   const [cargoWeight, setCargoWeight] = useState(0);
@@ -118,52 +182,26 @@ export default function TransportationCalculator() {
     return { value, multiplier, unitWeight: perUnitWeight };
   };
 
+  const transportationCalculatorProps = {
+    selectedTransport,
+    setSelectedTransport,
+    transportationData,
+    selectedTransportData,
+    setDistance,
+    resetDistance,
+    distance,
+    resetWeight,
+    cargoWeight,
+    setCargoWeight,
+    totalCost,
+    totalDays,
+  }
+
   return (
-    <div className={styles.calculatorItem}>
-      <h2>Transportation Calculator</h2>
-      <select value={selectedTransport} onChange={(e) => setSelectedTransport(e.target.value)}>
-        <option value="">Select Transportation</option>
-        {transportationData.map((option, index) => (
-          <option key={index} value={option.type}>{option.type}</option>
-        ))}
-      </select>
-
-      {selectedTransportData.speed !== "Instant" && (
-        <>
-          <label>
-            <input
-              type="number"
-              value={distance}
-              onChange={(e) => setDistance(parseFloat(e.target.value) || 0)}
-              placeholder="Distance in miles"
-              onFocus={handleFocus}
-              onBlur={resetDistance}
-            />
-            Miles
-          </label>
-
-          {selectedTransportData.cargoRate && (
-            <label>
-              <input
-                type="number"
-                value={cargoWeight}
-                onChange={(e) => setCargoWeight(parseFloat(e.target.value) || 0)}
-                placeholder="Cargo weight in lbs"
-                onFocus={handleFocus}
-                onBlur={resetWeight}
-              />
-              Weight (lbs)
-            </label>
-          )}
-        </>
-      )}
-
-      <div className={styles.totals}>
-        Total Cost: {convertToDnDCurrency(totalCost)}
-      </div>
-      <div className={styles.totals}>
-        Total Time: {totalDays}
-      </div>
-    </div>
+    <View
+      {...transportationCalculatorProps}
+    />
   );
 }
+
+export default TransportationCalculator

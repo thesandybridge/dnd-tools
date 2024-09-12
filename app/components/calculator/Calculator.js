@@ -22,29 +22,13 @@ function convertCurrency(type, amount) {
   return resultString.trim()
 }
 
-
-
-export default function Calculator() {
-  const [currency, setCurrency] = useState(0)
-  const [selectedCurrency, setSelectedCurrency] = useState('GP')
-  const [conversionResult, setConversionResult] = useState('')
-
-  const handleCurrencyChange = (e) => {
-    const newAmount = parseFloat(e.target.value) || 0
-    setCurrency(newAmount)
-    updateConversionResult(selectedCurrency, newAmount)
-  }
-
-  const handleCurrencyTypeChange = (e) => {
-    const newType = e.target.value
-    setSelectedCurrency(newType)
-    updateConversionResult(newType, currency)
-  }
-
-  const updateConversionResult = (type, amount) => {
-    setConversionResult(convertCurrency(type, amount))
-  }
-
+const View = ({
+  conversionResult,
+  currency,
+  handleCurrencyChange,
+  handleCurrencyTypeChange,
+  selectedCurrency,
+}) => {
   return (
     <div className={styles.calculatorWrapper}>
       <h2>Currency Converter</h2>
@@ -71,3 +55,41 @@ export default function Calculator() {
     </div>
   )
 }
+
+const Calculator = () => {
+  const [currency, setCurrency] = useState(0)
+  const [selectedCurrency, setSelectedCurrency] = useState('GP')
+  const [conversionResult, setConversionResult] = useState('')
+
+  const handleCurrencyChange = (e) => {
+    const newAmount = parseFloat(e.target.value) || 0
+    setCurrency(newAmount)
+    updateConversionResult(selectedCurrency, newAmount)
+  }
+
+  const handleCurrencyTypeChange = (e) => {
+    const newType = e.target.value
+    setSelectedCurrency(newType)
+    updateConversionResult(newType, currency)
+  }
+
+  const updateConversionResult = (type, amount) => {
+    setConversionResult(convertCurrency(type, amount))
+  }
+
+  const calculatorProps = {
+    conversionResult,
+    currency,
+    handleCurrencyChange,
+    handleCurrencyTypeChange,
+    selectedCurrency,
+  }
+
+  return (
+    <View
+      {...calculatorProps}
+    />
+  )
+}
+
+export default Calculator
