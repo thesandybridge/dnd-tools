@@ -19,6 +19,7 @@
     "@supabase/supabase-js": "^2.42.4",
     "@tanstack/react-query": "^5.56.2",
     "aws-sdk": "^2.1599.0",
+    "jose": "^5.9.2",
     "jsonwebtoken": "^9.0.2",
     "leaflet": "^1.9.4",
     "next": "^14.2.13",
