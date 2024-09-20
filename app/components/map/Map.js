@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import {
   MapContainer,
   TileLayer,
@@ -11,32 +11,38 @@ import {
   useMapEvents,
   useMap
 } from 'react-leaflet'
-import L from "leaflet";
-import CustomControls from "./Controls";
-import MarkerButton from "./MarkerButton";
+import L from "leaflet"
+import CustomControls from "./Controls"
+import MarkerButton from "./MarkerButton"
+import RulerButton from "./RulerButton"
+import { calculateDistance } from "./utils"
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { fetchMarkers, addMarker, removeMarker, updateMarkerDistance } from '@/lib/markers'
+import { useTheme } from "@/app/providers/ThemeProvider"
 
-import { calculateDistance } from "./utils";
-import RulerButton from "./RulerButton";
+const customIcon = new L.Icon({
+  iconUrl: '/images/maps-and-flags.png',
+  iconSize: [25, 25],
+  iconAnchor: [11.5, 15],
+})
 
 const RulerHandler = ({ addRulerPoint }) => {
-  const map = useMap();
-
+  const map = useMap()
   useMapEvents({
-    click: async (e) => {
+    click: (e) => {
       if (map.getBounds().contains(e.latlng)) {
         addRulerPoint(e.latlng)
       }
     }
   })
-
-  return null;
+  return null
 }
 
-const MarkerHandler = ({ addMarker, markers, lastMarkerId }) => {
-  const map = useMap();
+const MarkerHandler = ({ markers, lastMarkerId, addMarker }) => {
+  const map = useMap()
 
   useMapEvents({
-    click: async (e) => {
+    click: (e) => {
       if (map.getBounds().contains(e.latlng)) {
         const newMarker = {
           position: e.latlng,
@@ -44,59 +50,30 @@ const MarkerHandler = ({ addMarker, markers, lastMarkerId }) => {
             ? calculateDistance(markers[markers.length - 1].position, e.latlng)
             : "Start",
           prev_marker: lastMarkerId
-        };
+        }
 
-        await addMarker(newMarker)
-
-      } else {
-        console.log("Outside the bounds of the map");
+        addMarker(newMarker)
       }
     }
-  });
+  })
 
-  return null;
+  return null
 }
 
-const customIcon = new L.Icon({
-  iconUrl: '/images/maps-and-flags.png',
-  iconSize: [25, 25],
-  iconAnchor: [11.5, 15],
-});
-
-const updateMarkerDistance = async (markerId, newDistance) => {
-  try {
-    const response = await fetch(`/api/markers/${markerId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ distance: newDistance })
-    });
-    if (!response.ok) throw new Error('Failed to update marker distance');
-    console.log("Distance update successful");
-  } catch (error) {
-    console.error("Failed to update marker distance:", error.message);
-  }
-};
-
-
-/**
- * Represents a map component using Leaflet. This component manages markers on a map,
- * allowing users to add, view, and delete markers. The map's geographical bounds are
- * predefined, and the component supports toggling additional map interactions.
- *
- * @returns {JSX.Element} The map component rendered with Leaflet.
- */
-export default function MapComponent() {
-  /**
-   * State for managing markers on the map.
-   * @type {Array.<L.Marker>}
-   */
-  const [markers, setMarkers] = useState([])
+export default function MapComponent({ user_id }) {
+  const queryClient = useQueryClient()
 
   const [lastMarkerId, setLastMarkerId] = useState(null);
-
-  const [markerHandler, setMarkerHandler] = useState(false)
   const [rulerHandler, setRulerHandler] = useState(false)
+  const [markerHandler, setMarkerHandler] = useState(false)
   const [rulerPoints, setRulerPoints] = useState([])
+  const { theme } = useTheme()
+
+  // Fetch markers using React Query v5, leveraging hydration from the server
+  const { data: markers = [], isLoading, isError } = useQuery({
+    queryKey: ['markers'],
+    queryFn: fetchMarkers,
+  })
 
   //const url= "/images/eberron"; // for local development
   const url = "/api/tiles";
@@ -106,100 +83,82 @@ export default function MapComponent() {
     [-172.25, -123.5],
   ];
 
+  const mutateAddMarker = useMutation({
+    mutationFn: addMarker,
+    onMutate: async (newMarker) => {
+      await queryClient.cancelQueries(['markers'])
+
+      const previousMarkers = queryClient.getQueryData(['markers'])
+
+      const optimisticNewMarker = { ...newMarker, id: Date.now() }
+      queryClient.setQueryData(['markers'], (oldMarkers = []) => [...oldMarkers, optimisticNewMarker])
+
+      return { previousMarkers }
+    },
+    onError: (err, _, context) => {
+      queryClient.setQueryData(['markers'], context.previousMarkers)
+      console.error("Failed to add marker:", err.message)
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries(['markers'])
+    }
+  })
+
+  const mutateRemoveMarker = useMutation({
+    mutationFn: removeMarker,
+    onMutate: async (markerId) => {
+      await queryClient.cancelQueries(['markers'])
+
+      const previousMarkers = queryClient.getQueryData(['markers'])
+
+      // Optimistically update the markers by removing the deleted marker
+      const updatedMarkers = previousMarkers.filter(marker => marker.id !== markerId)
+
+      // Check if we need to update the marker relationships (prev_marker, distance)
+      const markerToRemove = previousMarkers.find(marker => marker.id === markerId)
+      const affectedMarker = previousMarkers.find(marker => marker.prev_marker === markerId)
+
+      if (affectedMarker && markerToRemove) {
+        const newPrevMarker = previousMarkers.find(marker => marker.id === markerToRemove.prev_marker)
+
+        // Update the affected marker's distance and prev_marker
+        const updatedDistance = newPrevMarker
+          ? calculateDistance(newPrevMarker.position, affectedMarker.position)
+          : "Start"
+
+        // Update the affected marker
+        queryClient.setQueryData(['markers'], updatedMarkers.map(marker =>
+          marker.id === affectedMarker.id
+            ? { ...marker, prev_marker: markerToRemove.prev_marker, distance: updatedDistance }
+            : marker
+        ))
+
+        updateMarkerDistance(affectedMarker.id, updatedDistance)
+      } else {
+        queryClient.setQueryData(['markers'], updatedMarkers)
+      }
+
+      return { previousMarkers }
+    },
+    onError: (err, markerId, context) => {
+      queryClient.setQueryData(['markers'], context.previousMarkers)
+      console.error(`Failed to remove marker: ${markerId}`, err.message)
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries(['markers'])
+    }
+  })
 
   const toggleMarkers = () => {
-    setMarkerHandler(!markerHandler)
+    setMarkerHandler(prev => !prev)
   }
 
   const toggleRuler = () => {
     if (rulerHandler) {
       setRulerPoints([])
     }
-    setRulerHandler(!rulerHandler)
+    setRulerHandler(prev => !prev)
   }
-
-  useEffect(() => {
-    async function fetchMarkers() {
-      try {
-        const response = await fetch('/api/markers');
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-
-        const sortedData = data.sort((a, b) => a.id - b.id);
-
-        setMarkers(sortedData);
-        const lastMarker = sortedData.length > 0 ? sortedData[sortedData.length - 1] : null;
-        if (lastMarker) {
-          setLastMarkerId(lastMarker.id);
-        }
-      } catch (error) {
-        console.error("Failed to load markers:", error.message);
-      }
-    }
-    fetchMarkers();
-  }, []);
-
-  const handleRemoveMarker = async (markerId) => {
-    const markerToRemove = markers.find(marker => marker.id === markerId);
-    const affectedMarker = markers.find(marker => marker.prev_marker === markerId);
-
-    let newMarkers = markers.filter(marker => marker.id !== markerId);
-
-    if (affectedMarker && markerToRemove) {
-      const newPrevMarker = markers.find(marker => marker.id === markerToRemove.prev_marker);
-      const updatedDistance = newPrevMarker ? calculateDistance(newPrevMarker.position, affectedMarker.position) : "Start";
-
-      newMarkers = newMarkers.map(marker => {
-        if (marker.id === affectedMarker.id) {
-          return { ...marker, prev_marker: markerToRemove.prev_marker, distance: updatedDistance };
-        }
-        return marker;
-      });
-
-      updateMarkerDistance(affectedMarker.id, updatedDistance);
-    }
-
-    setMarkers(newMarkers);
-
-    try {
-      const response = await fetch(`/api/markers/${markerId}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-      });
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      console.log("Delete successful");
-    } catch (error) {
-      console.error("Failed to delete marker:", error.message);
-      setMarkers(markers); // Revert markers if deletion fails
-    }
-  };
-
-
-  const addMarker = async (newMarkerData) => {
-    const optimisticNewMarker = { ...newMarkerData, id: Date.now() };
-    setMarkers([...markers, optimisticNewMarker]);
-
-    try {
-      const response = await fetch('/api/markers', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newMarkerData)
-      });
-      const data = await response.json();
-      if (!response.ok) throw new Error('Network response was not ok');
-      setLastMarkerId(data[0].id);
-      setMarkers(prevMarkers => prevMarkers.map(marker =>
-        marker.id === optimisticNewMarker.id ? { ...marker, id: data[0].id } : marker
-      ));
-      console.log("New marker successfully added");
-    } catch (error) {
-      console.error('Error adding marker:', error.message);
-      setMarkers(markers.filter(marker => marker.id !== optimisticNewMarker.id));
-    }
-  };
-
 
   const addRulerPoint = (latlng) => {
     setRulerPoints(prevPoints => {
@@ -211,6 +170,17 @@ export default function MapComponent() {
     })
   }
 
+  const handleRemoveMarker = (markerId) => {
+    mutateRemoveMarker.mutate(markerId)
+  }
+
+  const handleAddMarker = (newMarker) => {
+    mutateAddMarker.mutate(newMarker)
+  }
+
+  if (isLoading) return <div>Loading...</div>
+  if (isError) return <div>Error loading markers</div>
+
   return (
     <MapContainer
       center={[-80, 117]}
@@ -220,7 +190,10 @@ export default function MapComponent() {
       maxZoom={5}
       bounds={mapBounds}
       zoomSnap={0.5}
-      style={{ height: '85vh', width: '100%' }}
+      style={{
+        height: '85vh',
+        width: '100%',
+      }}
       crs={L.CRS.Simple}
     >
       <TileLayer
@@ -252,7 +225,7 @@ export default function MapComponent() {
       {markers && (
         <Polyline
           positions={markers.map(marker => marker.position)}
-          pathOptions={{ color: '#fabd2f', dashArray: '10, 20' }}
+          pathOptions={{ color: theme.primaryColor, dashArray: '10, 20' }}
         />
       )}
       {rulerPoints.map((point, idx) => (
@@ -267,7 +240,7 @@ export default function MapComponent() {
       {rulerPoints.length === 2 && (
         <Polyline
           positions={rulerPoints}
-          pathOptions={{ color: 'blue', weight: 2 }}
+          pathOptions={{ color: theme.primaryColor, weight: 2 }}
         >
           <Tooltip permanent>{`Distance: ${calculateDistance(rulerPoints[0], rulerPoints[1])} miles`}</Tooltip>
         </Polyline>
@@ -278,7 +251,7 @@ export default function MapComponent() {
       </CustomControls>
       {markerHandler && (
         <MarkerHandler
-          addMarker={addMarker}
+          addMarker={handleAddMarker}
           markers={markers}
           lastMarkerId={lastMarkerId}
         />

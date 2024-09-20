@@ -121,6 +121,7 @@ label {
 
 .user_profile {
     border-radius: 50%;
+    border: solid 2px var(--alt);
 }
 
 .user-control {

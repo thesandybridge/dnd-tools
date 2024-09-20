@@ -37,10 +37,12 @@ export default async function Nav() {
               icon={faMap}
             ></FontAwesomeIcon>
           </Link>
-          <Image className="user_profile"
-            src={session?.user.image}
-            alt="user profile"
-            width={50} height={50} />
+          <Link href={`/user/${session?.user.id}`}>
+            <Image className="user_profile"
+              src={session?.user.image}
+              alt="user profile"
+              width={50} height={50} />
+          </Link>
           <SignOut />
         </>
       ) : (
