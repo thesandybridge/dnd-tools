@@ -25,7 +25,12 @@ const View = ({
       <select value={selectedTransport} onChange={(e) => setSelectedTransport(e.target.value)}>
         <option value="">Select Transportation</option>
         {transportationData.map((option, index) => (
-          <option key={index} value={option.type}>{option.type}</option>
+          <option
+            key={index}
+            value={option.type}
+          >
+            {option.type} - {option.fare}
+          </option>
         ))}
       </select>
 

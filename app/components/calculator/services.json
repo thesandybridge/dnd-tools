@@ -1,6 +1,6 @@
 [
     {
-        "house": "House Cannith",
+        "house": "Crafting",
         "services": [
             {
                 "Commission Magic Item": {
@@ -15,7 +15,7 @@
         ]
     },
     {
-        "house": "House Jorasco",
+        "house": "Healing",
         "services": [
             {
                 "Cure Wounds": {
@@ -52,7 +52,7 @@
         ]
     },
     {
-        "house": "House Kundarak",
+        "house": "Warding",
         "services": [
             {
                 "Arcane Lock": {
@@ -71,7 +71,7 @@
         ]
     },
     {
-        "house": "House Orien",
+        "house": "Travel",
         "services": [
             {
                 "Dragonmarked Courier": {
@@ -102,7 +102,7 @@
         ]
     },
     {
-        "house": "House Sivis",
+        "house": "Scribing",
         "services": [
             {
                 "Arcane Mark": {
@@ -140,7 +140,7 @@
         ]
     },
     {
-        "house": "House Vadalis",
+        "house": "Handling",
         "services": [
             {
                 "Gargoyle Courier": {

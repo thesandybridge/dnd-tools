@@ -97,7 +97,7 @@ export default function ServicesCalculator() {
                       checked={!!serviceSelections[serviceKey]}
                       onChange={() => toggleMainService(house.house, serviceName, serviceDetails.type === 'markup')}
                     />
-                    {serviceName}
+                    {serviceName} - {convertToDnDCurrency(serviceDetails.price)}
                     {serviceSelections[serviceKey] && (
                       <>
                         {serviceDetails.unit && (

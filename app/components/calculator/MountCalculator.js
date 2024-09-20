@@ -90,7 +90,12 @@ export default function MountCalculator() {
       <select value={selectedItem} onChange={(e) => setSelectedItem(e.target.value)}>
         <option value="">Select an Item</option>
         {itemsData.map((item, index) => (
-          <option key={index} value={item.item}>{item.item}</option>
+          <option
+            key={index}
+            value={item.item}
+          >
+            {item.item} - {convertToDnDCurrency(item.baseCost)}
+          </option>
         ))}
       </select>
 

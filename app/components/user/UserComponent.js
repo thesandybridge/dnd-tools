@@ -12,7 +12,7 @@ export default function UserComponent({ user }) {
   const { theme, changePrimaryColor } = useTheme();
   const [color, setColor] = useColor(theme.primaryColor);
 
-  const mutation = useMutation({
+  const {mutate, isPending} = useMutation({
     mutationFn: (newColor) => updateUser(user.id, { color: newColor }),
     onMutate: (newColor) => {
       changePrimaryColor(newColor);
@@ -27,7 +27,7 @@ export default function UserComponent({ user }) {
 
   const handleSave = (e) => {
     e.preventDefault();
-    mutation.mutate(color.hex);
+    mutate(color.hex);
   };
 
   return (
@@ -54,8 +54,8 @@ export default function UserComponent({ user }) {
               onChange={setColor}
             />
           </div>
-          <button type="submit" disabled={mutation.isLoading}>
-            {mutation.isLoading ? 'Saving...' : 'Save'}
+          <button type="submit" disabled={isPending}>
+            {isPending ? 'Saving...' : 'Save'}
           </button>
         </form>
       </section>
