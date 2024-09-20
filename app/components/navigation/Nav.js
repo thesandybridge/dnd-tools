@@ -1,50 +1,34 @@
-import Link from "next/link";
-import Image from "next/image";
 import SignIn from "./Login";
-import SignOut from "./Logout";
 import { auth } from "@/auth"
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"; // Import the FontAwesomeIcon component
-import { faScrewdriverWrench, faMap, faHome } from "@fortawesome/free-solid-svg-icons";
+import { faScrewdriverWrench, faHome } from "@fortawesome/free-solid-svg-icons";
+import UserNav from "./UserNav";
+import MainNav from "./MainNav";
 
+const routes = [
+  {
+    title: 'Home',
+    path: '/',
+    icon: faHome
+  },
+  {
+    title: 'Tools/Calculators',
+    path: '/tools',
+    icon: faScrewdriverWrench
+  }
+]
 export default async function Nav() {
   const session = await auth()
 
   return (
     <nav className="main-nav">
-      <Link href="/">
-        <FontAwesomeIcon
-          className="user-control"
-          title={"Home"}
-          style={{ fontSize: "25px" }}
-          icon={faHome}
-        ></FontAwesomeIcon>
-      </Link>
-      <Link href="/tools">
-        <FontAwesomeIcon
-          className="user-control"
-          title={"Tools/Calculators"}
-          style={{ fontSize: "25px" }}
-          icon={faScrewdriverWrench}
-        ></FontAwesomeIcon>
-      </Link>
+      {routes.map((route => (
+        <MainNav
+          key={route.title}
+          route={route}
+        />
+      )))}
       {session?.user ? (
-        <>
-          <Link href="/map">
-            <FontAwesomeIcon
-              className="user-control"
-              title={"Map"}
-              style={{ fontSize: "25px" }}
-              icon={faMap}
-            ></FontAwesomeIcon>
-          </Link>
-          <Link href={`/user/${session?.user.id}`}>
-            <Image className="user_profile"
-              src={session?.user.image}
-              alt="user profile"
-              width={50} height={50} />
-          </Link>
-          <SignOut />
-        </>
+        <UserNav user={session?.user} />
       ) : (
         <SignIn />
       )}

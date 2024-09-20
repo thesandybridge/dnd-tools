@@ -1,5 +1,8 @@
+'use client'
+
 import Link from "next/link";
 import Calculator from "@/app/components/calculator/Calculator";
+import { usePathname } from "next/navigation"
 
 const routes = [
   {
@@ -21,6 +24,7 @@ const routes = [
 ]
 
 export default function ToolsNav() {
+  const path = usePathname()
   return (
     <>
       <Calculator />
@@ -29,7 +33,7 @@ export default function ToolsNav() {
           <Link
             key={btoa(route.path)}
             href={`/tools/${route.path}`}
-            className="tools-link"
+            className={`tools-link ${path === `/tools/${route.path}` ? 'active' : ''}`}
           >
             {route.label}
           </Link>
