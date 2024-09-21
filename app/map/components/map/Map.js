@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { memo, useMemo, useState } from "react"
 import {
   MapContainer,
   TileLayer,
@@ -19,15 +19,8 @@ import { calculateDistance } from "./utils"
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fetchMarkers, addMarker, removeMarker, updateMarkerDistance } from '@/lib/markers'
 import { useTheme } from "@/app/providers/ThemeProvider"
-import MapLoading from "../loading/MapLoading"
 
-const customIcon = new L.Icon({
-  iconUrl: '/images/maps-and-flags.png',
-  iconSize: [25, 25],
-  iconAnchor: [11.5, 15],
-})
-
-const RulerHandler = ({ addRulerPoint }) => {
+const RulerHandler = memo(({ addRulerPoint }) => {
   const map = useMap()
   useMapEvents({
     click: (e) => {
@@ -37,9 +30,11 @@ const RulerHandler = ({ addRulerPoint }) => {
     }
   })
   return null
-}
+})
 
-const MarkerHandler = ({ markers, lastMarkerId, addMarker }) => {
+RulerHandler.displayName = 'RulerHandler'
+
+const MarkerHandler = memo(({ markers, lastMarkerId, addMarker }) => {
   const map = useMap()
 
   useMapEvents({
@@ -59,19 +54,26 @@ const MarkerHandler = ({ markers, lastMarkerId, addMarker }) => {
   })
 
   return null
-}
+})
+
+MarkerHandler.displayName = 'MarkerHandler'
 
 export default function MapComponent({ user_id }) {
   const queryClient = useQueryClient()
 
-  const [lastMarkerId, setLastMarkerId] = useState(null);
+  const [lastMarkerId, _] = useState(null);
   const [rulerHandler, setRulerHandler] = useState(false)
   const [markerHandler, setMarkerHandler] = useState(false)
   const [rulerPoints, setRulerPoints] = useState([])
   const { theme } = useTheme()
 
-  // Fetch markers using React Query v5, leveraging hydration from the server
-  const { data: markers = [], isLoading, isError } = useQuery({
+  const customIcon = useMemo(() => new L.Icon({
+    iconUrl: '/images/maps-and-flags.png',
+    iconSize: [25, 25],
+    iconAnchor: [11.5, 15],
+  }), []);
+
+  const { data: markers = [] } = useQuery({
     queryKey: ['markers'],
     queryFn: fetchMarkers,
   })
@@ -171,13 +173,29 @@ export default function MapComponent({ user_id }) {
     })
   }
 
-  const handleRemoveMarker = (markerId) => {
-    mutateRemoveMarker.mutate(markerId)
-  }
-
   const handleAddMarker = (newMarker) => {
     mutateAddMarker.mutate(newMarker)
   }
+
+  const memoizedMarkers = useMemo(() => markers.map((marker, idx) => (
+    <Marker
+      position={marker.position}
+      key={idx}
+      icon={customIcon}
+    >
+      <Popup>
+        <div className="popupContent">
+          {idx === 0 ? "Starting Point" : `Marker ${idx + 1} - ${marker.distance} miles from last marker`}
+          <button onClick={(e) => {
+            e.stopPropagation();
+            mutateRemoveMarker.mutate(marker.id)
+          }}>
+            Delete Marker
+          </button>
+        </div>
+      </Popup>
+    </Marker>
+  )), [markers, customIcon, mutateRemoveMarker]);
 
   return (
     <MapContainer
@@ -201,25 +219,7 @@ export default function MapComponent({ user_id }) {
         tileSize={256}
         bounds={mapBounds}
       />
-      {markers.map((marker, idx) => (
-        <Marker
-          position={marker.position}
-          key={idx}
-          icon={customIcon}
-        >
-          <Popup>
-            <div className="popupContent">
-              {idx === 0 ? "Starting Point" : `Marker ${idx + 1} - ${marker.distance} miles from last marker`}
-              <button onClick={(e) => {
-                e.stopPropagation();
-                handleRemoveMarker(marker.id);
-              }}>
-                Delete Marker
-              </button>
-            </div>
-          </Popup>
-        </Marker>
-      ))}
+      {memoizedMarkers}
       {markers && (
         <Polyline
           positions={markers.map(marker => marker.position)}

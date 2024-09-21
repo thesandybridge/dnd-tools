@@ -61,7 +61,11 @@ export default function ThemeProvider({ children }) {
   }, [theme.primaryColor, theme.themeMode]);
 
   return (
-    <ThemeContext.Provider value={{ theme, changePrimaryColor, toggleThemeMode }}>
+    <ThemeContext.Provider value={{
+      theme,
+      changePrimaryColor,
+      toggleThemeMode
+    }}>
       {children}
     </ThemeContext.Provider>
   );
