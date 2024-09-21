@@ -7,7 +7,7 @@
 /* Light Theme */
 html[data-theme='light'] {
   --bg: #ececec;
-  --fg: #282828;
+  --fg: #928374;
   --alt: #8ec07c;
 }
 
@@ -218,6 +218,51 @@ label:not(.rcp-field-label, .themeSwitch) {
 .tools-nav {
   display: flex;
   gap: 1rem;
+  width: 100%;
+  height: 50vh;
+  flex-wrap: wrap;
+}
+
+.tools-link {
+  height: 100%;
+  width: 100%;
+  font-size: clamp(1rem, 10vw, 2rem);
+  flex: 1 1 calc(25% - 1rem);
+  background-position: center;
+  background-size: cover;
+  border-radius: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: filter 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.tools-link::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: inherit;
+  filter: grayscale(1);
+  transition: filter 0.3s ease;
+}
+
+.tools-link:hover::after {
+  filter: grayscale(0);
+}
+
+.tools-link--label {
+  z-index: 1;
+}
+
+@media screen and (max-width: 900px) {
+  .tools-link {
+    flex: 1 1 100%;
+  }
 }
 
 .tools-link.active {
@@ -226,6 +271,7 @@ label:not(.rcp-field-label, .themeSwitch) {
 
 .tools-link:hover {
   color: var(--alt);
+  filter: grayscale(0)
 }
 
 .leaflet-control-attribution {

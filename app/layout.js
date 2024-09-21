@@ -7,6 +7,7 @@ import "@fortawesome/fontawesome-svg-core/styles.css";
 import { config } from "@fortawesome/fontawesome-svg-core";
 import ThemeProvider from "./providers/ThemeProvider";
 import QueryClientProvider from "./providers/QueryClientProvider";
+import Calculator from "./tools/components/calculator/Calculator";
 config.autoAddCss = false;
 
 const inter = Inter({ subsets: ["latin"] });
@@ -25,6 +26,7 @@ export default function RootLayout({ children }) {
           <QueryClientProvider>
             <ThemeProvider>
               <Nav />
+              <Calculator />
               {children}
               <footer>
                 <p>© {year} - made with ♥ by sandybridge</p>
