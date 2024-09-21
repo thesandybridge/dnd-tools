@@ -3,6 +3,21 @@
   --fg: #928374;
   --alt: #8ec07c;
 }
+
+/* Light Theme */
+html[data-theme='light'] {
+  --bg: #ececec;
+  --fg: #282828;
+  --alt: #8ec07c;
+}
+
+/* Existing Dark Theme (default) */
+html[data-theme='dark'] {
+  --bg: #282828;
+  --fg: #928374;
+  --alt: #8ec07c;
+}
+
 * {
   box-sizing: border-box;
   padding: 0;
@@ -53,7 +68,7 @@ select {
   padding: 1rem;
 }
 
-button:not(.map-btn) {
+button:not(.map-btn, .Toastify__close-button) {
   background-color: var(--fg);
   color: var(--bg);
   padding: 1rem;
@@ -95,11 +110,11 @@ h2 {
 
 
 .totals {
-  border: solid 1px #928374;
+  border: solid 1px var(--fg);
   padding: 1rem;
 }
 
-label:not(.rcp-field-label) {
+label:not(.rcp-field-label, .themeSwitch) {
   display: flex;
   align-items: center;
   background: var(--bg);
@@ -211,4 +226,8 @@ label:not(.rcp-field-label) {
 
 .tools-link:hover {
   color: var(--alt);
+}
+
+.leaflet-control-attribution {
+  display: none !important;
 }

@@ -1,27 +1,29 @@
 "use client"
 
 import Image from "next/image"
-import styles from "./user.module.css"
 import { ColorPicker, useColor } from "react-color-palette";
 import "react-color-palette/css";
 import { useTheme } from "@/app/providers/ThemeProvider";
 import { updateUser } from "@/lib/users";
 import { useMutation } from '@tanstack/react-query';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import styles from "./user.module.css"
 
 export default function UserComponent({ user }) {
   const { theme, changePrimaryColor } = useTheme();
   const [color, setColor] = useColor(theme.primaryColor);
 
-  const {mutate, isPending} = useMutation({
+  const { mutate, isPending } = useMutation({
     mutationFn: (newColor) => updateUser(user.id, { color: newColor }),
     onMutate: (newColor) => {
       changePrimaryColor(newColor);
     },
     onError: (error) => {
-      console.error("Failed to update user color:", error.message);
+      toast.error(error.message)
     },
-    onSuccess: (data) => {
-      console.log("User color updated successfully:", data);
+    onSuccess: () => {
+      toast.success(`${user.name}'s profile saved!`)
     },
   });
 
@@ -32,6 +34,7 @@ export default function UserComponent({ user }) {
 
   return (
     <main className={styles.main}>
+      <ToastContainer theme={theme.themeMode} />
       <header className={styles.header}>
         <Image
           alt={user.name}

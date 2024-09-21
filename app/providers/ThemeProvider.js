@@ -10,6 +10,7 @@ const ThemeContext = createContext();
 export default function ThemeProvider({ children }) {
   const [theme, setTheme] = useState({
     primaryColor: '#8ec07c',
+    themeMode: "dark",
   });
 
   const { data: session } = useSession();
@@ -19,6 +20,14 @@ export default function ThemeProvider({ children }) {
       ...prevTheme,
       primaryColor: color,
     }));
+  }, [setTheme]);
+
+  const toggleThemeMode = useCallback(() => {
+    setTheme((prevTheme) => {
+      const newThemeMode = prevTheme.themeMode === 'light' ? 'dark' : 'light';
+      localStorage.setItem('themeMode', newThemeMode);
+      return { ...prevTheme, themeMode: newThemeMode };
+    });
   }, [setTheme]);
 
   const { data: user } = useQuery({
@@ -42,11 +51,17 @@ export default function ThemeProvider({ children }) {
   }, [user, changePrimaryColor]);
 
   useEffect(() => {
+    const savedThemeMode = localStorage.getItem('themeMode') || 'light';
+    setTheme((prevTheme) => ({ ...prevTheme, themeMode: savedThemeMode }));
+  }, []);
+
+  useEffect(() => {
     document.documentElement.style.setProperty('--alt', theme.primaryColor);
-  }, [theme.primaryColor]);
+    document.documentElement.setAttribute('data-theme', theme.themeMode);
+  }, [theme.primaryColor, theme.themeMode]);
 
   return (
-    <ThemeContext.Provider value={{ theme, changePrimaryColor }}>
+    <ThemeContext.Provider value={{ theme, changePrimaryColor, toggleThemeMode }}>
       {children}
     </ThemeContext.Provider>
   );

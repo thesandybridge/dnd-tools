@@ -3,6 +3,7 @@ import { faScrewdriverWrench, faHome } from "@fortawesome/free-solid-svg-icons"
 import SignIn from "./Login"
 import UserNav from "./UserNav"
 import MainNav from "./MainNav"
+import ToggleTheme from "./ToggleTheme"
 
 const routes = [
   {
@@ -21,6 +22,7 @@ export default async function Nav() {
 
   return (
     <nav className="main-nav">
+      <div className="nav-spacer" />
       {routes.map((route => (
         <MainNav
           key={route.title}
@@ -32,6 +34,7 @@ export default async function Nav() {
       ) : (
         <SignIn />
       )}
+      <ToggleTheme />
     </nav>
   )
 }

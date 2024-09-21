@@ -27,7 +27,8 @@
     "react": "^18",
     "react-color-palette": "^7.3.0",
     "react-dom": "^18",
-    "react-leaflet": "^4.2.1"
+    "react-leaflet": "^4.2.1",
+    "react-toastify": "^10.0.5"
   },
   "devDependencies": {
     "@tanstack/eslint-plugin-query": "^5.56.1",

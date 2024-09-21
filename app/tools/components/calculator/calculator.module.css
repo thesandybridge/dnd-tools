@@ -14,7 +14,7 @@
 
 .calculatorItem {
     padding: 1rem;
-    border: solid 1px #928374;
+    border: solid 1px var(--fg);
     border-radius: 10px;
     display: flex;
     flex-direction: column;
@@ -49,12 +49,12 @@
 }
 
 .totals {
-    border: solid 1px #928374;
+    border: solid 1px var(--fg);
     padding: 1rem;
     position: sticky;
     bottom: 0;
-    background-color: #282828;
-    box-shadow: 0 0 4px 4px #928374;
+    background-color: var(--bg);
+    box-shadow: 0 0 4px 4px var(--fg);
 }
 
 .additionalService {
