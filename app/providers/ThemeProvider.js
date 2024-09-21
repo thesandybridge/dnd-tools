@@ -51,7 +51,7 @@ export default function ThemeProvider({ children }) {
   }, [user, changePrimaryColor]);
 
   useEffect(() => {
-    const savedThemeMode = localStorage.getItem('themeMode') || 'light';
+    const savedThemeMode = localStorage.getItem('themeMode') || 'dark';
     setTheme((prevTheme) => ({ ...prevTheme, themeMode: savedThemeMode }));
   }, []);
 
