@@ -1,4 +1,4 @@
-import ServicesCalculator from "@/app/components/calculator/ServiceCalculator"
+import ServicesCalculator from "@/app/tools/components/calculator/ServiceCalculator"
 
 export default function Page() {
   return <ServicesCalculator />

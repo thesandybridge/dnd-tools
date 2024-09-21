@@ -21,7 +21,7 @@ export default function ThemeProvider({ children }) {
     }));
   }, [setTheme]);
 
-  const { data: user, isLoading, isError } = useQuery({
+  const { data: user } = useQuery({
     queryKey: ['user', session?.user?.id],
     queryFn: () => fetchUser(session?.user?.id),
     enabled: !!session?.user?.id,

@@ -1,4 +1,4 @@
-import MountCalculator from "@/app/components/calculator/MountCalculator"
+import MountCalculator from "@/app/tools/components/calculator/MountCalculator"
 export default function Page() {
   return <MountCalculator />
 }

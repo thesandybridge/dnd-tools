@@ -1,4 +1,4 @@
-import TransportationCalculator from "@/app/components/calculator/TravelCalculator";
+import TransportationCalculator from "@/app/tools/components/calculator/TravelCalculator";
 
 export default function Page() {
   return <TransportationCalculator />

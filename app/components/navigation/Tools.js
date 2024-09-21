@@ -1,7 +1,7 @@
 'use client'
 
-import Link from "next/link";
-import Calculator from "@/app/components/calculator/Calculator";
+import Link from "next/link"
+import Calculator from "@/app/tools/components/calculator/Calculator"
 import { usePathname } from "next/navigation"
 
 const routes = [

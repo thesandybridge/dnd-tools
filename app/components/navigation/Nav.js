@@ -1,8 +1,8 @@
-import SignIn from "./Login";
 import { auth } from "@/auth"
-import { faScrewdriverWrench, faHome } from "@fortawesome/free-solid-svg-icons";
-import UserNav from "./UserNav";
-import MainNav from "./MainNav";
+import { faScrewdriverWrench, faHome } from "@fortawesome/free-solid-svg-icons"
+import SignIn from "./Login"
+import UserNav from "./UserNav"
+import MainNav from "./MainNav"
 
 const routes = [
   {

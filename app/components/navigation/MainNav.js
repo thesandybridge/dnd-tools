@@ -17,8 +17,7 @@ export default function MainNav({route}) {
         title={route.title}
         style={{ fontSize: "25px" }}
         icon={route.icon}
-      >
-      </FontAwesomeIcon>
+      />
     </Link>
   )
 }

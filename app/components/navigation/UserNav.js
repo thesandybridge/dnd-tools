@@ -1,11 +1,11 @@
 'use client'
 
-import Link from "next/link";
-import Image from "next/image";
-import SignOut from "./Logout";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"; // Import the FontAwesomeIcon component
-import { faMap } from "@fortawesome/free-solid-svg-icons";
+import Link from "next/link"
+import Image from "next/image"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { faMap } from "@fortawesome/free-solid-svg-icons"
 import { usePathname } from "next/navigation"
+import SignOut from "./Logout"
 
 export default function UserNav({user}) {
   const path = usePathname()
@@ -17,7 +17,7 @@ export default function UserNav({user}) {
           title={"Map"}
           style={{ fontSize: "25px" }}
           icon={faMap}
-        ></FontAwesomeIcon>
+        />
       </Link>
       <Link href={`/user/${user.id}`}>
         <Image className="user_profile"

@@ -21,19 +21,18 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Nav />
         <SessionProvider>
           <QueryClientProvider>
             <ThemeProvider>
+              <Nav />
               {children}
+              <footer>
+                <p>© {year} - made with ♥ by sandybridge</p>
+              </footer>
             </ThemeProvider>
           </QueryClientProvider>
         </SessionProvider>
-        <footer>
-          <p>© {year} - made with ♥ by sandybridge</p>
-        </footer>
       </body>
-
     </html>
   );
 }

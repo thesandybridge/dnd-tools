@@ -19,6 +19,7 @@ import { calculateDistance } from "./utils"
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fetchMarkers, addMarker, removeMarker, updateMarkerDistance } from '@/lib/markers'
 import { useTheme } from "@/app/providers/ThemeProvider"
+import MapLoading from "../loading/MapLoading"
 
 const customIcon = new L.Icon({
   iconUrl: '/images/maps-and-flags.png',
@@ -177,9 +178,6 @@ export default function MapComponent({ user_id }) {
   const handleAddMarker = (newMarker) => {
     mutateAddMarker.mutate(newMarker)
   }
-
-  if (isLoading) return <div>Loading...</div>
-  if (isError) return <div>Error loading markers</div>
 
   return (
     <MapContainer
