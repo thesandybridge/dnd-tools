@@ -1,5 +1,5 @@
 "use client"
-
+import { motion, AnimatePresence } from "framer-motion"
 import { useState, useEffect, useCallback } from 'react';
 import styles from './calculator.module.css';
 import {
@@ -24,8 +24,21 @@ const View = ({
     <>
       <div className={styles.calculatorItem}>
         <Banner image="/images/blacksmith.png">
-          <h2>Item Price Calculator</h2>
+          <h2>Item Calculator</h2>
         </Banner>
+        <AnimatePresence>
+          {gp > 0 && (
+            <motion.div
+              className={styles.totals}
+              style={{ marginTop: '20px' }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              Total Price {convertToDnDCurrency(gp)}
+            </motion.div>
+          )}
+        </AnimatePresence>
         <select value={rarity} onChange={(e) => setRarity(e.target.value)}>
           <option value="">Select Rarity</option>
           <option value="Uncommon">Uncommon</option>
@@ -55,11 +68,7 @@ const View = ({
             </label>
           ))}
         </div>
-        {gp > 0 && (
-          <div className={styles.totals} style={{ marginTop: '20px' }}>
-            Total Price {convertToDnDCurrency(gp)}
-          </div>
-        )}
+
       </div>
     </>
   )

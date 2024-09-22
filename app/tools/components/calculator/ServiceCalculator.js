@@ -1,5 +1,5 @@
 "use client"
-
+import { motion, AnimatePresence } from 'framer-motion'
 import styles from "./calculator.module.css";
 import { useState, useEffect } from "react";
 import servicesData from './services.json';
@@ -86,6 +86,18 @@ export default function ServicesCalculator() {
       <Banner image="/images/tavern.png">
         <h2>Services Calculator</h2>
       </Banner>
+      <AnimatePresence>
+        {totalCost > 0 && (
+          <motion.div
+            className={styles.totals}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            Total Cost: {convertToDnDCurrency(totalCost)}
+          </motion.div>
+        )}
+      </AnimatePresence>
       {servicesData.map((house, _) => (
         <div key={house.house} className={styles.calcGroup}>
           <h3>{house.house}</h3>
@@ -146,9 +158,6 @@ export default function ServicesCalculator() {
           ))}
         </div>
       ))}
-      <div className={styles.totals}>
-        Total Cost: {convertToDnDCurrency(totalCost)}
-      </div>
     </div>
   );
 }

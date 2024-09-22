@@ -1,5 +1,6 @@
 "use client"
 
+import { motion, AnimatePresence } from "framer-motion"
 import styles from "./calculator.module.css";
 import { useState, useEffect, useCallback } from "react";
 import itemsData from './items.json';
@@ -88,10 +89,34 @@ export default function MountCalculator() {
   return (
     <div className={styles.calculatorItem}>
       <Banner image="/images/mounts.png">
-        <h2>Item Calculator</h2>
+        <h2>Mount Calculator</h2>
       </Banner>
+      <AnimatePresence>
+        {totalCost > 0 && (
+          <motion.div
+            className={styles.totals}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            Total Cost: {convertToDnDCurrency(totalCost)}
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {totalDays && (
+          <motion.div
+            className={styles.totals}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            Total Time: {totalDays}
+          </motion.div>
+        )}
+      </AnimatePresence>
       <select value={selectedItem} onChange={(e) => setSelectedItem(e.target.value)}>
-        <option value="">Select an Item</option>
+        <option value="">Select a Mount</option>
         {itemsData.map((item, index) => (
           <option
             key={index}
@@ -138,13 +163,6 @@ export default function MountCalculator() {
         />
         Miles
       </label>
-
-      <div className={styles.totals}>
-        Total Cost: {convertToDnDCurrency(totalCost)}
-      </div>
-      <div className={styles.totals}>
-        Total Time: {totalDays}
-      </div>
     </div>
   );
 }

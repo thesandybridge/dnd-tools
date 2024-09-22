@@ -1,5 +1,6 @@
 "use client"
 
+import {motion, AnimatePresence} from "framer-motion"
 import styles from "./calculator.module.css";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import transportationData from "./travel.json";
@@ -25,6 +26,30 @@ const View = ({
       <Banner image="/images/travel.png">
         <h2>Transportation Calculator</h2>
       </Banner>
+      <AnimatePresence>
+        {totalCost > 0 && (
+          <motion.div
+            className={styles.totals}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            Total Cost: {convertToDnDCurrency(totalCost)}
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {totalDays && (
+          <motion.div
+            className={styles.totals}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            Total Time: {totalDays}
+          </motion.div>
+        )}
+      </AnimatePresence>
       <select value={selectedTransport} onChange={(e) => setSelectedTransport(e.target.value)}>
         <option value="">Select Transportation</option>
         {transportationData.map((option, index) => (
@@ -67,12 +92,7 @@ const View = ({
         </>
       )}
 
-      <div className={styles.totals}>
-        Total Cost: {convertToDnDCurrency(totalCost)}
-      </div>
-      <div className={styles.totals}>
-        Total Time: {totalDays}
-      </div>
+
     </div>
   )
 }
