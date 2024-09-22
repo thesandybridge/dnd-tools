@@ -12,6 +12,7 @@
 
 /* Hide the checkbox */
 .checkbox {
+  all: unset;
   opacity: 0;
   width: 0;
   height: 0;
