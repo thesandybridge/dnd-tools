@@ -1,24 +1,24 @@
 :root {
     --bg: #282828;
-    --fg: #928374;
+    --fg: #877042;
     --fg-rgb: 146, 131, 116;
-    --alt: #8ec07c;
+    --alt: #874d42;
 }
 
 /* Light Theme */
 html[data-theme='light'] {
     --bg: #ececec;
-    --fg: #928374;
+    --fg: #877042;
     --fg-rgb: 40, 40, 40;
-    --alt: #8ec07c;
+    --alt: #874d42;
 }
 
 /* Existing Dark Theme (default) */
 html[data-theme='dark'] {
     --bg: #282828;
-    --fg: #928374;
+    --fg: #877042;
     --fg-rgb: 146, 131, 116;
-    --alt: #8ec07c;
+    --alt: #874d42;
 }
 
 * {
