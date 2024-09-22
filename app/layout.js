@@ -1,4 +1,4 @@
-import { Inter } from "next/font/google";
+import { Inter, Italianno, Bilbo_Swash_Caps } from "next/font/google";
 import Nav from "./components/navigation/Nav";
 import { SessionProvider } from 'next-auth/react'
 import "./globals.css";
@@ -10,6 +10,10 @@ import QueryClientProvider from "./providers/QueryClientProvider";
 config.autoAddCss = false;
 
 const inter = Inter({ subsets: ["latin"] });
+const bilboSwashCaps = Bilbo_Swash_Caps({
+  weight: '400',
+  subsets: ["latin"]
+})
 
 export const metadata = {
   title: "Dungeon Syndrome",
@@ -20,7 +24,7 @@ export default function RootLayout({ children }) {
   const year = new Date().getFullYear()
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={bilboSwashCaps.className}>
         <SessionProvider>
           <QueryClientProvider>
             <ThemeProvider>
