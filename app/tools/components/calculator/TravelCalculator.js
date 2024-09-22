@@ -4,6 +4,7 @@ import styles from "./calculator.module.css";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import transportationData from "./travel.json";
 import { convertToDnDCurrency, formatDuration, handleFocus } from "./helper";
+import Banner from "../Banner"
 
 const View = ({
   selectedTransport,
@@ -21,7 +22,9 @@ const View = ({
 }) => {
   return (
     <div className={styles.calculatorItem}>
-      <h2>Transportation Calculator</h2>
+      <Banner image="/images/travel.png">
+        <h2>Transportation Calculator</h2>
+      </Banner>
       <select value={selectedTransport} onChange={(e) => setSelectedTransport(e.target.value)}>
         <option value="">Select Transportation</option>
         {transportationData.map((option, index) => (

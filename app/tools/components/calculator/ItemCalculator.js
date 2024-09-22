@@ -6,6 +6,7 @@ import {
   convertToDnDCurrency,
   handleFocus
 } from './helper';
+import Banner from '../Banner';
 
 const View = ({
   rarity,
@@ -20,43 +21,47 @@ const View = ({
   gp,
 }) => {
   return (
-    <div className={styles.calculatorItem}>
-      <h2>Item Price Calculator</h2>
-      <select value={rarity} onChange={(e) => setRarity(e.target.value)}>
-        <option value="">Select Rarity</option>
-        <option value="Uncommon">Uncommon</option>
-        <option value="Common">Common</option>
-        <option value="Rare">Rare</option>
-        <option value="Very Rare">Very Rare</option>
-        <option value="Legendary">Legendary</option>
-      </select>
-      <label>Consumable:
-        <input type="checkbox" checked={isConsumable} onChange={(e) => setIsConsumable(e.target.checked)} />
-      </label>
-      <label>Requires Attunement:
-        <input type="checkbox" checked={requiresAttunement} onChange={(e) => setRequiresAttunement(e.target.checked)} />
-      </label>
-      <div className={styles.calcGroup}>
-        {Object.keys(attributes).map((attr) => (
-          <label key={attr} className={styles.label}>
-            {attr.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}:
-            <input
-              type="number"
-              value={attributes[attr]}
-              onChange={handleAttributeChange(attr)}
-              onFocus={handleFocus}
-              onBlur={handleBlur(attr)}
-              placeholder={attr.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}
-            />
-          </label>
-        ))}
-      </div>
-      {gp > 0 && (
-        <div className={styles.totals} style={{ marginTop: '20px' }}>
-          Total Price {convertToDnDCurrency(gp)}
+    <>
+      <div className={styles.calculatorItem}>
+        <Banner image="/images/blacksmith.png">
+          <h2>Item Price Calculator</h2>
+        </Banner>
+        <select value={rarity} onChange={(e) => setRarity(e.target.value)}>
+          <option value="">Select Rarity</option>
+          <option value="Uncommon">Uncommon</option>
+          <option value="Common">Common</option>
+          <option value="Rare">Rare</option>
+          <option value="Very Rare">Very Rare</option>
+          <option value="Legendary">Legendary</option>
+        </select>
+        <label>Consumable:
+          <input type="checkbox" checked={isConsumable} onChange={(e) => setIsConsumable(e.target.checked)} />
+        </label>
+        <label>Requires Attunement:
+          <input type="checkbox" checked={requiresAttunement} onChange={(e) => setRequiresAttunement(e.target.checked)} />
+        </label>
+        <div className={styles.calcGroup}>
+          {Object.keys(attributes).map((attr) => (
+            <label key={attr} className={styles.label}>
+              {attr.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}:
+              <input
+                type="number"
+                value={attributes[attr]}
+                onChange={handleAttributeChange(attr)}
+                onFocus={handleFocus}
+                onBlur={handleBlur(attr)}
+                placeholder={attr.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}
+              />
+            </label>
+          ))}
         </div>
-      )}
-    </div>
+        {gp > 0 && (
+          <div className={styles.totals} style={{ marginTop: '20px' }}>
+            Total Price {convertToDnDCurrency(gp)}
+          </div>
+        )}
+      </div>
+    </>
   )
 }
 

@@ -8,6 +8,7 @@ import {
   formatDuration,
   handleFocus,
 } from "./helper";
+import Banner from "../Banner";
 
 export default function MountCalculator() {
   const [selectedItem, setSelectedItem] = useState('');
@@ -86,7 +87,9 @@ export default function MountCalculator() {
 
   return (
     <div className={styles.calculatorItem}>
-      <h2>Item Calculator</h2>
+      <Banner image="/images/mounts.png">
+        <h2>Item Calculator</h2>
+      </Banner>
       <select value={selectedItem} onChange={(e) => setSelectedItem(e.target.value)}>
         <option value="">Select an Item</option>
         {itemsData.map((item, index) => (

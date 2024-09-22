@@ -4,6 +4,7 @@ import styles from "./calculator.module.css";
 import { useState, useEffect } from "react";
 import servicesData from './services.json';
 import { convertToDnDCurrency } from "./helper";
+import Banner from "../Banner";
 
 export default function ServicesCalculator() {
   const [serviceSelections, setServiceSelections] = useState({});
@@ -82,7 +83,9 @@ export default function ServicesCalculator() {
 
   return (
     <div className={styles.calculatorItem}>
-      <h2>Services Calculator</h2>
+      <Banner image="/images/tavern.png">
+        <h2>Services Calculator</h2>
+      </Banner>
       {servicesData.map((house, _) => (
         <div key={house.house} className={styles.calcGroup}>
           <h3>{house.house}</h3>
