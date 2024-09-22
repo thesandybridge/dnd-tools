@@ -1,6 +1,6 @@
 :root {
     --bg: #282828;
-    --fg: #877042;
+    --fg: #928374;
     --fg-rgb: 146, 131, 116;
     --alt: #874d42;
 }
@@ -8,7 +8,7 @@
 /* Light Theme */
 html[data-theme='light'] {
     --bg: #ececec;
-    --fg: #877042;
+    --fg: #928374;
     --fg-rgb: 40, 40, 40;
     --alt: #874d42;
 }
@@ -16,7 +16,7 @@ html[data-theme='light'] {
 /* Existing Dark Theme (default) */
 html[data-theme='dark'] {
     --bg: #282828;
-    --fg: #877042;
+    --fg: #928374;
     --fg-rgb: 146, 131, 116;
     --alt: #874d42;
 }
