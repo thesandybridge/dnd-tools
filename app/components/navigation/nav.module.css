@@ -1,6 +1,6 @@
 /* The container for the switch */
 .toggleSwitch {
-  position: absolute;
+  position: fixed;
   display: flex;
   width: 50px;
   height: 24px;
