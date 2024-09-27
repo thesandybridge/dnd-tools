@@ -1,4 +1,5 @@
 "use client"
+
 import { motion, AnimatePresence } from "framer-motion"
 import { useState, useEffect, useCallback } from 'react';
 import styles from './calculator.module.css';
@@ -20,6 +21,8 @@ const View = ({
   handleAttributeChange,
   handleBlur,
   gp,
+  resetValues,
+  reset,
 }) => {
   return (
     <>
@@ -91,7 +94,15 @@ const View = ({
             </label>
           ))}
         </div>
-
+        {reset && (
+          <button
+            onClick={resetValues}
+            className={styles.resetButton}
+            style={{ marginTop: '20px' }}
+          >
+            Reset to Defaults
+          </button>
+        )}
       </div>
     </>
   )
@@ -113,6 +124,35 @@ const ItemCalculator = () => {
     spellLevel: 0
   });
   const [gp, setGp] = useState(0);
+  const [reset, setReset] = useState(true)
+
+  const resetValues = () => {
+    setRarity('');
+    setIsConsumable(false);
+    setRequiresAttunement(false);
+    setAttributes({
+      attackDamage: 0,
+      spellAttackDC: 0,
+      ac: 0,
+      savingThrow: 0,
+      proficiency: 0,
+      resistances: 0,
+      immunities: 0,
+      spellLevel: 0
+    });
+    setGp(0);
+    setReset(false);
+  }
+
+  useEffect(() => {
+    const isChanged =
+      rarity !== '' ||
+      isConsumable !== false ||
+      requiresAttunement !== false ||
+      Object.values(attributes).some((value) => value !== 0);
+
+    setReset(isChanged);
+  }, [rarity, isConsumable, requiresAttunement, attributes]);
 
   const handleAttributeChange = useCallback((attribute) => (e) => {
     const value = parseInt(e.target.value, 10) || 0;
@@ -200,6 +240,8 @@ const ItemCalculator = () => {
     attributes,
     handleAttributeChange,
     gp,
+    resetValues,
+    reset,
   }
 
   return (
