@@ -24,7 +24,7 @@ export default function RootLayout({ children }) {
   const year = new Date().getFullYear()
   return (
     <html lang="en">
-      <body className={bilboSwashCaps.className}>
+      <body className={inter.className}>
         <SessionProvider>
           <QueryClientProvider>
             <ThemeProvider>
