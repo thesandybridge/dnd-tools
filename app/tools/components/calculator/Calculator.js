@@ -11,6 +11,7 @@ import Copper from "./currency_svgs/Copper";
 import Platinum from "./currency_svgs/Platinum";
 import Electrum from "./currency_svgs/Electrum";
 import { useCurrency } from "../../context/CurrencyContext";
+import { handleFocus } from "./helper";
 
 function convertCurrency(type, amount) {
   const rates = {
@@ -45,6 +46,7 @@ const View = ({
   selectedCurrency,
   copiedIndex,
   handleCopy,
+  handleBlur,
 }) => {
   return (
     <div className={styles.calculatorWrapper}>
@@ -55,6 +57,8 @@ const View = ({
             type="number"
             value={currency}
             onChange={handleCurrencyChange}
+            onBlur={handleBlur}
+            onFocus={handleFocus}
           />
         </label>
         <select value={selectedCurrency} onChange={handleCurrencyTypeChange}>
@@ -108,6 +112,13 @@ const Calculator = () => {
       });
   };
 
+  const handleBlur = (e) => {
+    if (e.target.value === '') {
+      setCurrency(0);
+      e.target.value = '0';
+    }
+  };
+
   const handleCurrencyChange = (e) => {
     const newAmount = parseFloat(e.target.value) || 0
     setCurrency(newAmount)
@@ -134,6 +145,7 @@ const Calculator = () => {
     selectedCurrency,
     copiedIndex,
     handleCopy,
+    handleBlur,
   }
 
   return (
