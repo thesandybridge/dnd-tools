@@ -116,7 +116,7 @@ const ItemCalculator = () => {
   const [attributes, setAttributes] = useState({
     attackDamage: 0,
     spellAttackDC: 0,
-    ac: 0,
+    armorClass: 0,
     savingThrow: 0,
     proficiency: 0,
     resistances: 0,
@@ -133,7 +133,7 @@ const ItemCalculator = () => {
     setAttributes({
       attackDamage: 0,
       spellAttackDC: 0,
-      ac: 0,
+      armorClass: 0,
       savingThrow: 0,
       proficiency: 0,
       resistances: 0,
@@ -190,17 +190,17 @@ const ItemCalculator = () => {
 
     const totalBonusPoints = Object.entries(attributes).reduce((acc, [key, value]) => {
       switch (key) {
-        case "attackDamage": // Bonus to attack rolls/damage
-        case "ac":           // Armor Class
-        case "savingThrow":   // Saving Throws
-        case "spellAttackDC": // Save DCs
-        case "proficiency":   // Proficiency Bonus
+        case "attackDamage":
+        case "armorClass":
+        case "savingThrow":
+        case "spellAttackDC":
+        case "proficiency":
           return acc + value;
-        case "resistances":   // Damage Resistances
+        case "resistances":
           return acc + (value * 1);
-        case "immunities":    // Damage Immunities
+        case "immunities":
           return acc + (value * 3);
-        case "spellLevel":    // Spell Level (if item can cast spells)
+        case "spellLevel":
           return acc + value;
         default:
           return acc;

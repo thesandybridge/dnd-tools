@@ -300,3 +300,7 @@ label:not(.rcp-field-label, .themeSwitch) {
   transform: translateX(-30%);
   transition: transform 0.3s ease;
 }
+
+.leaflet-marker-icon {
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
