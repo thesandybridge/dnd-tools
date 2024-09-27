@@ -65,3 +65,4 @@
 .checkbox:checked + .label {
   background-color: var(--alt);
 }
+

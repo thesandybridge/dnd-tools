@@ -295,3 +295,8 @@ label:not(.rcp-field-label, .themeSwitch) {
 .leaflet-control-attribution {
     display: none !important;
 }
+
+.back:hover svg {
+  transform: translateX(-30%);
+  transition: transform 0.3s ease;
+}
