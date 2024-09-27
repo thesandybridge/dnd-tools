@@ -28,7 +28,7 @@ function convertCurrency(type, amount) {
     if (key !== type) {
       const conversionAmount = ((rates[type].price / value.price) * amount).toFixed(2);
       conversionResults.push({
-        amount: conversionAmount.toLocaleString('en-US'),
+        amount: conversionAmount,
         currency: key,
         icon: value.icon
       });
@@ -79,7 +79,7 @@ const View = ({
           >
             {result.icon}
             <div className={styles.conversionText}>
-              <span>{result.amount}</span>
+              <span>{parseInt(result.amount).toLocaleString()}</span>
               <span>{result.currency}</span>
             </div>
             {copiedIndex === index && (
