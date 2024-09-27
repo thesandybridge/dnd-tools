@@ -41,8 +41,8 @@ const View = ({
         </AnimatePresence>
         <select value={rarity} onChange={(e) => setRarity(e.target.value)}>
           <option value="">Select Rarity</option>
-          <option value="Uncommon">Uncommon</option>
           <option value="Common">Common</option>
+          <option value="Uncommon">Uncommon</option>
           <option value="Rare">Rare</option>
           <option value="Very Rare">Very Rare</option>
           <option value="Legendary">Legendary</option>
@@ -111,8 +111,8 @@ const ItemCalculator = () => {
       'Legendary': 4
     };
     const gpMultiplierMap = {
-      'Uncommon': 10,
-      'Common': 100,
+      'Common': 10,
+      'Uncommon': 100,
       'Rare': 1000,
       'Very Rare': 5000,
       'Legendary': 10000
@@ -126,19 +126,32 @@ const ItemCalculator = () => {
 
     const totalBonusPoints = Object.entries(attributes).reduce((acc, [key, value]) => {
       switch (key) {
-        case "immunities":
-          return acc + (value * 3)
-        case "resistances":
-          return acc + (value * 1)
-        case "spellLevel":
-          return acc + value
+        case "attackDamage": // Bonus to attack rolls/damage
+        case "ac":           // Armor Class
+        case "savingThrow":   // Saving Throws
+        case "spellAttackDC": // Save DCs
+        case "proficiency":   // Proficiency Bonus
+          return acc + value;
+        case "resistances":   // Damage Resistances
+          return acc + (value * 1);
+        case "immunities":    // Damage Immunities
+          return acc + (value * 3);
+        case "spellLevel":    // Spell Level (if item can cast spells)
+          return acc + value;
         default:
-          return acc + value
+          return acc;
       }
     }, 0);
 
+    // Step 4: Add base points and bonus points together
+    let finalPoints = basePoints + totalBonusPoints;
 
-    const finalPoints = isConsumable ? (basePoints + totalBonusPoints) / 2 : (basePoints + totalBonusPoints);
+    // Step 5: If item is consumable, divide points by 2
+    if (isConsumable) {
+      finalPoints /= 2;
+    }
+
+    // Step 6: Calculate total gold cost based on rarity multiplier
     const totalGp = finalPoints * (gpMultiplierMap[rarity] || 0);
 
     setGp(totalGp);
