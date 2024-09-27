@@ -48,15 +48,37 @@ const View = ({
           <option value="Very Rare">Very Rare</option>
           <option value="Legendary">Legendary</option>
         </select>
-        <label>Consumable:
-          <input type="checkbox" checked={isConsumable} onChange={(e) => setIsConsumable(e.target.checked)} />
+        <label
+          style={{
+            borderColor: isConsumable ? 'var(--alt)' : 'var(--fg)'
+          }}
+        >Consumable:
+          <input
+            type="checkbox"
+            checked={isConsumable}
+            onChange={(e) => setIsConsumable(e.target.checked)}
+          />
         </label>
-        <label>Requires Attunement:
-          <input type="checkbox" checked={requiresAttunement} onChange={(e) => setRequiresAttunement(e.target.checked)} />
+        <label
+          style={{
+            borderColor: requiresAttunement ? 'var(--alt)' : 'var(--fg)'
+          }}
+        >Requires Attunement:
+          <input
+            type="checkbox"
+            checked={requiresAttunement}
+            onChange={(e) => setRequiresAttunement(e.target.checked)}
+          />
         </label>
-        <div className={styles.calcGroup}>
+        <div
+          className={styles.calcGroup}
+        >
           {Object.keys(attributes).map((attr) => (
-            <label key={attr} className={styles.label}>
+            <label key={attr} className={styles.label}
+              style={{
+                borderColor: attributes[attr] > 0 ? 'var(--alt)' : 'var(--fg)'
+              }}
+            >
               {attr.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}:
               <input
                 type="number"
