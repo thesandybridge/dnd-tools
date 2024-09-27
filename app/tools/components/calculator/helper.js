@@ -51,9 +51,21 @@ const handleFocus = (e) => {
   }
 };
 
+function convertToLabel(symbol) {
+  const symbols = {
+    CP: "Copper",
+    SP: "Silver",
+    EP: "Electrum",
+    GP: "Gold",
+    PP: "Platinum",
+  }
+  return symbols[symbol] || "Unknown"
+}
+
 export {
   convertToDnDCurrency,
   formatDuration,
   handleFocus,
+  convertToLabel,
 };
 

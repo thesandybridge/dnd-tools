@@ -11,7 +11,7 @@ import Copper from "./currency_svgs/Copper";
 import Platinum from "./currency_svgs/Platinum";
 import Electrum from "./currency_svgs/Electrum";
 import { useCurrency } from "../../context/CurrencyContext";
-import { handleFocus } from "./helper";
+import { handleFocus, convertToLabel } from "./helper";
 
 function convertCurrency(type, amount) {
   const rates = {
@@ -78,7 +78,7 @@ const View = ({
             onClick={() => handleCopy(result.amount, index)}
           >
             {result.icon}
-            <div className={styles.conversionText}>
+            <div className={styles.conversionText} title={convertToLabel(result.currency)}>
               <span>{parseInt(result.amount).toLocaleString()}</span>
               <span>{result.currency}</span>
             </div>
