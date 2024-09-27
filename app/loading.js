@@ -5,7 +5,7 @@ export default function Loading() {
     <div className={styles.wrapper}>
       <svg className={styles.icon} width="57" height="57" viewBox="0 0 57 57" xmlns="http://www.w3.org/2000/svg">
         <g fill="none" fillRule="evenodd">
-          <g transform="translate(1 1)" stroke-width="2">
+          <g transform="translate(1 1)" strokeWidth="2">
             <circle cx="5" cy="50" r="5">
               <animate attributeName="cy" begin="0s" dur="2.2s" values="50;5;50;50" calcMode="linear" repeatCount="indefinite" />
               <animate attributeName="cx" begin="0s" dur="2.2s" values="5;27;49;5" calcMode="linear" repeatCount="indefinite" />
