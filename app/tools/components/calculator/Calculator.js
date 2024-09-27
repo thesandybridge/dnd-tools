@@ -1,6 +1,10 @@
 "use client"
-import styles from "./calculator.module.css";
+
 import { useState, useEffect } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { faClipboardCheck } from "@fortawesome/free-solid-svg-icons"
+
+import styles from "./calculator.module.css";
 import Gold from "./currency_svgs/Gold";
 import Silver from "./currency_svgs/Silver";
 import Copper from "./currency_svgs/Copper";
@@ -39,6 +43,8 @@ const View = ({
   handleCurrencyChange,
   handleCurrencyTypeChange,
   selectedCurrency,
+  copiedIndex,
+  handleCopy,
 }) => {
   return (
     <div className={styles.calculatorWrapper}>
@@ -62,12 +68,22 @@ const View = ({
       </div>
       <div className={styles.conversion}>
         {conversionResult.map((result, index) => (
-          <div key={index} className={styles.conversionItem}>
+          <div
+            key={index}
+            className={styles.conversionItem}
+            onClick={() => handleCopy(result.amount, index)}
+          >
             {result.icon}
             <div className={styles.conversionText}>
               <span>{result.amount}</span>
               <span>{result.currency}</span>
             </div>
+            {copiedIndex === index && (
+              <FontAwesomeIcon
+                icon={faClipboardCheck}
+                className={styles.copiedIcon} // Add appropriate styling
+              />
+            )}
           </div>
         ))}
       </div>
@@ -79,6 +95,18 @@ const Calculator = () => {
   const { currency, setCurrency } = useCurrency();
   const [selectedCurrency, setSelectedCurrency] = useState('GP')
   const [conversionResult, setConversionResult] = useState([])
+  const [copiedIndex, setCopiedIndex] = useState(null);
+
+  const handleCopy = (amount, index) => {
+    navigator.clipboard.writeText(amount)
+      .then(() => {
+        setCopiedIndex(index);
+        setTimeout(() => setCopiedIndex(null), 2000);
+      })
+      .catch((err) => {
+        console.error("Failed to copy: ", err);
+      });
+  };
 
   const handleCurrencyChange = (e) => {
     const newAmount = parseFloat(e.target.value) || 0
@@ -104,6 +132,8 @@ const Calculator = () => {
     handleCurrencyChange,
     handleCurrencyTypeChange,
     selectedCurrency,
+    copiedIndex,
+    handleCopy,
   }
 
   return (
