@@ -1,6 +1,6 @@
 "use client"
 
-import {motion, AnimatePresence} from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import styles from "./calculator.module.css";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import transportationData from "./travel.json";
@@ -25,19 +25,19 @@ const View = ({
     <div className={styles.calculatorItem}>
       <Banner image="/images/travel.png">
         <h2>Transportation Calculator</h2>
+        <AnimatePresence>
+          {totalCost > 0 && (
+            <motion.div
+              className={styles.totals}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              Total Cost: {convertToDnDCurrency(totalCost)}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </Banner>
-      <AnimatePresence>
-        {totalCost > 0 && (
-          <motion.div
-            className={styles.totals}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            Total Cost: {convertToDnDCurrency(totalCost)}
-          </motion.div>
-        )}
-      </AnimatePresence>
       <AnimatePresence>
         {totalDays && (
           <motion.div

@@ -90,19 +90,19 @@ export default function MountCalculator() {
     <div className={styles.calculatorItem}>
       <Banner image="/images/mounts.png">
         <h2>Mount Calculator</h2>
+        <AnimatePresence>
+          {totalCost > 0 && (
+            <motion.div
+              className={styles.totals}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              Total Cost: {convertToDnDCurrency(totalCost)}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </Banner>
-      <AnimatePresence>
-        {totalCost > 0 && (
-          <motion.div
-            className={styles.totals}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            Total Cost: {convertToDnDCurrency(totalCost)}
-          </motion.div>
-        )}
-      </AnimatePresence>
       <AnimatePresence>
         {totalDays && (
           <motion.div

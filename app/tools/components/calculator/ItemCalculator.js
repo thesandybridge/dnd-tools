@@ -25,20 +25,20 @@ const View = ({
       <div className={styles.calculatorItem}>
         <Banner image="/images/blacksmith.png">
           <h2>Item Calculator</h2>
+          <AnimatePresence>
+            {gp > 0 && (
+              <motion.div
+                className={styles.totals}
+                style={{ marginTop: '20px' }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                Total Price {convertToDnDCurrency(gp)}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </Banner>
-        <AnimatePresence>
-          {gp > 0 && (
-            <motion.div
-              className={styles.totals}
-              style={{ marginTop: '20px' }}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              Total Price {convertToDnDCurrency(gp)}
-            </motion.div>
-          )}
-        </AnimatePresence>
         <select value={rarity} onChange={(e) => setRarity(e.target.value)}>
           <option value="">Select Rarity</option>
           <option value="Common">Common</option>
