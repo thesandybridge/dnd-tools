@@ -241,6 +241,7 @@ label:not(.rcp-field-label, .themeSwitch) {
     position: relative;
     overflow: hidden;
     border: ridge 15px var(--fg);
+    box-shadow: none
 }
 
 .tools-link::after {
@@ -257,8 +258,11 @@ label:not(.rcp-field-label, .themeSwitch) {
 
 .tools-link:hover {
     transform: scale(1.01);
-    box-shadow: rgba(var(--fg-rgb), 0.2) 0px 7px 29px 0px;
     transform: translateY(-5px);
+    box-shadow:
+        5px 5px 0 0 var(--alt),
+        10px 10px 0 0 var(--alt);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .tools-link:hover .tools-link--label {

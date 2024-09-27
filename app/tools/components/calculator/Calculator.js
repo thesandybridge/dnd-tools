@@ -81,7 +81,7 @@ const View = ({
             {copiedIndex === index && (
               <FontAwesomeIcon
                 icon={faClipboardCheck}
-                className={styles.copiedIcon} // Add appropriate styling
+                className={styles.copiedIcon}
               />
             )}
           </div>
