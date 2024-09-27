@@ -10,6 +10,7 @@ import {
   handleFocus,
 } from "./helper";
 import Banner from "../Banner";
+import { useCurrency } from "../../context/CurrencyContext";
 
 const View = ({
   totalCost,
@@ -117,11 +118,17 @@ export default function MountCalculator() {
   const [totalCost, setTotalCost] = useState(0);
   const [totalDays, setTotalDays] = useState("");
 
+  const { setCurrency } = useCurrency()
+
   useEffect(() => {
     setSelectedType('');
     setSelectedFeatures([]);
     setTotalCost(0);
   }, [selectedItem]);
+
+  useEffect(() => {
+    setCurrency(totalCost)
+  }, [setCurrency, totalCost])
 
   const handleFeatureChange = (feature, isChecked) => {
     setSelectedFeatures(prev =>

@@ -6,6 +6,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import transportationData from "./travel.json";
 import { convertToDnDCurrency, formatDuration, handleFocus } from "./helper";
 import Banner from "../Banner"
+import { useCurrency } from "../../context/CurrencyContext";
 
 const View = ({
   selectedTransport,
@@ -117,6 +118,12 @@ const TransportationCalculator = () => {
   const [cargoWeight, setCargoWeight] = useState(0);
   const [totalCost, setTotalCost] = useState(0);
   const [totalDays, setTotalDays] = useState("");
+
+  const { setCurrency } = useCurrency()
+
+  useEffect(() => {
+    setCurrency(totalCost)
+  }, [setCurrency, totalCost])
 
   const selectedTransportData = useMemo(() => {
     return transportationData.find(t => t.type === selectedTransport) || {};

@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import servicesData from './services.json';
 import { convertToDnDCurrency } from "./helper";
 import Banner from "../Banner";
+import { useCurrency } from '../../context/CurrencyContext';
 
 const View = ({
   totalCost,
@@ -106,6 +107,12 @@ export default function ServicesCalculator() {
   const [markupPrices, setMarkupPrices] = useState({});
   const [additionalServicesSelected, setAdditionalServicesSelected] = useState({});
   const [totalCost, setTotalCost] = useState(0);
+
+  const { setCurrency } = useCurrency()
+
+  useEffect(() => {
+    setCurrency(totalCost)
+  }, [setCurrency, totalCost])
 
   const toggleMainService = (houseName, serviceName, isMarkup = false) => {
     const key = `${houseName}|${serviceName}`;

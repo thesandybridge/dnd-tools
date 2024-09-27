@@ -1,11 +1,12 @@
 "use client"
 import styles from "./calculator.module.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Gold from "./currency_svgs/Gold";
 import Silver from "./currency_svgs/Silver";
 import Copper from "./currency_svgs/Copper";
 import Platinum from "./currency_svgs/Platinum";
 import Electrum from "./currency_svgs/Electrum";
+import { useCurrency } from "../../context/CurrencyContext";
 
 function convertCurrency(type, amount) {
   const rates = {
@@ -22,7 +23,7 @@ function convertCurrency(type, amount) {
     if (key !== type) {
       const conversionAmount = ((rates[type].price / value.price) * amount).toFixed(2);
       conversionResults.push({
-        amount: conversionAmount,
+        amount: conversionAmount.toLocaleString('en-US'),
         currency: key,
         icon: value.icon
       });
@@ -75,25 +76,27 @@ const View = ({
 }
 
 const Calculator = () => {
-  const [currency, setCurrency] = useState(0)
+  const { currency, setCurrency } = useCurrency();
   const [selectedCurrency, setSelectedCurrency] = useState('GP')
   const [conversionResult, setConversionResult] = useState([])
 
   const handleCurrencyChange = (e) => {
     const newAmount = parseFloat(e.target.value) || 0
     setCurrency(newAmount)
-    updateConversionResult(selectedCurrency, newAmount)
   }
 
   const handleCurrencyTypeChange = (e) => {
     const newType = e.target.value
     setSelectedCurrency(newType)
-    updateConversionResult(newType, currency)
   }
 
   const updateConversionResult = (type, amount) => {
     setConversionResult(convertCurrency(type, amount))
   }
+
+  useEffect(() => {
+    updateConversionResult(selectedCurrency, currency);
+  }, [currency, selectedCurrency]);
 
   const calculatorProps = {
     conversionResult,

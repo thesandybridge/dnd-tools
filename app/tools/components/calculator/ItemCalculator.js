@@ -7,6 +7,7 @@ import {
   handleFocus
 } from './helper';
 import Banner from '../Banner';
+import { useCurrency } from "../../context/CurrencyContext";
 
 const View = ({
   rarity,
@@ -75,6 +76,7 @@ const View = ({
 }
 
 const ItemCalculator = () => {
+  const { setCurrency } = useCurrency()
   const [rarity, setRarity] = useState('');
   const [isConsumable, setIsConsumable] = useState(false);
   const [requiresAttunement, setRequiresAttunement] = useState(false);
@@ -156,6 +158,10 @@ const ItemCalculator = () => {
 
     setGp(totalGp);
   }, [attributes, rarity, isConsumable, requiresAttunement]);
+
+  useEffect(() => {
+    setCurrency(gp)
+  }, [setCurrency, gp])
 
   useEffect(() => {
     calculatePointsAndGp();
