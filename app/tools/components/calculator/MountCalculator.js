@@ -11,6 +11,104 @@ import {
 } from "./helper";
 import Banner from "../Banner";
 
+const View = ({
+  totalCost,
+  totalDays,
+  selectedItem,
+  setSelectedItem,
+  itemsData,
+  selectedType,
+  selectedFeatures,
+  setSelectedType,
+  setMiles,
+  handleBlur,
+  handleFocus,
+  handleFeatureChange,
+  miles,
+}) => {
+  return (
+    <>
+      <div className={styles.calculatorItem}>
+        <Banner image="/images/mounts.png">
+          <h2>Mount Calculator</h2>
+          <AnimatePresence>
+            {totalCost > 0 && (
+              <motion.div
+                className={styles.totals}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                Total Cost: {convertToDnDCurrency(totalCost)}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </Banner>
+        <AnimatePresence>
+          {totalDays && (
+            <motion.div
+              className={styles.totals}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              Total Time: {totalDays}
+            </motion.div>
+          )}
+        </AnimatePresence>
+        <select value={selectedItem} onChange={(e) => setSelectedItem(e.target.value)}>
+          <option value="">Select a Mount</option>
+          {itemsData.map((item, index) => (
+            <option
+              key={index}
+              value={item.item}
+            >
+              {item.item} - {convertToDnDCurrency(item.baseCost)}
+            </option>
+          ))}
+        </select>
+
+        {selectedItem && itemsData.find(item => item.item === selectedItem)?.types && (
+          <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)}>
+            <option value="">Select Type</option>
+            {itemsData.find(item => item.item === selectedItem).types.map((type, index) => (
+              <option key={index} value={type.type}>{type.type}</option>
+            ))}
+          </select>
+        )}
+
+        {itemsData.find(item => item.item === selectedItem)?.specials && (
+          itemsData.find(item => item.item === selectedItem).specials.map((special, index) => (
+            <div key={index}>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={selectedFeatures.includes(special.feature)}
+                  onChange={(e) => handleFeatureChange(special.feature, e.target.checked)}
+                />
+                {special.feature} (+{special.additionalCost} gp)
+              </label>
+            </div>
+          ))
+        )}
+
+        <label>
+          <input
+            type="number"
+            min="0"
+            value={miles}
+            onChange={(e) => setMiles(parseInt(e.target.value, 10) || 0)}
+            placeholder="Miles (if applicable)"
+            onBlur={handleBlur(miles)}
+            onFocus={handleFocus}
+          />
+          Miles
+        </label>
+      </div>
+    </>
+  )
+}
+
 export default function MountCalculator() {
   const [selectedItem, setSelectedItem] = useState('');
   const [selectedType, setSelectedType] = useState('');
@@ -86,83 +184,25 @@ export default function MountCalculator() {
     calculateTotalCost();
   }, [selectedItem, selectedType, selectedFeatures, miles, calculateTotalCost]);
 
+  const mountCalculatorProps = {
+    totalCost,
+    totalDays,
+    selectedItem,
+    setSelectedItem,
+    itemsData,
+    selectedType,
+    setSelectedType,
+    selectedFeatures,
+    setMiles,
+    handleBlur,
+    handleFocus,
+    handleFeatureChange,
+    miles,
+  }
+
   return (
-    <div className={styles.calculatorItem}>
-      <Banner image="/images/mounts.png">
-        <h2>Mount Calculator</h2>
-        <AnimatePresence>
-          {totalCost > 0 && (
-            <motion.div
-              className={styles.totals}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              Total Cost: {convertToDnDCurrency(totalCost)}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </Banner>
-      <AnimatePresence>
-        {totalDays && (
-          <motion.div
-            className={styles.totals}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            Total Time: {totalDays}
-          </motion.div>
-        )}
-      </AnimatePresence>
-      <select value={selectedItem} onChange={(e) => setSelectedItem(e.target.value)}>
-        <option value="">Select a Mount</option>
-        {itemsData.map((item, index) => (
-          <option
-            key={index}
-            value={item.item}
-          >
-            {item.item} - {convertToDnDCurrency(item.baseCost)}
-          </option>
-        ))}
-      </select>
-
-      {selectedItem && itemsData.find(item => item.item === selectedItem)?.types && (
-        <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)}>
-          <option value="">Select Type</option>
-          {itemsData.find(item => item.item === selectedItem).types.map((type, index) => (
-            <option key={index} value={type.type}>{type.type}</option>
-          ))}
-        </select>
-      )}
-
-      {itemsData.find(item => item.item === selectedItem)?.specials && (
-        itemsData.find(item => item.item === selectedItem).specials.map((special, index) => (
-          <div key={index}>
-            <label>
-              <input
-                type="checkbox"
-                checked={selectedFeatures.includes(special.feature)}
-                onChange={(e) => handleFeatureChange(special.feature, e.target.checked)}
-              />
-              {special.feature} (+{special.additionalCost} gp)
-            </label>
-          </div>
-        ))
-      )}
-
-      <label>
-        <input
-          type="number"
-          min="0"
-          value={miles}
-          onChange={(e) => setMiles(parseInt(e.target.value, 10) || 0)}
-          placeholder="Miles (if applicable)"
-          onBlur={handleBlur(miles)}
-          onFocus={handleFocus}
-        />
-        Miles
-      </label>
-    </div>
+    <View
+      {...mountCalculatorProps}
+    />
   );
 }
