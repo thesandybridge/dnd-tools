@@ -1,5 +1,5 @@
 import { auth } from "@/auth"
-import { faScrewdriverWrench, faHome } from "@fortawesome/free-solid-svg-icons"
+import { faCalculator, faHome } from "@fortawesome/free-solid-svg-icons"
 import SignIn from "./Login"
 import UserNav from "./UserNav"
 import MainNav from "./MainNav"
@@ -14,7 +14,7 @@ const routes = [
   {
     title: 'Tools/Calculators',
     path: '/tools',
-    icon: faScrewdriverWrench
+    icon: faCalculator
   }
 ]
 export default async function Nav() {
