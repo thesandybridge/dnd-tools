@@ -5,7 +5,7 @@ import { useState, useEffect } from "react"
 import servicesData from './services.json'
 import { convertToDnDCurrency } from "./helper"
 import Banner from "../Banner"
-import { useCurrency } from '../../context/CurrencyContext'
+import { useCurrency } from '../../providers/CurrencyContext'
 
 const View = ({
   totalCost,

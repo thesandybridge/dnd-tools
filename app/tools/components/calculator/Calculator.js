@@ -10,7 +10,7 @@ import Silver from "./currency_svgs/Silver"
 import Copper from "./currency_svgs/Copper"
 import Platinum from "./currency_svgs/Platinum"
 import Electrum from "./currency_svgs/Electrum"
-import { useCurrency } from "../../context/CurrencyContext"
+import { useCurrency } from "../../providers/CurrencyContext"
 import { handleFocus, convertToLabel } from "./helper"
 
 function convertCurrency(type, amount) {

@@ -6,7 +6,7 @@ import { useState, useEffect, useCallback, useMemo } from "react"
 import transportationData from "./travel.json"
 import { convertToDnDCurrency, formatDuration, handleFocus } from "./helper"
 import Banner from "../Banner"
-import { useCurrency } from "../../context/CurrencyContext"
+import { useCurrency } from "../../providers/CurrencyContext"
 
 const View = ({
   selectedTransport,

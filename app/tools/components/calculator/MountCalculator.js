@@ -10,7 +10,7 @@ import {
   handleFocus,
 } from "./helper"
 import Banner from "../Banner"
-import { useCurrency } from "../../context/CurrencyContext"
+import { useCurrency } from "../../providers/CurrencyContext"
 
 const View = ({
   totalCost,
