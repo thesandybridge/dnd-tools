@@ -34,7 +34,7 @@ export default function ThemeProvider({ children }) {
     queryKey: ['user', session?.user?.id],
     queryFn: () => fetchUser(session?.user?.id),
     enabled: !!session?.user?.id,
-    staleTime: 0,
+    staleTime: 300000,
     onError: (error) => {
       console.error('Failed to fetch user theme:', error.message)
     }
