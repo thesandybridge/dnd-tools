@@ -68,7 +68,7 @@ export default function MapComponent({ user_id }) {
   const { theme } = useTheme()
 
   function svgToBase64(svgString) {
-    return `data:image/svg+xmlbase64,${btoa(svgString)}`
+    return `data:image/svg+xml;base64,${btoa(encodeURIComponent(svgString).replace(/%([0-9A-F]{2})/g, (_, p1) => String.fromCharCode('0x' + p1)))}`
   }
 
   const customIcon = useMemo(() => {
@@ -77,7 +77,7 @@ export default function MapComponent({ user_id }) {
       <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
       <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
       <g id="SVGRepo_iconCarrier">
-        <style type="text/css">.st0{fill:${theme.primaryColor}}</style>
+        <style type="text/css">.st0{fill:${theme.primaryColor};}</style>
         <g>
           <path class="st0" d="M390.54,55.719C353.383,18.578,304.696,0,255.993,0c-48.688,0-97.391,18.578-134.547,55.719 c-59.219,59.219-74.641,149.563-36.094,218.875C129.586,354.109,255.993,512,255.993,512s126.422-157.891,170.656-237.406 C465.195,205.281,449.773,114.938,390.54,55.719z M255.993,305.844c-63.813,0-115.563-51.75-115.563-115.547 c0-63.859,51.75-115.609,115.563-115.609c63.828,0,115.578,51.75,115.578,115.609C371.571,254.094,319.821,305.844,255.993,305.844 z"></path>
         </g>
@@ -245,7 +245,7 @@ export default function MapComponent({ user_id }) {
           positions={markers.map(marker => marker.position)}
           pathOptions={{
             color: theme.primaryColor,
-            dashArray: '10, 20' ,
+            dashArray: '10, 20',
             opacity: '0.8',
             lineCap: 'round',
             lineJoin: 'bevel',
