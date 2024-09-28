@@ -2,11 +2,11 @@ import { auth } from "@/auth"
 import { createClient } from '@supabase/supabase-js'
 
 export const GET = auth(async function PATCH(request, { params }) {
-  let session;
+  let session
   try {
-    session = request.auth;
+    session = request.auth
   } catch (error) {
-    console.error('Authentication failed:', error.message);
+    console.error('Authentication failed:', error.message)
     return new Response(JSON.stringify({
       error: 'Authentication failed',
       details: error.message
@@ -15,11 +15,11 @@ export const GET = auth(async function PATCH(request, { params }) {
       headers: {
         'Content-Type': 'application/json'
       }
-    });
+    })
   }
 
   if (!session?.user) {
-    return new Response(null, { status: 302, headers: { Location: '/' } });
+    return new Response(null, { status: 302, headers: { Location: '/' } })
   }
 
   const supabase = createClient(
@@ -32,7 +32,7 @@ export const GET = auth(async function PATCH(request, { params }) {
         },
       },
     }
-  );
+  )
 
   try {
     const { id } = params
@@ -51,9 +51,9 @@ export const GET = auth(async function PATCH(request, { params }) {
       headers: {
         'Content-Type': 'application/json'
       }
-    });
+    })
   } catch (error) {
-    console.error('Failed to fetch user data:', error.message);
+    console.error('Failed to fetch user data:', error.message)
     return new Response(JSON.stringify({
       error: 'Failed to fetch user data',
       details: error.message
@@ -62,16 +62,16 @@ export const GET = auth(async function PATCH(request, { params }) {
       headers: {
         'Content-Type': 'application/json'
       }
-    });
+    })
   }
 })
 
 export const PATCH = auth(async function PATCH(request, { params }) {
-  let session;
+  let session
   try {
-    session = request.auth;
+    session = request.auth
   } catch (error) {
-    console.error('Authentication failed:', error.message);
+    console.error('Authentication failed:', error.message)
     return new Response(JSON.stringify({
       error: 'Authentication failed',
       details: error.message
@@ -80,11 +80,11 @@ export const PATCH = auth(async function PATCH(request, { params }) {
       headers: {
         'Content-Type': 'application/json'
       }
-    });
+    })
   }
 
   if (!session?.user) {
-    return new Response(null, { status: 302, headers: { Location: '/' } });
+    return new Response(null, { status: 302, headers: { Location: '/' } })
   }
 
   const supabase = createClient(
@@ -97,7 +97,7 @@ export const PATCH = auth(async function PATCH(request, { params }) {
         },
       },
     }
-  );
+  )
 
   try {
     const { id } = params
@@ -121,9 +121,9 @@ export const PATCH = auth(async function PATCH(request, { params }) {
       headers: {
         'Content-Type': 'application/json'
       }
-    });
+    })
   } catch (error) {
-    console.error('Failed to update user color:', error.message);
+    console.error('Failed to update user color:', error.message)
     return new Response(JSON.stringify({
       error: 'Failed to update user color',
       details: error.message
@@ -132,6 +132,6 @@ export const PATCH = auth(async function PATCH(request, { params }) {
       headers: {
         'Content-Type': 'application/json'
       }
-    });
+    })
   }
 })

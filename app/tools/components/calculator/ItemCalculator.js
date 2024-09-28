@@ -1,14 +1,14 @@
 "use client"
 
 import { motion, AnimatePresence } from "framer-motion"
-import { useState, useEffect, useCallback } from 'react';
-import styles from './calculator.module.css';
+import { useState, useEffect, useCallback } from 'react'
+import styles from './calculator.module.css'
 import {
   convertToDnDCurrency,
   handleFocus
-} from './helper';
-import Banner from '../Banner';
-import { useCurrency } from "../../context/CurrencyContext";
+} from './helper'
+import Banner from '../Banner'
+import { useCurrency } from "../../context/CurrencyContext"
 
 const View = ({
   rarity,
@@ -110,9 +110,9 @@ const View = ({
 
 const ItemCalculator = () => {
   const { setCurrency } = useCurrency()
-  const [rarity, setRarity] = useState('');
-  const [isConsumable, setIsConsumable] = useState(false);
-  const [requiresAttunement, setRequiresAttunement] = useState(false);
+  const [rarity, setRarity] = useState('')
+  const [isConsumable, setIsConsumable] = useState(false)
+  const [requiresAttunement, setRequiresAttunement] = useState(false)
   const [attributes, setAttributes] = useState({
     attackDamage: 0,
     spellAttackDC: 0,
@@ -122,14 +122,14 @@ const ItemCalculator = () => {
     resistances: 0,
     immunities: 0,
     spellLevel: 0
-  });
-  const [gp, setGp] = useState(0);
+  })
+  const [gp, setGp] = useState(0)
   const [reset, setReset] = useState(true)
 
   const resetValues = () => {
-    setRarity('');
-    setIsConsumable(false);
-    setRequiresAttunement(false);
+    setRarity('')
+    setIsConsumable(false)
+    setRequiresAttunement(false)
     setAttributes({
       attackDamage: 0,
       spellAttackDC: 0,
@@ -139,9 +139,9 @@ const ItemCalculator = () => {
       resistances: 0,
       immunities: 0,
       spellLevel: 0
-    });
-    setGp(0);
-    setReset(false);
+    })
+    setGp(0)
+    setReset(false)
   }
 
   useEffect(() => {
@@ -149,22 +149,22 @@ const ItemCalculator = () => {
       rarity !== '' ||
       isConsumable !== false ||
       requiresAttunement !== false ||
-      Object.values(attributes).some((value) => value !== 0);
+      Object.values(attributes).some((value) => value !== 0)
 
-    setReset(isChanged);
-  }, [rarity, isConsumable, requiresAttunement, attributes]);
+    setReset(isChanged)
+  }, [rarity, isConsumable, requiresAttunement, attributes])
 
   const handleAttributeChange = useCallback((attribute) => (e) => {
-    const value = parseInt(e.target.value, 10) || 0;
-    setAttributes(prev => ({ ...prev, [attribute]: value }));
-  }, []);
+    const value = parseInt(e.target.value, 10) || 0
+    setAttributes(prev => ({ ...prev, [attribute]: value }))
+  }, [])
 
   const handleBlur = (attribute) => (e) => {
     if (e.target.value === '') {
-      setAttributes(prev => ({ ...prev, [attribute]: 0 }));
-      e.target.value = '0';
+      setAttributes(prev => ({ ...prev, [attribute]: 0 }))
+      e.target.value = '0'
     }
-  };
+  }
 
   const calculatePointsAndGp = useCallback(() => {
     const rarityPointsMap = {
@@ -173,19 +173,19 @@ const ItemCalculator = () => {
       'Rare': 2,
       'Very Rare': 3,
       'Legendary': 4
-    };
+    }
     const gpMultiplierMap = {
       'Common': 10,
       'Uncommon': 100,
       'Rare': 1000,
       'Very Rare': 5000,
       'Legendary': 10000
-    };
+    }
 
-    let basePoints = rarityPointsMap[rarity] || 0;
+    let basePoints = rarityPointsMap[rarity] || 0
 
     if (!requiresAttunement && !isConsumable) {
-      basePoints *= 2;
+      basePoints *= 2
     }
 
     const totalBonusPoints = Object.entries(attributes).reduce((acc, [key, value]) => {
@@ -195,39 +195,39 @@ const ItemCalculator = () => {
         case "savingThrow":
         case "spellAttackDC":
         case "proficiency":
-          return acc + value;
+          return acc + value
         case "resistances":
-          return acc + (value * 1);
+          return acc + (value * 1)
         case "immunities":
-          return acc + (value * 3);
+          return acc + (value * 3)
         case "spellLevel":
-          return acc + value;
+          return acc + value
         default:
-          return acc;
+          return acc
       }
-    }, 0);
+    }, 0)
 
     // Step 4: Add base points and bonus points together
-    let finalPoints = basePoints + totalBonusPoints;
+    let finalPoints = basePoints + totalBonusPoints
 
     // Step 5: If item is consumable, divide points by 2
     if (isConsumable) {
-      finalPoints /= 2;
+      finalPoints /= 2
     }
 
     // Step 6: Calculate total gold cost based on rarity multiplier
-    const totalGp = finalPoints * (gpMultiplierMap[rarity] || 0);
+    const totalGp = finalPoints * (gpMultiplierMap[rarity] || 0)
 
-    setGp(totalGp);
-  }, [attributes, rarity, isConsumable, requiresAttunement]);
+    setGp(totalGp)
+  }, [attributes, rarity, isConsumable, requiresAttunement])
 
   useEffect(() => {
     setCurrency(gp)
   }, [setCurrency, gp])
 
   useEffect(() => {
-    calculatePointsAndGp();
-  }, [attributes, rarity, isConsumable, requiresAttunement, calculatePointsAndGp]);
+    calculatePointsAndGp()
+  }, [attributes, rarity, isConsumable, requiresAttunement, calculatePointsAndGp])
 
   const itemCalculatorProps = {
     rarity,
@@ -248,7 +248,7 @@ const ItemCalculator = () => {
     <View
       {...itemCalculatorProps}
     />
-  );
+  )
 }
 
 export default ItemCalculator

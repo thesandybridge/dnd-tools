@@ -2,11 +2,11 @@ import { auth } from "@/auth"
 import { createClient } from '@supabase/supabase-js'
 
 export const DELETE = auth(async function DELETE(request, { params }) {
-  let session;
+  let session
   try {
-    session = request.auth;
+    session = request.auth
   } catch (error) {
-    console.error('Authentication failed:', error.message);
+    console.error('Authentication failed:', error.message)
     return new Response(JSON.stringify({
       error: 'Authentication failed',
       details: error.message
@@ -15,11 +15,11 @@ export const DELETE = auth(async function DELETE(request, { params }) {
       headers: {
         'Content-Type': 'application/json'
       }
-    });
+    })
   }
 
   if (!session?.user) {
-    return new Response(null, { status: 302, headers: { Location: '/' } });
+    return new Response(null, { status: 302, headers: { Location: '/' } })
   }
 
   const supabase = createClient(
@@ -32,7 +32,7 @@ export const DELETE = auth(async function DELETE(request, { params }) {
         },
       },
     }
-  );
+  )
 
   try {
     const { id } = params
@@ -40,10 +40,10 @@ export const DELETE = auth(async function DELETE(request, { params }) {
     const { data: referencingMarkers, error: referencingError } = await supabase
       .from('markers')
       .select('id')
-      .eq('prev_marker', id);
+      .eq('prev_marker', id)
 
     if (referencingError) {
-      throw new Error(referencingError.message);
+      throw new Error(referencingError.message)
     }
 
     // Retrieve current marker's prev_marker
@@ -51,10 +51,10 @@ export const DELETE = auth(async function DELETE(request, { params }) {
       .from('markers')
       .select('prev_marker')
       .eq('id', id)
-      .single();
+      .single()
 
     if (fetchError || !marker) {
-      throw new Error(fetchError ? fetchError.message : "Marker not found");
+      throw new Error(fetchError ? fetchError.message : "Marker not found")
     }
 
     // Update any markers that pointed to the deleted marker to point to its prev_marker
@@ -62,10 +62,10 @@ export const DELETE = auth(async function DELETE(request, { params }) {
       const { error: updateError } = await supabase
         .from('markers')
         .update({ prev_marker: marker.prev_marker })
-        .eq('prev_marker', id);
+        .eq('prev_marker', id)
 
       if (updateError) {
-        throw new Error(updateError.message);
+        throw new Error(updateError.message)
       }
     }
 
@@ -73,10 +73,10 @@ export const DELETE = auth(async function DELETE(request, { params }) {
     const { error: deleteError } = await supabase
       .from('markers')
       .delete()
-      .eq('id', id);
+      .eq('id', id)
 
     if (deleteError) {
-      throw new Error(deleteError.message);
+      throw new Error(deleteError.message)
     }
 
     return new Response(JSON.stringify({ message: "Marker deleted successfully" }), {
@@ -84,9 +84,9 @@ export const DELETE = auth(async function DELETE(request, { params }) {
       headers: {
         'Content-Type': 'application/json'
       }
-    });
+    })
   } catch (error) {
-    console.error('Failed to delete marker:', error.message);
+    console.error('Failed to delete marker:', error.message)
     return new Response(JSON.stringify({
       error: 'Failed to delete marker',
       details: error.message
@@ -95,16 +95,16 @@ export const DELETE = auth(async function DELETE(request, { params }) {
       headers: {
         'Content-Type': 'application/json'
       }
-    });
+    })
   }
 })
 
 export const PATCH = auth(async function PATCH(request, { params }) {
-  let session;
+  let session
   try {
-    session = request.auth;
+    session = request.auth
   } catch (error) {
-    console.error('Authentication failed:', error.message);
+    console.error('Authentication failed:', error.message)
     return new Response(JSON.stringify({
       error: 'Authentication failed',
       details: error.message
@@ -113,11 +113,11 @@ export const PATCH = auth(async function PATCH(request, { params }) {
       headers: {
         'Content-Type': 'application/json'
       }
-    });
+    })
   }
 
   if (!session?.user) {
-    return new Response(null, { status: 302, headers: { Location: '/' } });
+    return new Response(null, { status: 302, headers: { Location: '/' } })
   }
 
   const supabase = createClient(
@@ -130,7 +130,7 @@ export const PATCH = auth(async function PATCH(request, { params }) {
         },
       },
     }
-  );
+  )
 
   try {
     const { id } = params
@@ -151,9 +151,9 @@ export const PATCH = auth(async function PATCH(request, { params }) {
       headers: {
         'Content-Type': 'application/json'
       }
-    });
+    })
   } catch (error) {
-    console.error('Failed to update marker:', error.message);
+    console.error('Failed to update marker:', error.message)
     return new Response(JSON.stringify({
       error: 'Failed to update marker',
       details: error.message
@@ -162,6 +162,6 @@ export const PATCH = auth(async function PATCH(request, { params }) {
       headers: {
         'Content-Type': 'application/json'
       }
-    });
+    })
   }
 })

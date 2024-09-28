@@ -3,16 +3,16 @@ import { createClient } from '@supabase/supabase-js'
 import { redirect } from 'next/navigation'
 
 export const GET = auth(async function GET(request) {
-  let session;
+  let session
   try {
-    session = request.auth;
+    session = request.auth
   } catch (error) {
-    console.error('Authentication failed:', error.message);
-    return redirect('/');
+    console.error('Authentication failed:', error.message)
+    return redirect('/')
   }
 
   if (!session?.user) {
-    return new Response(null, { status: 302, headers: { Location: '/' } });
+    return new Response(null, { status: 302, headers: { Location: '/' } })
   }
 
   const supabase = createClient(
@@ -25,16 +25,16 @@ export const GET = auth(async function GET(request) {
         },
       },
     }
-  );
+  )
 
   try {
     const { data, error } = await supabase
       .from("markers")
       .select("*")
-      .eq('user_id', session.user.id);
+      .eq('user_id', session.user.id)
 
     if (error) {
-      throw new Error(error.message);
+      throw new Error(error.message)
     }
 
     return new Response(JSON.stringify(data), {
@@ -42,9 +42,9 @@ export const GET = auth(async function GET(request) {
       headers: {
         'Content-Type': 'application/json'
       }
-    });
+    })
   } catch (error) {
-    console.error('Failed to fetch markers:', error.message);
+    console.error('Failed to fetch markers:', error.message)
     return new Response(JSON.stringify({
       error: 'Failed to fetch markers',
       details: error.message
@@ -53,17 +53,17 @@ export const GET = auth(async function GET(request) {
       headers: {
         'Content-Type': 'application/json'
       }
-    });
+    })
   }
 })
 
 
 export const POST = auth(async function POST(request) {
-  let session;
+  let session
   try {
-    session = request.auth;
+    session = request.auth
   } catch (error) {
-    console.error('Authentication failed:', error.message);
+    console.error('Authentication failed:', error.message)
     return new Response(JSON.stringify({
       error: 'Authentication failed',
       details: error.message
@@ -72,11 +72,11 @@ export const POST = auth(async function POST(request) {
       headers: {
         'Content-Type': 'application/json'
       }
-    });
+    })
   }
 
   if (!session?.user) {
-    return new Response(null, { status: 302, headers: { Location: '/' } });
+    return new Response(null, { status: 302, headers: { Location: '/' } })
   }
 
   const supabase = createClient(
@@ -89,11 +89,11 @@ export const POST = auth(async function POST(request) {
         },
       },
     }
-  );
+  )
 
   try {
-    const requestData = await request.json();
-    const { position, prev_marker, distance } = requestData;
+    const requestData = await request.json()
+    const { position, prev_marker, distance } = requestData
 
     const { data, error } = await supabase
       .from('markers')
@@ -107,7 +107,7 @@ export const POST = auth(async function POST(request) {
 
 
     if (error) {
-      throw new Error(error.message);
+      throw new Error(error.message)
     }
 
     return new Response(JSON.stringify(data), {
@@ -115,9 +115,9 @@ export const POST = auth(async function POST(request) {
       headers: {
         'Content-Type': 'application/json'
       }
-    });
+    })
   } catch (error) {
-    console.error('Failed to insert marker:', error.message);
+    console.error('Failed to insert marker:', error.message)
     return new Response(JSON.stringify({
       error: 'Failed to insert marker',
       details: error.message
@@ -126,16 +126,16 @@ export const POST = auth(async function POST(request) {
       headers: {
         'Content-Type': 'application/json'
       }
-    });
+    })
   }
 })
 
 export const DELETE = auth(async function DELETE(request) {
-  let session;
+  let session
   try {
-    session = request.auth;
+    session = request.auth
   } catch (error) {
-    console.error('Authentication failed:', error.message);
+    console.error('Authentication failed:', error.message)
     return new Response(JSON.stringify({
       error: 'Authentication failed',
       details: error.message
@@ -144,11 +144,11 @@ export const DELETE = auth(async function DELETE(request) {
       headers: {
         'Content-Type': 'application/json'
       }
-    });
+    })
   }
 
   if (!session?.user) {
-    return new Response(null, { status: 302, headers: { Location: '/' } });
+    return new Response(null, { status: 302, headers: { Location: '/' } })
   }
 
   const supabase = createClient(
@@ -161,11 +161,11 @@ export const DELETE = auth(async function DELETE(request) {
         },
       },
     }
-  );
+  )
 
   try {
-    const requestData = await request.json();
-    const { id } = requestData;
+    const requestData = await request.json()
+    const { id } = requestData
 
     const { data, error } = await supabase
       .from('markers')
@@ -175,7 +175,7 @@ export const DELETE = auth(async function DELETE(request) {
 
 
     if (error) {
-      throw new Error(error.message);
+      throw new Error(error.message)
     }
 
     return new Response(JSON.stringify(data), {
@@ -183,9 +183,9 @@ export const DELETE = auth(async function DELETE(request) {
       headers: {
         'Content-Type': 'application/json'
       }
-    });
+    })
   } catch (error) {
-    console.error('Failed to insert marker:', error.message);
+    console.error('Failed to insert marker:', error.message)
     return new Response(JSON.stringify({
       error: 'Failed to delete marker',
       details: error.message
@@ -194,6 +194,6 @@ export const DELETE = auth(async function DELETE(request) {
       headers: {
         'Content-Type': 'application/json'
       }
-    });
+    })
   }
 })

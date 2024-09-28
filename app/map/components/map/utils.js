@@ -1,4 +1,4 @@
-export const MILES_PER_MAP_UNIT = 15.644;
+export const MILES_PER_MAP_UNIT = 15.644
 
 /**
  * @typedef {Object} Coordinates
@@ -13,7 +13,7 @@ export const MILES_PER_MAP_UNIT = 15.644;
  * @returns {number} Map units converted to miles
  */
 function calculateDistanceInMiles(mapUnits) {
-  return mapUnits * MILES_PER_MAP_UNIT;
+  return mapUnits * MILES_PER_MAP_UNIT
 }
 
 /**
@@ -24,8 +24,8 @@ function calculateDistanceInMiles(mapUnits) {
  * @returns {number} The distance between pointA and pointB in miles
  */
 export function calculateDistance(pointA, pointB) {
-  const dx = pointB.lng - pointA.lng; // difference in longitude units
-  const dy = pointB.lat - pointA.lat; // difference in latitude units
-  const distanceInMapUnits = Math.sqrt(dx * dx + dy * dy); // Euclidean distance in map units
-  return calculateDistanceInMiles(distanceInMapUnits).toFixed(2); // Convert to miles and format
+  const dx = pointB.lng - pointA.lng // difference in longitude units
+  const dy = pointB.lat - pointA.lat // difference in latitude units
+  const distanceInMapUnits = Math.sqrt(dx * dx + dy * dy) // Euclidean distance in map units
+  return calculateDistanceInMiles(distanceInMapUnits).toFixed(2) // Convert to miles and format
 }

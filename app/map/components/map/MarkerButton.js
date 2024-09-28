@@ -1,5 +1,5 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMap, faMapLocationDot } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
+import { faMap, faMapLocationDot } from "@fortawesome/free-solid-svg-icons"
 
 /**
  * @typedef {Object} ControlButtonProps
@@ -23,9 +23,9 @@ const MarkerButton = ({ onClick, isActive }) => {
    * @param {React.MouseEvent<HTMLDivElement>} e - The React mouse event object.
    */
   const handleClick = (e) => {
-    e.stopPropagation();
-    onClick();
-  };
+    e.stopPropagation()
+    onClick()
+  }
   return (
     <div className={`map-btn ${isActive ? 'active-markers' : ''}`}>
       <FontAwesomeIcon

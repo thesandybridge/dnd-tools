@@ -1,17 +1,17 @@
 "use client"
 
-import { useState, useEffect } from "react";
+import { useState, useEffect } from "react"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faClipboardCheck } from "@fortawesome/free-solid-svg-icons"
 
-import styles from "./calculator.module.css";
-import Gold from "./currency_svgs/Gold";
-import Silver from "./currency_svgs/Silver";
-import Copper from "./currency_svgs/Copper";
-import Platinum from "./currency_svgs/Platinum";
-import Electrum from "./currency_svgs/Electrum";
-import { useCurrency } from "../../context/CurrencyContext";
-import { handleFocus, convertToLabel } from "./helper";
+import styles from "./calculator.module.css"
+import Gold from "./currency_svgs/Gold"
+import Silver from "./currency_svgs/Silver"
+import Copper from "./currency_svgs/Copper"
+import Platinum from "./currency_svgs/Platinum"
+import Electrum from "./currency_svgs/Electrum"
+import { useCurrency } from "../../context/CurrencyContext"
+import { handleFocus, convertToLabel } from "./helper"
 
 function convertCurrency(type, amount) {
   const rates = {
@@ -22,20 +22,20 @@ function convertCurrency(type, amount) {
     PP: { price: 1000, icon: <Platinum /> }
   }
 
-  const conversionResults = [];
+  const conversionResults = []
 
   Object.entries(rates).forEach(([key, value]) => {
     if (key !== type) {
-      const conversionAmount = ((rates[type].price / value.price) * amount).toFixed(2);
+      const conversionAmount = ((rates[type].price / value.price) * amount).toFixed(2)
       conversionResults.push({
         amount: conversionAmount,
         currency: key,
         icon: value.icon
-      });
+      })
     }
-  });
+  })
 
-  return conversionResults;
+  return conversionResults
 }
 
 const View = ({
@@ -96,28 +96,28 @@ const View = ({
 }
 
 const Calculator = () => {
-  const { currency, setCurrency } = useCurrency();
+  const { currency, setCurrency } = useCurrency()
   const [selectedCurrency, setSelectedCurrency] = useState('GP')
   const [conversionResult, setConversionResult] = useState([])
-  const [copiedIndex, setCopiedIndex] = useState(null);
+  const [copiedIndex, setCopiedIndex] = useState(null)
 
   const handleCopy = (amount, index) => {
     navigator.clipboard.writeText(amount)
       .then(() => {
-        setCopiedIndex(index);
-        setTimeout(() => setCopiedIndex(null), 2000);
+        setCopiedIndex(index)
+        setTimeout(() => setCopiedIndex(null), 2000)
       })
       .catch((err) => {
-        console.error("Failed to copy: ", err);
-      });
-  };
+        console.error("Failed to copy: ", err)
+      })
+  }
 
   const handleBlur = (e) => {
     if (e.target.value === '') {
-      setCurrency(0);
-      e.target.value = '0';
+      setCurrency(0)
+      e.target.value = '0'
     }
-  };
+  }
 
   const handleCurrencyChange = (e) => {
     const newAmount = parseFloat(e.target.value) || 0
@@ -134,8 +134,8 @@ const Calculator = () => {
   }
 
   useEffect(() => {
-    updateConversionResult(selectedCurrency, currency);
-  }, [currency, selectedCurrency]);
+    updateConversionResult(selectedCurrency, currency)
+  }, [currency, selectedCurrency])
 
   const calculatorProps = {
     conversionResult,

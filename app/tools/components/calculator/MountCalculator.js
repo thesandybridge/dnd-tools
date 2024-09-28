@@ -1,16 +1,16 @@
 "use client"
 
 import { motion, AnimatePresence } from "framer-motion"
-import styles from "./calculator.module.css";
-import { useState, useEffect, useCallback } from "react";
-import itemsData from './items.json';
+import styles from "./calculator.module.css"
+import { useState, useEffect, useCallback } from "react"
+import itemsData from './items.json'
 import {
   convertToDnDCurrency,
   formatDuration,
   handleFocus,
-} from "./helper";
-import Banner from "../Banner";
-import { useCurrency } from "../../context/CurrencyContext";
+} from "./helper"
+import Banner from "../Banner"
+import { useCurrency } from "../../context/CurrencyContext"
 
 const View = ({
   totalCost,
@@ -111,20 +111,20 @@ const View = ({
 }
 
 export default function MountCalculator() {
-  const [selectedItem, setSelectedItem] = useState('');
-  const [selectedType, setSelectedType] = useState('');
-  const [selectedFeatures, setSelectedFeatures] = useState([]);
-  const [miles, setMiles] = useState(0);
-  const [totalCost, setTotalCost] = useState(0);
-  const [totalDays, setTotalDays] = useState("");
+  const [selectedItem, setSelectedItem] = useState('')
+  const [selectedType, setSelectedType] = useState('')
+  const [selectedFeatures, setSelectedFeatures] = useState([])
+  const [miles, setMiles] = useState(0)
+  const [totalCost, setTotalCost] = useState(0)
+  const [totalDays, setTotalDays] = useState("")
 
   const { setCurrency } = useCurrency()
 
   useEffect(() => {
-    setSelectedType('');
-    setSelectedFeatures([]);
-    setTotalCost(0);
-  }, [selectedItem]);
+    setSelectedType('')
+    setSelectedFeatures([])
+    setTotalCost(0)
+  }, [selectedItem])
 
   useEffect(() => {
     setCurrency(totalCost)
@@ -133,39 +133,39 @@ export default function MountCalculator() {
   const handleFeatureChange = (feature, isChecked) => {
     setSelectedFeatures(prev =>
       isChecked ? [...prev, feature] : prev.filter(f => f !== feature)
-    );
-  };
+    )
+  }
 
   const handleBlur = () => (e) => {
     if (e.target.value === '') {
-      setMiles(0);
-      e.target.value = '0';
+      setMiles(0)
+      e.target.value = '0'
     }
-  };
+  }
 
   const calculateTotalCost = useCallback(() => {
-    const item = itemsData.find(i => i.item === selectedItem);
-    if (!item) return;
+    const item = itemsData.find(i => i.item === selectedItem)
+    if (!item) return
 
-    let cost = item.baseCost;
+    let cost = item.baseCost
 
-    const typeCost = item.types?.find(type => type.type === selectedType)?.additionalCost || 0;
-    cost += typeCost;
+    const typeCost = item.types?.find(type => type.type === selectedType)?.additionalCost || 0
+    cost += typeCost
 
     item.specials?.forEach(({ feature, additionalCost }) => {
       if (selectedFeatures.includes(feature)) {
-        cost += additionalCost;
+        cost += additionalCost
       }
-    });
+    })
 
     if (item.perDay && miles > 0) {
-      const perDayMiles = parseInt(item.perDay.split(' ')[0], 10);
-      const perMileCost = item.baseCost / perDayMiles;
-      cost += perMileCost * miles;
+      const perDayMiles = parseInt(item.perDay.split(' ')[0], 10)
+      const perMileCost = item.baseCost / perDayMiles
+      cost += perMileCost * miles
     }
 
     if (item.perDay) {
-      const [distance, _] = item.perDay.split(' ');
+      const [distance, _] = item.perDay.split(' ')
 
       if (miles < distance) {
         let hours = Math.floor(miles / distance)
@@ -184,12 +184,12 @@ export default function MountCalculator() {
       }
     }
 
-    setTotalCost(cost);
-  }, [miles, selectedFeatures, selectedItem, selectedType]);
+    setTotalCost(cost)
+  }, [miles, selectedFeatures, selectedItem, selectedType])
 
   useEffect(() => {
-    calculateTotalCost();
-  }, [selectedItem, selectedType, selectedFeatures, miles, calculateTotalCost]);
+    calculateTotalCost()
+  }, [selectedItem, selectedType, selectedFeatures, miles, calculateTotalCost])
 
   const mountCalculatorProps = {
     totalCost,
@@ -211,5 +211,5 @@ export default function MountCalculator() {
     <View
       {...mountCalculatorProps}
     />
-  );
+  )
 }

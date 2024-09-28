@@ -1,5 +1,5 @@
 import Calculator from "./components/calculator/Calculator"
-import { CurrencyProvider } from "./context/CurrencyContext";
+import { CurrencyProvider } from "./context/CurrencyContext"
 import styles from "./page.module.css"
 
 export default function ToolsLayout({ children }) {

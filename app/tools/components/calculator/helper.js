@@ -5,23 +5,23 @@
  * @returns {string} formatted string of currency
  */
 function convertToDnDCurrency(goldPieces) {
-  let totalCopper = Math.round(goldPieces * 100);
-  let gp = Math.floor(totalCopper / 100);
-  let sp = Math.floor((totalCopper % 100) / 10);
-  let cp = totalCopper % 10;
+  let totalCopper = Math.round(goldPieces * 100)
+  let gp = Math.floor(totalCopper / 100)
+  let sp = Math.floor((totalCopper % 100) / 10)
+  let cp = totalCopper % 10
 
-  let result = [];
+  let result = []
   if (gp > 0) {
-    result.push(`${gp}GP`);
+    result.push(`${gp}GP`)
   }
   if (sp > 0) {
-    result.push(`${sp}SP`);
+    result.push(`${sp}SP`)
   }
   if (cp > 0) {
-    result.push(`${cp}CP`);
+    result.push(`${cp}CP`)
   }
 
-  return result.join(' ');
+  return result.join(' ')
 }
 
 
@@ -47,9 +47,9 @@ function formatDuration(days, hours, minutes, seconds) {
 
 const handleFocus = (e) => {
   if (e.target.value === '0') {
-    e.target.value = '';
+    e.target.value = ''
   }
-};
+}
 
 function convertToLabel(symbol) {
   const symbols = {
@@ -67,5 +67,5 @@ export {
   formatDuration,
   handleFocus,
   convertToLabel,
-};
+}
 
