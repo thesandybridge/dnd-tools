@@ -1,5 +1,5 @@
 import { auth } from "@/auth"
-import { faCalculator, faHome } from "@fortawesome/free-solid-svg-icons"
+import { faCalculator, faDungeon} from "@fortawesome/free-solid-svg-icons"
 import SignIn from "./Login"
 import UserNav from "./UserNav"
 import MainNav from "./MainNav"
@@ -9,7 +9,7 @@ const routes = [
   {
     title: 'Home',
     path: '/',
-    icon: faHome
+    icon: faDungeon
   },
   {
     title: 'Tools/Calculators',
