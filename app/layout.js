@@ -1,19 +1,15 @@
-import { Inter, Italianno, Bilbo_Swash_Caps } from "next/font/google"
-import Nav from "./components/navigation/Nav"
+import { Inter } from "next/font/google"
+import Nav from "@/app/components/navigation/Nav"
 import { SessionProvider } from 'next-auth/react'
-import "./globals.css"
+import "@/app/globals.css"
 import 'leaflet/dist/leaflet.css'
 import "@fortawesome/fontawesome-svg-core/styles.css"
 import { config } from "@fortawesome/fontawesome-svg-core"
-import ThemeProvider from "./providers/ThemeProvider"
-import QueryClientProvider from "./providers/QueryClientProvider"
+import ThemeProvider from "@/app/providers/ThemeProvider"
+import QueryClientProvider from "@/app/providers/QueryClientProvider"
 config.autoAddCss = false
 
 const inter = Inter({ subsets: ["latin"] })
-const bilboSwashCaps = Bilbo_Swash_Caps({
-  weight: '400',
-  subsets: ["latin"]
-})
 
 export const metadata = {
   title: "Dungeon Syndrome",
