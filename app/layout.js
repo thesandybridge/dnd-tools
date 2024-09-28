@@ -7,6 +7,7 @@ import "@fortawesome/fontawesome-svg-core/styles.css"
 import { config } from "@fortawesome/fontawesome-svg-core"
 import ThemeProvider from "@/app/providers/ThemeProvider"
 import QueryClientProvider from "@/app/providers/QueryClientProvider"
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 config.autoAddCss = false
 
 const inter = Inter({ subsets: ["latin"] })
@@ -30,6 +31,10 @@ export default function RootLayout({ children }) {
                 <p>© {year} - made with ♥ by sandybridge</p>
               </footer>
             </ThemeProvider>
+            <ReactQueryDevtools
+              initialIsOpen={false}
+              buttonPosition="bottom-left"
+            />
           </QueryClientProvider>
         </SessionProvider>
       </body>

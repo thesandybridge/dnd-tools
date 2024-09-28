@@ -53,7 +53,7 @@ a {
     text-decoration: none;
 }
 
-input {
+input:not(.tsqd-main-panel input) {
     cursor: pointer;
     background: none;
     color: var(--fg);
@@ -63,7 +63,7 @@ input {
     font-size: 1rem;
 }
 
-select {
+select:not(.tsqd-main-panel select) {
     background: var(--bg);
     color: var(--fg);
     border: solid 1px var(--fg);
@@ -71,7 +71,12 @@ select {
     padding: 1rem;
 }
 
-button:not(.map-btn, .Toastify__close-button) {
+button:not(
+.map-btn,
+.Toastify__close-button,
+.tsqd-main-panel button,
+.tsqd-open-btn
+) {
     background-color: var(--fg);
     color: var(--bg);
     padding: 1rem;
