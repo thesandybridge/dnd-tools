@@ -53,7 +53,7 @@ a {
     text-decoration: none;
 }
 
-input:not(.tsqd-main-panel input) {
+input {
     cursor: pointer;
     background: none;
     color: var(--fg);
