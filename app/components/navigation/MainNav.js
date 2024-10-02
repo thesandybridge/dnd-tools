@@ -1,8 +1,8 @@
 'use client'
 
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import ClientIcon from "../icons/ClientIcon"
 
 export default function MainNav({route}) {
   const path = usePathname()
@@ -12,7 +12,7 @@ export default function MainNav({route}) {
   }
   return (
     <Link href={route.path}>
-      <FontAwesomeIcon
+      <ClientIcon
         className={`user-control ${activePath ? 'active' : ''}`}
         title={route.title}
         style={{ fontSize: "25px" }}

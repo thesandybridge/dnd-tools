@@ -5,10 +5,6 @@ import { faPlus } from "@fortawesome/free-solid-svg-icons"
 import styles from "./guilds.module.css"
 
 export default function GuildControls() {
-  const createGuild = () => {
-    console.log('test')
-  }
-
   const controls = [
     {
       label: "Create Guild",

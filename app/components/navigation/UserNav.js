@@ -2,17 +2,17 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faMap, faDragon } from "@fortawesome/free-solid-svg-icons"
 import { usePathname } from "next/navigation"
 import SignOut from "./Logout"
+import ClientIcon from "../icons/ClientIcon"
 
 export default function UserNav({user}) {
   const path = usePathname()
   return (
     <>
       <Link href="/guilds">
-        <FontAwesomeIcon
+        <ClientIcon
           className={`user-control ${path === '/guilds' ? 'active' : ''}`}
           title={"Guild"}
           style={{ fontSize: "25px" }}
@@ -20,7 +20,7 @@ export default function UserNav({user}) {
         />
       </Link>
       <Link href="/map">
-        <FontAwesomeIcon
+        <ClientIcon
           className={`user-control ${path === '/map' ? 'active' : ''}`}
           title={"Map"}
           style={{ fontSize: "25px" }}

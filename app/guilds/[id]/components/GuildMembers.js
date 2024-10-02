@@ -33,7 +33,6 @@ export default function GuildMembers({ userId }) {
   const handleDeleteClick = (e, memberId) => {
     e.stopPropagation()
     e.preventDefault()
-    console.log(memberId)
     deleteMemberMutate(memberId)
   }
 

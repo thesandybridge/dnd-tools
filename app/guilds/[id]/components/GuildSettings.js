@@ -16,7 +16,8 @@ export default function GuildSettings({userId}) {
     mutationFn: deleteGuild,
     onSuccess: () => {
       router.push('/guilds')
-      queryClient.invalidateQueries(['guilds', guildData.guild_id])
+      queryClient.invalidateQueries('guilds')
+      queryClient.invalidateQueries(['guild', userId])
     },
     onError: (err) => {
       console.error("Error deleting guild:", err)

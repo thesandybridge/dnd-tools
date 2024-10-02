@@ -16,8 +16,7 @@ export default function GuildAddMember() {
       }
       return addMember(guildData.guild_id, newMember.id)
     },
-    onSuccess: (data) => {
-      console.log(data)
+    onSuccess: () => {
       queryClient.invalidateQueries(['guild', 'members', guildData.guild_id])
     },
     onError: (err) => {
