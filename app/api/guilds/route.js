@@ -1,7 +1,7 @@
 import { auth } from "@/auth"
 import { createClient } from '@supabase/supabase-js'
 
-export const GET = auth(async function PATCH(request, { params }) {
+export const GET = auth(async function PATCH(request) {
   let session
   try {
     session = request.auth
@@ -35,13 +35,14 @@ export const GET = auth(async function PATCH(request, { params }) {
   )
 
   try {
-    const { id } = params
-
     const { data, error } = await supabase
-      .from('users')
-      .select("*")
-      .eq('id', id)
-      .single()
+      .from('guilds')
+      .select(`
+        id,
+        name,
+        owner ( name, id ),
+        guild_id
+      `)
 
     if (error) {
       throw new Error(error.message)
@@ -54,9 +55,9 @@ export const GET = auth(async function PATCH(request, { params }) {
       }
     })
   } catch (error) {
-    console.error('Failed to fetch user data:', error.message)
+    console.error('Failed to fetch guilds:', error.message)
     return new Response(JSON.stringify({
-      error: 'Failed to fetch user data',
+      error: 'Failed to fetch guilds',
       details: error.message
     }), {
       status: 500,
@@ -67,7 +68,7 @@ export const GET = auth(async function PATCH(request, { params }) {
   }
 })
 
-export const PATCH = auth(async function PATCH(request, { params }) {
+export const POST = auth(async function POST(request) {
   let session
   try {
     session = request.auth
@@ -101,32 +102,44 @@ export const PATCH = auth(async function PATCH(request, { params }) {
   )
 
   try {
-    const { id } = params
     const requestData = await request.json()
-    const { userData } = requestData
+    const { guildData } = requestData
 
-    const { data, error } = await supabase
-      .from('users')
-      .update({
-        color: userData.color
+    const { data: newGuildData, error: guildError } = await supabase
+      .from('guilds')
+      .insert({
+        name: guildData.name,
+        owner: guildData.owner
       })
-      .eq('id', id)
       .select()
+      .single()
 
-    if (error) {
-      throw new Error(error.message)
+    if (guildError) {
+      throw new Error(guildError.message)
     }
 
-    return new Response(JSON.stringify(data), {
+    const { data: memberData, error: memberError } = await supabase
+      .from('guild_members')
+      .insert({
+        guild_id: newGuildData.guild_id,
+        user_id: newGuildData.owner,
+        role: 'owner'
+      })
+
+    if (memberError) {
+      throw new Error(memberError.message)
+    }
+
+    return new Response(JSON.stringify(newGuildData), {
       status: 200,
       headers: {
         'Content-Type': 'application/json'
       }
     })
   } catch (error) {
-    console.error('Failed to update user color:', error.message)
+    console.error('Failed to add guild:', error.message)
     return new Response(JSON.stringify({
-      error: 'Failed to update user color',
+      error: 'Failed to add guild',
       details: error.message
     }), {
       status: 500,

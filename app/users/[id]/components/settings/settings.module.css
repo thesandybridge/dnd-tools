@@ -1,0 +1,9 @@
+.colorPicker {
+  min-width: 25vw;
+}
+
+.userForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}

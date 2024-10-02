@@ -1,14 +1,13 @@
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
-import UserComponent from "../components/user/UserComponent"
+import GuildSettings from "../components/GuildSettings";
 
-export default async function User() {
+export default async function Page() {
   const session = await auth()
   if (!session?.user) {
     redirect('/')
   }
-
   return (
-    <UserComponent user={session?.user}/>
+    <GuildSettings userId={session.user.id} />
   )
 }

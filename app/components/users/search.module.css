@@ -1,0 +1,31 @@
+.searchForm {
+  display: flex;
+  position: relative;
+  gap: 1rem;
+}
+
+.searchInput {}
+
+.resultsDropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 99;
+  background-color: var(--bg);
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 1rem .5rem;
+  border: 1px solid var(--fg);
+  border-top: none;
+}
+
+.resultsItem {
+  list-style-type: none;
+  padding: 0.5rem;
+}
+
+.resultsItem:hover {
+  background-color: var(--hover-bg); /* Optional: Hover effect for list items */
+}

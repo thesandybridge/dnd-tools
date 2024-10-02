@@ -1,0 +1,95 @@
+.table {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  border: 1px solid var(--fg);
+}
+
+.tableHead {
+  display: flex;
+  width: 100%;
+  border-bottom: 1px solid var(--fg);
+}
+
+.tableBody {
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+}
+
+.tableRow {
+  display: flex;
+  width: 100%;
+}
+
+.tableHead .tableRow {
+  background-color: rgba(var(--fg-rgb), .2);
+}
+
+.tableBody .tableRow:nth-child(even) {
+  background-color: rgba(var(--fg-rgb), .2);
+}
+
+.tableRow:not(:last-child) {
+  border-bottom: 1px solid var(--fg);
+}
+
+.dataWrapper {
+  flex: 1;
+}
+
+.tableHeader, .tableData {
+  padding: 1rem;
+  flex: 1;
+  display: flex;
+}
+
+.tableHeader {
+  font-weight: bold;
+}
+
+/* Apply hover effect with higher specificity to override the nth-child background color */
+.tableBody .tableRow:hover {
+  background-color: rgba(var(--fg-rgb), .3) !important; /* Use !important to ensure it overrides the nth-child background */
+}
+
+.createGuild {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.currentUser {
+  color: var(--alt);
+}
+
+.guildNav {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.guildNavIcon {
+  color: var(--fg);
+}
+
+.guildNavButton {
+  border: solid 1px var(--fg);
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  background-color: rgba(var(--fg-rgb), .2);
+  cursor: pointer;
+}
+
+.guildActionBtns {
+  background-color: rgba(var(--danger-rgb), .4);
+  border: solid 1px var(--danger);
+  color: var(--danger);
+  border-radius: 10px;
+  padding: .25rem;
+  cursor: pointer;
+}
