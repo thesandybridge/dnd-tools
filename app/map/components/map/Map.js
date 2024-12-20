@@ -109,7 +109,7 @@ export default function MapComponent({ user_id }) {
     [0, 15360],
   ];
 
-  const mapCenter = [-100, 125];
+  const mapCenter = [-75, 125];
   const resolutions = [64, 32, 16, 8, 4, 2];
 
   const mutateAddMarker = useMutation({
@@ -234,10 +234,10 @@ export default function MapComponent({ user_id }) {
       bounds={mapBounds}
       center={mapCenter}
       className={`mapContainer crosshair`}
-      zoom={2}
+      zoom={2.5}
       minZoom={0}
       maxZoom={resolutions.length - 1}
-      zoomSnap={1}
+      zoomSnap={.5}
       zoomDelta={1}
       style={{
         height: '85vh',
