@@ -10,7 +10,7 @@ const DMButton = ({ onClick, isActive }) => {
   return (
     <div className={`map-btn ${isActive ? 'active-markers' : ''}`}>
       <FontAwesomeIcon
-        title={"Ruler"}
+        title={"DM Map"}
         onClick={handleClick}
         style={{ fontSize: "25px" }}
         icon={faHatWizard}
