@@ -234,10 +234,10 @@ export default function MapComponent({ user_id }) {
       bounds={mapBounds}
       center={mapCenter}
       className={`mapContainer crosshair`}
-      zoom={2.5}
+      zoom={2}
       minZoom={0}
       maxZoom={resolutions.length - 1}
-      zoomSnap={.5}
+      zoomSnap={1}
       zoomDelta={1}
       style={{
         height: '85vh',
