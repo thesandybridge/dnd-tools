@@ -8,6 +8,7 @@ import { addMember } from "@/lib/members"
 export default function GuildAddMember() {
   const { guildData } = useGuild()
   const queryClient = useQueryClient()
+  const key = ['guild', 'members', guildData.guild_id]
 
   const { mutate: addMemberMutate, isLoading: isAdding, error } = useMutation({
     mutationFn: async (newMember) => {
@@ -16,12 +17,22 @@ export default function GuildAddMember() {
       }
       return addMember(guildData.guild_id, newMember.id)
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['guild', 'members', guildData.guild_id])
+    onMutate: async (newMember) => {
+      await queryClient.cancelQueries(key)
+
+      const previousMembers = queryClient.getQueryData(key)
+
+      queryClient.setQueryData(key, (oldMembers = []) => [
+        ...oldMembers,
+        { ...newMember, isOptimistic: true }
+      ])
+
+      return { previousMembers }
     },
-    onError: (err) => {
-      console.error("Error adding member:", err)
-    }
+    onError: (err, _, context) => {
+      queryClient.setQueryData(key, context.previousMembers)
+      console.error("Error adding member:", err.message)
+    },
   })
 
   const handleSubmit = (selectedUser) => {

@@ -16,17 +16,28 @@ export default function GuildsTable({ userId, isUserProfile = false }) {
 
   const { data, error, isLoading } = useQuery({
     queryKey: GUILDS_KEY,
-    queryFn: () => (isUserProfile ? fetchGuildsByUser(userId) : fetchGuilds())
+    queryFn: () => (isUserProfile ? fetchGuildsByUser(userId) : fetchGuilds()),
+    refetchOnWindowFocus: false
   })
 
   const { mutate: deleteGuildMutate, isLoading: isDeleting } = useMutation({
     mutationFn: deleteGuild,
-    onSuccess: () => {
-      queryClient.invalidateQueries(GUILDS_KEY)
+    onMutate: async (guildId) => {
+      await queryClient.cancelQueries(GUILDS_KEY)
+
+      const previousGuilds = queryClient.getQueryData(GUILDS_KEY)
+
+      queryClient.setQueryData(GUILDS_KEY, oldGuilds =>
+        oldGuilds?.filter(guild => guild.id !== guildId) || []
+      )
+
+      return { previousGuilds }
     },
-    onError: (err) => {
-      console.error("Error deleting guild:", err)
-    }
+    onError: (err, _, context) => {
+      queryClient.setQueryData(GUILDS_KEY, context.previousGuilds)
+      console.error("Failed to delete guild:", err.message)
+      alert("Failed to delete the guild. Please try again.")
+    },
   })
 
   const columnHelper = createColumnHelper()

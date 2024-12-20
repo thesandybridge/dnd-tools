@@ -18,12 +18,18 @@ export default function CreateGuild({ userId }) {
     mutationFn: async () => {
       return createGuild(formData)
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries('guilds')
-      setFormData({
-        name: "",
-        owner: userId
-      })
+    onSettled: (newGuild, err) => {
+      if (newGuild) {
+        // Update the cache with the new guild
+        queryClient.setQueryData('guilds', (oldGuilds = []) => [
+          ...oldGuilds,
+          newGuild
+        ])
+      } else if (err) {
+        console.error("Error creating guild:", err.message)
+      }
+      // Reset the form
+      setFormData({ name: "", owner: userId })
     },
     onError: (err) => {
       console.error("Error updating guild:", err)

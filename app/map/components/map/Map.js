@@ -1,6 +1,6 @@
 "use client"
 
-import { memo, useMemo, useState } from "react"
+import { memo, useEffect, useMemo, useState } from "react"
 import {
   MapContainer,
   TileLayer,
@@ -19,6 +19,7 @@ import { calculateDistance } from "./utils"
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fetchMarkers, addMarker, removeMarker, updateMarkerDistance } from '@/lib/markers'
 import { useTheme } from "@/app/providers/ThemeProvider"
+import DMButton from "./DMButton"
 
 const RulerHandler = memo(({ addRulerPoint }) => {
   const map = useMap()
@@ -61,10 +62,15 @@ MarkerHandler.displayName = 'MarkerHandler'
 export default function MapComponent({ user_id }) {
   const queryClient = useQueryClient()
 
+  const standard_map_tiles_path = "/api/eberron"
+  const dm_map_tiles_path = "/api/eberron-dm"
+
   const [lastMarkerId, _] = useState(null)
   const [rulerHandler, setRulerHandler] = useState(false)
   const [markerHandler, setMarkerHandler] = useState(false)
+  const [dmHandler, setDMHandler] = useState(false)
   const [rulerPoints, setRulerPoints] = useState([])
+  const [url, setUrl] = useState(standard_map_tiles_path)
   const { theme } = useTheme()
 
   function svgToBase64(svgString) {
@@ -98,13 +104,13 @@ export default function MapComponent({ user_id }) {
     queryFn: fetchMarkers,
   })
 
-  //const url= "/images/eberron" // for local development
-  const url = "/api/tiles"
-
   const mapBounds = [
-    [19.25, 200],
-    [-172.25, -123.5],
-  ]
+    [-9674, 0],
+    [0, 15360],
+  ];
+
+  const mapCenter = [-100, 125];
+  const resolutions = [64, 32, 16, 8, 4, 2];
 
   const mutateAddMarker = useMutation({
     mutationFn: addMarker,
@@ -121,9 +127,6 @@ export default function MapComponent({ user_id }) {
     onError: (err, _, context) => {
       queryClient.setQueryData(['markers'], context.previousMarkers)
       console.error("Failed to add marker:", err.message)
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries(['markers'])
     }
   })
 
@@ -167,13 +170,14 @@ export default function MapComponent({ user_id }) {
       queryClient.setQueryData(['markers'], context.previousMarkers)
       console.error(`Failed to remove marker: ${markerId}`, err.message)
     },
-    onSettled: () => {
-      queryClient.invalidateQueries(['markers'])
-    }
   })
 
   const toggleMarkers = () => {
     setMarkerHandler(prev => !prev)
+  }
+
+  const toggleDM = () => {
+    setDMHandler(prev => !prev)
   }
 
   const toggleRuler = () => {
@@ -197,6 +201,14 @@ export default function MapComponent({ user_id }) {
     mutateAddMarker.mutate(newMarker)
   }
 
+  useEffect(() => {
+    if (dmHandler) {
+      setUrl(dm_map_tiles_path)
+    } else {
+      setUrl(standard_map_tiles_path)
+    }
+  }, [dmHandler])
+
   const memoizedMarkers = useMemo(() => markers.map((marker, idx) => (
     <Marker
       position={marker.position}
@@ -219,13 +231,14 @@ export default function MapComponent({ user_id }) {
 
   return (
     <MapContainer
-      center={[-80, 117]}
+      bounds={mapBounds}
+      center={mapCenter}
       className={`mapContainer crosshair`}
       zoom={2}
-      minZoom={2}
-      maxZoom={5}
-      bounds={mapBounds}
-      zoomSnap={0.5}
+      minZoom={0}
+      maxZoom={resolutions.length - 1}
+      zoomSnap={1}
+      zoomDelta={1}
       style={{
         height: '85vh',
         width: '100%',
@@ -235,9 +248,7 @@ export default function MapComponent({ user_id }) {
       <TileLayer
         url={`${url}/{z}/{x}/{y}.png`}
         noWrap={true}
-        tms={false}
         tileSize={256}
-        bounds={mapBounds}
       />
       {memoizedMarkers}
       {markers && (
@@ -272,6 +283,7 @@ export default function MapComponent({ user_id }) {
       <CustomControls position="topleft" className="custom-controls">
         <MarkerButton onClick={toggleMarkers} isActive={markerHandler} />
         <RulerButton onClick={toggleRuler} isActive={rulerHandler} />
+        <DMButton onClick={toggleDM} isActive={dmHandler} />
       </CustomControls>
       {markerHandler && (
         <MarkerHandler
