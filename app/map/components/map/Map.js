@@ -240,7 +240,7 @@ export default function MapComponent({ user_id }) {
       zoomSnap={1}
       zoomDelta={1}
       style={{
-        height: '85vh',
+        height: '85dvh',
         width: '100%',
       }}
       crs={L.CRS.Simple}
