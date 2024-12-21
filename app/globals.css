@@ -121,6 +121,7 @@ nav {
 
 h2 {
   text-align: center;
+  text-shadow: var(--alt) 1px 0 2px;
 }
 
 
