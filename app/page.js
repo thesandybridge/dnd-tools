@@ -36,22 +36,26 @@ export default function Home() {
         {chars.map((char, idx) => {
           const classType = styles[char.type]
           return (
-            <a key={idx} href={`https://www.dndbeyond.com/characters/${char.id}`} target="_blank">
-              <div className={styles.character}>
-                <Image
-                  className={`${styles.profile} ${classType}`}
-                  width={50}
-                  height={50}
-                  alt={char.name}
-                  src={`/images/${char.id}.png`} />
-                <div>
-                  <h3>{char.name}</h3>
-                  <span className={classType}>{char.type}</span>
-                </div>
+              <div key={idx} className={styles.characterWrapper}>
+                <a
+                  href={`https://www.dndbeyond.com/characters/${char.id}`}
+                  target="_blank"
+                  className={styles.character}
+                >
+                  <Image
+                    className={`${styles.profile} ${classType}`}
+                    width={50}
+                    height={50}
+                    alt={char.name}
+                    src={`/images/${char.id}.png`} />
+                  <div>
+                    <h3>{char.name}</h3>
+                    <span className={classType}>{char.type}</span>
+                  </div>
+                </a>
               </div>
-            </a>
-          )
-        }
+            )
+          }
         )}
       </div>
     </main>
