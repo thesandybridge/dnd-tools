@@ -57,6 +57,38 @@ const MarkerHandler = memo(({ markers, lastMarkerId, addMarker }) => {
   return null
 })
 
+const DebugLogger = () => {
+  const map = useMap();
+
+  useEffect(() => {
+    const logMapDetails = () => {
+      console.log("Center:", map.getCenter());
+      console.log("Bounds:", map.getBounds());
+      console.log("Zoom:", map.getZoom());
+    };
+
+    // Log initial state
+    logMapDetails();
+
+    // Add event listeners
+    map.on('move', logMapDetails); // Log on pan/zoom
+    map.on('zoomend', logMapDetails);
+
+    map.on('tileerror', (error) => {
+      console.log("Tile Load Error:", error.coords);
+    });
+
+    // Cleanup listeners on unmount
+    return () => {
+      map.off('move', logMapDetails);
+      map.off('zoomend', logMapDetails);
+      map.off('tileerror');
+    };
+  }, [map]);
+
+  return null;
+};
+
 MarkerHandler.displayName = 'MarkerHandler'
 
 export default function MapComponent({ user_id }) {
@@ -110,7 +142,6 @@ export default function MapComponent({ user_id }) {
   ];
 
   const mapCenter = [-75, 125];
-  const resolutions = [64, 32, 16, 8, 4, 2];
 
   const mutateAddMarker = useMutation({
     mutationFn: addMarker,
@@ -233,12 +264,16 @@ export default function MapComponent({ user_id }) {
     <MapContainer
       bounds={mapBounds}
       center={mapCenter}
+      fadeAnimation={true}
+      markerZoomAnimation={true}
+      zoomAnimation={true}
       className={`mapContainer crosshair`}
-      zoom={2}
-      minZoom={0}
-      maxZoom={resolutions.length - 1}
+      zoom={3}
+      minZoom={2}
+      maxZoom={5}
       zoomSnap={1}
-      zoomDelta={1}
+      preferCanvas={true}
+      attributionControl={false}
       style={{
         height: '85dvh',
         width: '100%',
@@ -249,6 +284,10 @@ export default function MapComponent({ user_id }) {
         url={`${url}/{z}/{x}/{y}.png`}
         noWrap={true}
         tileSize={256}
+        bounds={mapBounds}
+        tms={false}
+        maxNativeZoom={5}
+        minNativeZoom={0}
       />
       {memoizedMarkers}
       {markers && (

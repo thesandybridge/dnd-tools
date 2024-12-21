@@ -304,10 +304,6 @@ label:not(.rcp-field-label, .themeSwitch) {
   filter: grayscale(0)
 }
 
-.leaflet-control-attribution {
-  display: none !important;
-}
-
 .back:hover svg {
   transform: translateX(-30%);
   transition: transform 0.3s ease;
