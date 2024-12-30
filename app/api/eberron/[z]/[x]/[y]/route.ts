@@ -20,7 +20,7 @@ export async function GET(_, { params }) {
   try {
     const { Body } = await s3Client.send(command)
 
-    return new Response(Body, {
+    return new Response(Body as BodyInit, {
       status: 200,
       headers: {
         'Content-Type': 'image/png'
