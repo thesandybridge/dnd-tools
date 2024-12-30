@@ -1,4 +1,5 @@
 import { auth } from "@/auth"
+import { Marker } from "@/lib/markers"
 import { createClient } from '@supabase/supabase-js'
 import { redirect } from 'next/navigation'
 
@@ -92,18 +93,20 @@ export const POST = auth(async function POST(request) {
   )
 
   try {
-    const requestData = await request.json()
-    const { position, prev_marker, distance } = requestData
+    const requestData: Marker = await request.json()
+    const { position, prev_marker, distance, uuid } = requestData
 
     const { data, error } = await supabase
       .from('markers')
       .insert([{
+        uuid: uuid,
         user_id: session.user.id,
         position: position,
         distance: distance,
         prev_marker: prev_marker
       }])
-      .select()
+      .select("*")
+      .single()
 
 
     if (error) {

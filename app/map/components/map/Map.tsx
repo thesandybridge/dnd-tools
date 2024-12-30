@@ -20,6 +20,10 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { fetchMarkers, addMarker, removeMarker, updateMarkerDistance } from '@/lib/markers'
 import { useTheme } from "@/app/providers/ThemeProvider"
 import DMButton from "./DMButton"
+import useRemoveMarkerMutation from "../../hooks/useRemoveMarkerMutation"
+import useAddMarkerMutation from "../../hooks/useAddMarkerMutation"
+import { svgToBase64, uuid } from "@/utils/helpers"
+import useGetMarkers from "../../hooks/useGetMarkers"
 
 const RulerHandler = memo(({ addRulerPoint }) => {
   const map = useMap()
@@ -42,6 +46,7 @@ const MarkerHandler = memo(({ markers, lastMarkerId, addMarker }) => {
     click: (e) => {
       if (map.getBounds().contains(e.latlng)) {
         const newMarker = {
+          uuid: uuid(),
           position: e.latlng,
           distance: markers.length > 0
             ? calculateDistance(markers[markers.length - 1].position, e.latlng)
@@ -92,7 +97,11 @@ const DebugLogger = () => {
 MarkerHandler.displayName = 'MarkerHandler'
 
 export default function MapComponent({ user_id }) {
-  const queryClient = useQueryClient()
+  const { theme } = useTheme()
+
+  const mutateAddMarker = useAddMarkerMutation();
+  const mutateRemoveMarker = useRemoveMarkerMutation();
+  const { data: markers = [] } = useGetMarkers();
 
   const standard_map_tiles_path = "/api/eberron"
   const dm_map_tiles_path = "/api/eberron-dm"
@@ -103,11 +112,6 @@ export default function MapComponent({ user_id }) {
   const [dmHandler, setDMHandler] = useState(false)
   const [rulerPoints, setRulerPoints] = useState([])
   const [url, setUrl] = useState(standard_map_tiles_path)
-  const { theme } = useTheme()
-
-  function svgToBase64(svgString) {
-    return `data:image/svg+xml;base64,${btoa(encodeURIComponent(svgString).replace(/%([0-9A-F]{2})/g, (_, p1) => String.fromCharCode('0x' + p1)))}`
-  }
 
   const customIcon = useMemo(() => {
     const svgString = `
@@ -131,77 +135,12 @@ export default function MapComponent({ user_id }) {
     })
   }, [theme.primaryColor])
 
-  const { data: markers = [] } = useQuery({
-    queryKey: ['markers'],
-    queryFn: fetchMarkers,
-  })
-
   const mapBounds = [
     [-9674, 0],
     [0, 15360],
   ];
 
   const mapCenter = [-75, 125];
-
-  const mutateAddMarker = useMutation({
-    mutationFn: addMarker,
-    onMutate: async (newMarker) => {
-      await queryClient.cancelQueries(['markers'])
-
-      const previousMarkers = queryClient.getQueryData(['markers'])
-
-      const optimisticNewMarker = { ...newMarker, id: Date.now() }
-      queryClient.setQueryData(['markers'], (oldMarkers = []) => [...oldMarkers, optimisticNewMarker])
-
-      return { previousMarkers }
-    },
-    onError: (err, _, context) => {
-      queryClient.setQueryData(['markers'], context.previousMarkers)
-      console.error("Failed to add marker:", err.message)
-    }
-  })
-
-  const mutateRemoveMarker = useMutation({
-    mutationFn: removeMarker,
-    onMutate: async (markerId) => {
-      await queryClient.cancelQueries(['markers'])
-
-      const previousMarkers = queryClient.getQueryData(['markers'])
-
-      // Optimistically update the markers by removing the deleted marker
-      const updatedMarkers = previousMarkers.filter(marker => marker.id !== markerId)
-
-      // Check if we need to update the marker relationships (prev_marker, distance)
-      const markerToRemove = previousMarkers.find(marker => marker.id === markerId)
-      const affectedMarker = previousMarkers.find(marker => marker.prev_marker === markerId)
-
-      if (affectedMarker && markerToRemove) {
-        const newPrevMarker = previousMarkers.find(marker => marker.id === markerToRemove.prev_marker)
-
-        // Update the affected marker's distance and prev_marker
-        const updatedDistance = newPrevMarker
-          ? calculateDistance(newPrevMarker.position, affectedMarker.position)
-          : "Start"
-
-        // Update the affected marker
-        queryClient.setQueryData(['markers'], updatedMarkers.map(marker =>
-          marker.id === affectedMarker.id
-            ? { ...marker, prev_marker: markerToRemove.prev_marker, distance: updatedDistance }
-            : marker
-        ))
-
-        updateMarkerDistance(affectedMarker.id, updatedDistance)
-      } else {
-        queryClient.setQueryData(['markers'], updatedMarkers)
-      }
-
-      return { previousMarkers }
-    },
-    onError: (err, markerId, context) => {
-      queryClient.setQueryData(['markers'], context.previousMarkers)
-      console.error(`Failed to remove marker: ${markerId}`, err.message)
-    },
-  })
 
   const toggleMarkers = () => {
     setMarkerHandler(prev => !prev)
@@ -240,18 +179,18 @@ export default function MapComponent({ user_id }) {
     }
   }, [dmHandler])
 
-  const memoizedMarkers = useMemo(() => markers.map((marker, idx) => (
+  const memoizedMarkers = useMemo(() => markers.map((marker) => (
     <Marker
       position={marker.position}
-      key={idx}
+      key={marker.uuid}
       icon={customIcon}
     >
       <Popup>
         <div className="popupContent">
-          {idx === 0 ? "Starting Point" : `Marker ${idx + 1} - ${marker.distance} miles from last marker`}
+          {marker.distance === "Start" ? "Starting Point" : `Marker - ${marker.distance} miles from last marker`}
           <button onClick={(e) => {
             e.stopPropagation()
-            mutateRemoveMarker.mutate(marker.id)
+            mutateRemoveMarker.mutate(marker.uuid)
           }}>
             Delete Marker
           </button>

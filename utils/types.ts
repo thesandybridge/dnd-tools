@@ -1,4 +1,4 @@
-import { randomUUID } from 'crypto';
-const uuid = randomUUID();
+import { uuid } from "./helpers";
+const temp = uuid()
 
-export type UUID = typeof uuid;
+export type UUID = typeof temp

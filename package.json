@@ -32,7 +32,8 @@
     "react-dom": "^18",
     "react-leaflet": "^4.2.1",
     "react-modal": "^3.16.1",
-    "react-toastify": "^10.0.5"
+    "react-toastify": "^10.0.5",
+    "uuid": "^11.0.3"
   },
   "devDependencies": {
     "@tanstack/eslint-plugin-query": "^5.56.1",

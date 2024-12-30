@@ -1,4 +1,22 @@
-export async function fetchMarkers() {
+import { UUID } from "@/utils/types"
+
+export interface Position {
+  lat: string,
+  lng: string,
+}
+
+export interface Marker {
+  id: number,
+  uuid: UUID,
+  created_at?: string,
+  user_id?: UUID,
+  prev_marker?: number | null,
+  position?: Position,
+  distance?: string | number,
+	text?: string,
+}
+
+export async function fetchMarkers(): Promise<Marker[]> {
     const response = await fetch('/api/markers')
     if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)
@@ -6,7 +24,7 @@ export async function fetchMarkers() {
     return response.json()
 }
 
-export async function addMarker(marker) {
+export async function addMarker(marker: Marker): Promise<Marker> {
     const response = await fetch('/api/markers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -18,7 +36,7 @@ export async function addMarker(marker) {
     return response.json()
 }
 
-export async function removeMarker(markerId) {
+export async function removeMarker(markerId: UUID): Promise<Marker> {
     const response = await fetch(`/api/markers/${markerId}`, {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
@@ -29,7 +47,7 @@ export async function removeMarker(markerId) {
     return response.json()
 }
 
-export async function updateMarkerDistance(markerId, newDistance) {
+export async function updateMarkerDistance(markerId: UUID, newDistance: number): Promise<Marker> {
     const response = await fetch(`/api/markers/${markerId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },

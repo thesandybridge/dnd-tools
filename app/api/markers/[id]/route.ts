@@ -39,7 +39,7 @@ export const DELETE = auth(async function DELETE(request, { params }) {
 
     const { data: referencingMarkers, error: referencingError } = await supabase
       .from('markers')
-      .select('id')
+      .select('uuid')
       .eq('prev_marker', id)
 
     if (referencingError) {
@@ -50,7 +50,7 @@ export const DELETE = auth(async function DELETE(request, { params }) {
     const { data: marker, error: fetchError } = await supabase
       .from('markers')
       .select('prev_marker')
-      .eq('id', id)
+      .eq('uuid', id)
       .single()
 
     if (fetchError || !marker) {
@@ -73,7 +73,7 @@ export const DELETE = auth(async function DELETE(request, { params }) {
     const { error: deleteError } = await supabase
       .from('markers')
       .delete()
-      .eq('id', id)
+      .eq('uuid', id)
 
     if (deleteError) {
       throw new Error(deleteError.message)
