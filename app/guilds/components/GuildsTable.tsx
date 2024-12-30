@@ -8,6 +8,7 @@ import { fetchGuilds, deleteGuild } from "@/lib/guilds"
 import { fetchGuildsByUser } from "@/lib/users"
 
 import styles from "./guilds.module.css"
+import OwnerChip from './OwnerChip'
 
 export default function GuildsTable({ userId, isUserProfile = false }) {
   const queryClient = useQueryClient()
@@ -60,16 +61,12 @@ export default function GuildsTable({ userId, isUserProfile = false }) {
     columnHelper.accessor('owner.name', {
       header: 'Owner',
       cell: info => {
-        const isOwner = info.row.original.owner.id === userId
-        return isOwner ? (
-          <Link
-            href={`/users/${userId}`}
-            className={`${styles.currentUser} ${styles.tableData}`}>
-            {info.getValue()}
-          </Link>
-        ) : (
-          <span className={styles.tableData}>{info.getValue()}</span>
-        )
+        const isOwner = info.row.original.owner === userId
+        return <OwnerChip
+          userId={info.row.original.owner}
+          isOwner={isOwner}
+          className={styles.tableData}
+        />
       },
     }),
     ...(isUserProfile ? [

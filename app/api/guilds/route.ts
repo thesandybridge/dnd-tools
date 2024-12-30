@@ -40,7 +40,7 @@ export const GET = auth(async function PATCH(request: Request) {
       .select(`
         id,
         name,
-        owner ( name, id ),
+        owner,
         guild_id
       `)
 

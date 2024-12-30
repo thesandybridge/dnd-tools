@@ -36,7 +36,7 @@ export const GET = auth(async function GET(request, { params }) {
     const { id } = params
     const { data, error } = await supabase
       .from('guilds')
-      .select('id, name, guild_id, owner ( name, id )')
+      .select('id, name, guild_id, owner')
       .eq('owner', id)
 
     if (error) {

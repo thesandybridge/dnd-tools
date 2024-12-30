@@ -5,38 +5,15 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Guild, createGuild } from "@/lib/guilds"
 
 import styles from "./guilds.module.css"
+import { uuid } from "@/utils/helpers"
+import useCreateGuildMutation from "../hooks/useCreateGuildMutation"
 
-export default function CreateGuild({ userId }) {
-  const [formData, setFormData] = useState<Guild>({
-    name: "",
-    owner: userId
-  })
+export default function CreateGuild({ userId }: { userId: string }) {
+  const { formData, setFormData, createGuild, mutation } = useCreateGuildMutation(userId);
+  const { isLoading, error } = mutation
 
-  const queryClient = useQueryClient()
 
-  const { mutate, isLoading, error } = useMutation({
-    mutationFn: async () => {
-      return createGuild(formData)
-    },
-    onSettled: (newGuild, err) => {
-      if (newGuild) {
-        // Update the cache with the new guild
-        queryClient.setQueryData('guilds', (oldGuilds = []) => [
-          ...oldGuilds,
-          newGuild
-        ])
-      } else if (err) {
-        console.error("Error creating guild:", err.message)
-      }
-      // Reset the form
-      setFormData({ name: "", owner: userId })
-    },
-    onError: (err) => {
-      console.error("Error updating guild:", err)
-    }
-  })
-
-  const handleChange = (e) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData(prevState => ({
       ...prevState,
@@ -44,13 +21,13 @@ export default function CreateGuild({ userId }) {
     }))
   }
 
-  const handleCreateGuild = (e) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    mutate()
+    createGuild(formData)
   }
 
   return (
-    <form className={styles.createGuild} onSubmit={handleCreateGuild}>
+    <form className={styles.createGuild} onSubmit={handleSubmit}>
       <input
         type="text"
         name="name"
