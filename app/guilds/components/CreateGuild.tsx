@@ -2,12 +2,12 @@
 
 import { useState } from "react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { createGuild } from "@/lib/guilds"
+import { Guild, createGuild } from "@/lib/guilds"
 
 import styles from "./guilds.module.css"
 
 export default function CreateGuild({ userId }) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<Guild>({
     name: "",
     owner: userId
   })

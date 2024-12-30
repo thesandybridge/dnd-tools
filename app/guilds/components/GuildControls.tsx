@@ -2,6 +2,7 @@
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faPlus } from "@fortawesome/free-solid-svg-icons"
+import { createGuild } from "@/lib/guilds"
 import styles from "./guilds.module.css"
 
 export default function GuildControls() {

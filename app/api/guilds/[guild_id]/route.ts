@@ -1,7 +1,8 @@
 import { auth } from "@/auth"
 import { createClient } from '@supabase/supabase-js'
+import { type NextRequest } from "next/server"
 
-export const GET = auth(async function PATCH(request, { params }) {
+export const GET = auth(async function PATCH(request: NextRequest, { params }) {
   let session
   try {
     session = request.auth

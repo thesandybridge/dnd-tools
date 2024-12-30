@@ -1,4 +1,14 @@
-export async function createGuild(guildData) {
+import { UUID } from "../utils/types"
+
+export interface Guild {
+  id: number,
+  timestamp?: string,
+  owner?: UUID,
+  name: string,
+  guild_id?: UUID,
+}
+
+export async function createGuild(guildData: Guild): Promise<Guild> {
   const response = await fetch(`/api/guilds`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -8,7 +18,7 @@ export async function createGuild(guildData) {
   return response.json()
 }
 
-export async function updateGuild(guildId, guildData) {
+export async function updateGuild(guildId: UUID, guildData: Guild): Promise<Guild> {
   const response = await fetch(`/api/guilds/${guildId}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
@@ -18,7 +28,7 @@ export async function updateGuild(guildId, guildData) {
   return response.json()
 }
 
-export async function fetchGuild(guildId) {
+export async function fetchGuild(guildId: UUID): Promise<Guild> {
   const response = await fetch(`/api/guilds/${guildId}`, {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' },
@@ -29,7 +39,7 @@ export async function fetchGuild(guildId) {
 
 
 
-export async function fetchGuilds() {
+export async function fetchGuilds(): Promise<Guild[]> {
   const response = await fetch(`/api/guilds`, {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' },
@@ -38,7 +48,7 @@ export async function fetchGuilds() {
   return response.json()
 }
 
-export async function deleteGuild(guildId) {
+export async function deleteGuild(guildId: UUID): Promise<Guild> {
   const response = await fetch(`/api/guilds/${guildId}`, {
     method: 'DELETE',
     headers: { 'Content-Type': 'application/json' },
