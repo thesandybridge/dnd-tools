@@ -1,32 +1,15 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import { deleteMember } from "@/lib/members"
 import { useGuild } from "../providers/GuildProvider"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { createColumnHelper, useReactTable, getCoreRowModel, flexRender } from "@tanstack/react-table"
 import styles from "./members.module.css"
+import useDeleteMemberMutation from '../../hooks/useDeleteMemberMutation'
 
 export default function GuildMembers({ userId }) {
   const { guildData, membersData, isAdminOrOwner } = useGuild()
-  const queryClient = useQueryClient()
-  const router = useRouter()
 
-
-  const { mutate: deleteMemberMutate, isLoading: isDeleting, error } = useMutation({
-    mutationFn: (memberId) => deleteMember(guildData.guild_id, memberId),
-    onSuccess: (data) => {
-      if (data.redirect) {
-        router.push('/guilds')
-        queryClient.invalidateQueries('guild', userId)
-      } else {
-        queryClient.invalidateQueries('guild', 'members', guildData.guild_id)
-      }
-    },
-    onError: (err) => {
-      console.error("Error deleting member:", err)
-    }
-  })
+  const { mutation } = useDeleteMemberMutation(guildData)
+  const { mutate: deleteMemberMutate, isLoading: isDeleting, error } = mutation
 
   const columnHelper = createColumnHelper()
 
