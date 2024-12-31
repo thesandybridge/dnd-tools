@@ -16,8 +16,6 @@ import CustomControls from "./Controls"
 import MarkerButton from "./MarkerButton"
 import RulerButton from "./RulerButton"
 import { calculateDistance } from "./utils"
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { fetchMarkers, addMarker, removeMarker, updateMarkerDistance } from '@/lib/markers'
 import { useTheme } from "@/app/providers/ThemeProvider"
 import DMButton from "./DMButton"
 import useRemoveMarkerMutation from "../../hooks/useRemoveMarkerMutation"
@@ -96,7 +94,7 @@ const DebugLogger = () => {
 
 MarkerHandler.displayName = 'MarkerHandler'
 
-export default function MapComponent({ user_id }) {
+export default function MapComponent() {
   const { theme } = useTheme()
 
   const mutateAddMarker = useAddMarkerMutation();
@@ -106,7 +104,7 @@ export default function MapComponent({ user_id }) {
   const standard_map_tiles_path = "/api/eberron"
   const dm_map_tiles_path = "/api/eberron-dm"
 
-  const [lastMarkerId, _] = useState(null)
+  const [lastMarkerId] = useState(null)
   const [rulerHandler, setRulerHandler] = useState(false)
   const [markerHandler, setMarkerHandler] = useState(false)
   const [dmHandler, setDMHandler] = useState(false)
@@ -143,6 +141,11 @@ export default function MapComponent({ user_id }) {
   const mapCenter = [-75, 125];
 
   const toggleMarkers = () => {
+    if (rulerHandler) {
+      setRulerHandler(false)
+      setRulerPoints([])
+    }
+
     setMarkerHandler(prev => !prev)
   }
 
@@ -151,9 +154,14 @@ export default function MapComponent({ user_id }) {
   }
 
   const toggleRuler = () => {
+    if (markerHandler) {
+      setMarkerHandler(false)
+    }
+
     if (rulerHandler) {
       setRulerPoints([])
     }
+
     setRulerHandler(prev => !prev)
   }
 
@@ -168,6 +176,10 @@ export default function MapComponent({ user_id }) {
   }
 
   const handleAddMarker = (newMarker) => {
+    if (rulerHandler) {
+      return
+    }
+
     mutateAddMarker.mutate(newMarker)
   }
 

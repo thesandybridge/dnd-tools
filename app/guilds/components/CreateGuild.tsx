@@ -1,45 +1,72 @@
 'use client'
 
-import { useState } from "react"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { Guild, createGuild } from "@/lib/guilds"
-
 import styles from "./guilds.module.css"
-import { uuid } from "@/utils/helpers"
 import useCreateGuildMutation from "../hooks/useCreateGuildMutation"
+import { formOptions, useForm } from "@tanstack/react-form";
+import { uuid } from "@/utils/helpers";
+import { Guild } from "@/lib/guilds";
 
 export default function CreateGuild({ userId }: { userId: string }) {
-  const { formData, setFormData, createGuild, mutation } = useCreateGuildMutation(userId);
-  const { isLoading, error } = mutation
+  const { mutation } = useCreateGuildMutation(userId);
+  const { isPending, isError, error, mutate } = mutation
 
+  const formOpts = formOptions<Guild>({
+    defaultValues: {
+      name: '',
+      owner: userId,
+      guild_id: uuid(),
+    }
+  })
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setFormData(prevState => ({
-      ...prevState,
-      [name]: value
-    }))
-  }
+  const form = useForm({
+    ...formOpts,
+    onSubmit: async ({ value }) => {
+      mutate(value, {
+        onSuccess: () => {
+          form.reset();
+        },
+        onError: (error) => {
+          console.error('Error creating guild:', error.message);
+        }
+      })
+    }
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    createGuild(formData)
+    e.stopPropagation()
+    form.handleSubmit()
   }
 
   return (
     <form className={styles.createGuild} onSubmit={handleSubmit}>
-      <input
-        type="text"
+      <form.Field
         name="name"
-        value={formData.name}
-        onChange={handleChange}
-        required
-        placeholder="Enter guild name"
-      />
-      <button type="submit" disabled={isLoading}>
-        {isLoading ? 'Creating...' : 'Create Guild'}
+        asyncDebounceMs={500}
+      >
+        {(field) => (
+          <>
+            <input
+              type="text"
+              name={field.name}
+              value={field.state.value}
+              onBlur={field.handleBlur}
+              onChange={(e) => field.handleChange(e.target.value)}
+              required
+              placeholder="Enter guild name"
+            />
+          </>
+        )}
+      </form.Field>
+
+      <button type="submit" disabled={isPending}>
+        {isPending ? 'Creating...' : 'Create Guild'}
       </button>
-      {error && <p style={{ color: 'red' }}>Error: {error.message}</p>}
+      {isError && (
+        <p style={{ color: 'red' }}>
+          Error: {error instanceof Error && error.message}
+        </p>
+      )}
     </form>
   )
 }
