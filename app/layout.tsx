@@ -1,4 +1,4 @@
-import { Inter } from "next/font/google"
+import { Roboto } from "next/font/google"
 import Nav from "@/app/components/navigation/Nav"
 import { SessionProvider } from 'next-auth/react'
 import "@/app/globals.css"
@@ -10,7 +10,7 @@ import QueryClientProvider from "@/app/providers/QueryClientProvider"
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 config.autoAddCss = false
 
-const inter = Inter({ subsets: ["latin"] })
+const roboto = Roboto({ subsets: ["latin"], weight: '400' })
 
 export const metadata = {
   title: "Dungeon Syndrome",
@@ -21,7 +21,7 @@ export default function RootLayout({ children }) {
   const year = new Date().getFullYear()
   return (
     <html lang="en">
-      <body className={inter.className}>
+      <body className={roboto.className}>
         <SessionProvider>
           <QueryClientProvider>
             <ThemeProvider>

@@ -1,80 +1,96 @@
 'use client'
 
-import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { fetchUsersPartial } from '@/lib/users'
 import styles from "./search.module.css"
 import { useDebounce } from '@/app/hooks/useDebounce'
+import { formOptions, useForm, useStore } from '@tanstack/react-form'
+import { Autocomplete, TextField } from '@mui/material'
+import { Guild } from '@/lib/guilds'
+import useAddMemberMutation from '@/app/guilds/hooks/useAddMemberMutation'
 
-export default function UserSearch({ onSubmit, submitText = "Submit" }) {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedUser, setSelectedUser] = useState(null)
+interface Props {
+  guildData?: Guild
+  submitText?: string
+}
 
-  const handleUserSelect = (user) => {
-    setSelectedUser(user)
-    setSearchTerm(user.name)
-  }
+export default function UserSearch({
+  guildData,
+  submitText = "Submit"
+}: Props) {
+  const { mutation } = useAddMemberMutation(guildData)
+  const {
+    mutate: addMember,
+    isPending: isAddingMember,
+  } = mutation
+
+  const formOpts = formOptions({
+    defaultValues: {
+      searchTerm: '',
+      selectedUser: null,
+    }
+  })
+
+  const form = useForm({
+    ...formOpts,
+    onSubmit: async ({ value }) => {
+      if (value.selectedUser && value.selectedUser.id) {
+        addMember(value.selectedUser);
+        form.reset();
+      }
+    }
+  });
+
+  const searchTerm = useStore(form.store, state => state.values.searchTerm);
 
   const debouncedSearchTerm = useDebounce(searchTerm, 300)
 
-  const { data: results = [], isLoading, error } = useQuery({
+  const { data: results = [], isPending, isError, error } = useQuery({
     queryKey: ['users', debouncedSearchTerm],
     queryFn: () => fetchUsersPartial(5, debouncedSearchTerm),
-    enabled: debouncedSearchTerm.length >= 3,
+    enabled: !!debouncedSearchTerm && debouncedSearchTerm.length >= 3,
     retry: false
   })
 
-  const handleInputChange = (e) => {
-    const { value } = e.target
-    setSearchTerm(value)
-    setSelectedUser(null)
-  }
-
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    if (selectedUser) {
-      onSubmit(selectedUser)
-      setSelectedUser(null)
-      setSearchTerm('')
-    }
-  }
-
   return (
     <div>
-      <form className={styles.searchForm} onSubmit={handleSubmit}>
-        <input
-          type="text"
-          value={searchTerm}
-          onChange={handleInputChange}
-          placeholder="Enter at least 3 characters"
-          className={styles.searchInput}
-        />
-
-        {results.length > 0 && !selectedUser && (
-          <ul className={styles.resultsDropdown}>
-            {results.map((user) => (
-              <li
-                key={user.id}
-                onClick={() => handleUserSelect(user)}
-                className={styles.resultsItem}
-                style={{ cursor: 'pointer' }}
-              >
-                {user.name} - {user.email}
-              </li>
-            ))}
-          </ul>
-        )}
-
-        <button type="submit" disabled={!selectedUser}>
+      <form className={styles.searchForm} onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        form.handleSubmit();
+      }}>
+        <form.Field name="searchTerm">
+          {({state, handleChange, handleBlur, form}) => (
+            <Autocomplete
+              freeSolo
+              options={results.map(user => user)}
+              getOptionLabel={(option) => option.name || ''}
+              isOptionEqualToValue={(option, value) => option.id === value?.id}
+              loading={isPending || isAddingMember}
+              inputValue={state.value}
+              onInputChange={(_, value) => {
+                handleChange(value)
+              }}
+              onBlur={handleBlur}
+              onChange={(_, value) => {
+                form.setFieldValue('selectedUser', value)
+              }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Search Users"
+                  placeholder="Enter at least 3 characters"
+                  error={isError}
+                  helperText={isError && error.message}
+                />
+              )}
+            />
+          )}
+        </form.Field>
+        <button type="submit" disabled={!form.state.values.selectedUser}>
           {submitText}
         </button>
       </form>
-
-      {!isLoading && results.length === 0 && debouncedSearchTerm.length >= 3 && (
-        <p>No users found matching your search.</p>
-      )}
-      {isLoading && <p>Loading...</p>}
-      {error && <p className={styles.error}>{error.message}</p>}
     </div>
   )
 }
