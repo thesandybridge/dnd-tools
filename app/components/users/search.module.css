@@ -2,9 +2,13 @@
   display: flex;
   position: relative;
   gap: 1rem;
+  justify-content: center;
+  width: 100%;
 }
 
-.searchInput {}
+.searchInput {
+  border-color: var(--fg);
+}
 
 .resultsDropdown {
   position: absolute;
@@ -28,4 +32,9 @@
 
 .resultsItem:hover {
   background-color: var(--hover-bg); /* Optional: Hover effect for list items */
+}
+
+.autocomplete {
+  flex: .5;
+  border-color: var(--fg);
 }

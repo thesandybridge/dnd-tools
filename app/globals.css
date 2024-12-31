@@ -130,7 +130,7 @@ h2 {
   padding: 1rem;
 }
 
-label:not(.rcp-field-label, .themeSwitch) {
+label:not(.rcp-field-label, .themeSwitch, .MuiFormLabel-root) {
   display: flex;
   align-items: center;
   background: var(--bg);

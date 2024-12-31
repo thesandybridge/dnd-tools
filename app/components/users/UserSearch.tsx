@@ -53,44 +53,44 @@ export default function UserSearch({
   })
 
   return (
-    <div>
-      <form className={styles.searchForm} onSubmit={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        form.handleSubmit();
-      }}>
-        <form.Field name="searchTerm">
-          {({state, handleChange, handleBlur, form}) => (
-            <Autocomplete
-              freeSolo
-              options={results.map(user => user)}
-              getOptionLabel={(option) => option.name || ''}
-              isOptionEqualToValue={(option, value) => option.id === value?.id}
-              loading={isPending || isAddingMember}
-              inputValue={state.value}
-              onInputChange={(_, value) => {
-                handleChange(value)
-              }}
-              onBlur={handleBlur}
-              onChange={(_, value) => {
-                form.setFieldValue('selectedUser', value)
-              }}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label="Search Users"
-                  placeholder="Enter at least 3 characters"
-                  error={isError}
-                  helperText={isError && error.message}
-                />
-              )}
-            />
-          )}
-        </form.Field>
-        <button type="submit" disabled={!form.state.values.selectedUser}>
-          {submitText}
-        </button>
-      </form>
-    </div>
+    <form className={styles.searchForm} onSubmit={(e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      form.handleSubmit();
+    }}>
+      <form.Field name="searchTerm">
+        {({state, handleChange, handleBlur, form}) => (
+          <Autocomplete
+            className={styles.autocomplete}
+            freeSolo
+            options={results.map(user => user)}
+            getOptionLabel={(option) => option.name || ''}
+            isOptionEqualToValue={(option, value) => option.id === value?.id}
+            loading={isPending || isAddingMember}
+            inputValue={state.value}
+            onInputChange={(_, value) => {
+              handleChange(value)
+            }}
+            onBlur={handleBlur}
+            onChange={(_, value) => {
+              form.setFieldValue('selectedUser', value)
+            }}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                className={styles.searchInput}
+                label="Search Users"
+                placeholder="Enter at least 3 characters"
+                error={isError}
+                helperText={isError && error.message}
+              />
+            )}
+          />
+        )}
+      </form.Field>
+      <button type="submit" disabled={!form.state.values.selectedUser}>
+        {submitText}
+      </button>
+    </form>
   )
 }

@@ -7,9 +7,9 @@ export default function GuildAddMember() {
   const { guildData } = useGuild()
 
   return (
-    <div>
+    <>
       <h2>Add Member to Guild</h2>
       <UserSearch guildData={guildData} submitText="Add Member" />
-    </div>
+    </>
   )
 }
