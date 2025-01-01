@@ -7,6 +7,7 @@ import transportationData from "./travel.json"
 import { convertToDnDCurrency, formatDuration, handleFocus } from "./helper"
 import Banner from "../Banner"
 import { useCurrency } from "../../providers/CurrencyContext"
+import { FormControl, FormGroup, InputLabel, MenuItem, Select, TextField } from "@mui/material"
 
 const View = ({
   selectedTransport,
@@ -51,49 +52,53 @@ const View = ({
           </motion.div>
         )}
       </AnimatePresence>
-      <select value={selectedTransport} onChange={(e) => setSelectedTransport(e.target.value)}>
-        <option value="">Select Transportation</option>
-        {transportationData.map((option, index) => (
-          <option
-            key={index}
-            value={option.type}
+      <FormControl className={styles.calcGroup}>
+        <FormGroup>
+          <InputLabel id="transportation-label">Select Transportation</InputLabel>
+          <Select
+            labelId="transportation-label"
+            label="Select Transportation"
+            id="transportation-select"
+            value={selectedTransport}
+            autoWidth
+            onChange={(e) => setSelectedTransport(e.target.value)}
           >
-            {option.type} - {option.fare}
-          </option>
-        ))}
-      </select>
+            <MenuItem value="">Select Transportation</MenuItem>
+            {transportationData.map((option, index) => (
+              <MenuItem
+                key={index}
+                value={option.type}
+              >
+                {option.type} - {option.fare}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormGroup>
 
-      {selectedTransportData.speed !== "Instant" && (
-        <>
-          <label>
-            <input
+        {selectedTransportData.speed !== "Instant" && (
+          <>
+            <TextField
+              label="Miles"
               type="number"
-              value={distance}
               onChange={(e) => setDistance(parseFloat(e.target.value) || 0)}
-              placeholder="Distance in miles"
+              value={distance}
               onFocus={handleFocus}
               onBlur={resetDistance}
             />
-            Miles
-          </label>
 
-          {selectedTransportData.cargoRate && (
-            <label>
-              <input
-                type="number"
+            {selectedTransportData.cargoRate && (
+              <TextField
+                label="Weight (lbs)"
                 value={cargoWeight}
+                type="number"
                 onChange={(e) => setCargoWeight(parseFloat(e.target.value) || 0)}
-                placeholder="Cargo weight in lbs"
                 onFocus={handleFocus}
                 onBlur={resetWeight}
               />
-              Weight (lbs)
-            </label>
-          )}
-        </>
-      )}
-
-
+            )}
+          </>
+        )}
+      </FormControl>
     </div>
   )
 }
@@ -150,22 +155,22 @@ const TransportationCalculator = () => {
     }
 
     if (data.perDay) {
-      const [milesPerDay, _] = data.perDay.split(' ')
+      const [milesPerDay] = data.perDay.split(' ')
       const miles = parseInt(milesPerDay, 10)
 
       if (distance < miles) {
-        let hours = Math.floor(distance / miles)
-        let totalMinutes = (distance / miles * 60)
-        let minutes = Math.floor(totalMinutes % 60)
-        let seconds = Math.floor((totalMinutes * 60) % 60)
+        const hours = Math.floor(distance / miles)
+        const totalMinutes = (distance / miles * 60)
+        const minutes = Math.floor(totalMinutes % 60)
+        const seconds = Math.floor((totalMinutes * 60) % 60)
         setTotalDays(formatDuration(0, hours, minutes, seconds))
       } else {
-        let days = Math.floor(distance / miles)
-        let totalHours = (distance / miles * 24)
-        let hours = Math.floor(totalHours % 24)
-        let totalMinutes = (totalHours * 60)
-        let minutes = Math.floor(totalMinutes % 60)
-        let seconds = Math.floor((totalMinutes * 60) % 60)
+        const days = Math.floor(distance / miles)
+        const totalHours = (distance / miles * 24)
+        const hours = Math.floor(totalHours % 24)
+        const totalMinutes = (totalHours * 60)
+        const minutes = Math.floor(totalMinutes % 60)
+        const seconds = Math.floor((totalMinutes * 60) % 60)
         setTotalDays(formatDuration(days, hours, minutes, seconds))
       }
     }

@@ -8,6 +8,7 @@ import { config } from "@fortawesome/fontawesome-svg-core"
 import ThemeProvider from "@/app/providers/ThemeProvider"
 import QueryClientProvider from "@/app/providers/QueryClientProvider"
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { AntdRegistry } from '@ant-design/nextjs-registry';
 
 config.autoAddCss = false
 
@@ -25,13 +26,15 @@ export default function RootLayout({ children }) {
       <body className={roboto.className}>
         <SessionProvider>
           <QueryClientProvider>
-            <ThemeProvider>
-              <Nav />
-              {children}
-              <footer>
-                <p>© {year} - made with ♥ by sandybridge</p>
-              </footer>
-            </ThemeProvider>
+            <AntdRegistry>
+              <ThemeProvider>
+                <Nav />
+                {children}
+                <footer>
+                  <p>© {year} - made with ♥ by sandybridge</p>
+                </footer>
+              </ThemeProvider>
+            </AntdRegistry>
             <ReactQueryDevtools
               initialIsOpen={false}
               buttonPosition="bottom-left"

@@ -48,7 +48,7 @@ const View = ({
           <FormGroup>
             <InputLabel id="rarity-label">Select Rarity</InputLabel>
             <Select
-              labelId="Select Rarity"
+              labelId="rarity-label"
               id="rarity-select"
               value={rarity}
               label="Select Rarity"

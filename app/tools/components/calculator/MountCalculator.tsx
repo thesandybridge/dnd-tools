@@ -11,6 +11,7 @@ import {
 } from "./helper"
 import Banner from "../Banner"
 import { useCurrency } from "../../providers/CurrencyContext"
+import { Checkbox, FormControl, FormControlLabel, FormGroup, InputLabel, MenuItem, Select, TextField } from "@mui/material"
 
 const View = ({
   totalCost,
@@ -57,54 +58,76 @@ const View = ({
             </motion.div>
           )}
         </AnimatePresence>
-        <select value={selectedItem} onChange={(e) => setSelectedItem(e.target.value)}>
-          <option value="">Select a Mount</option>
-          {itemsData.map((item, index) => (
-            <option
-              key={index}
-              value={item.item}
+        <FormControl className={styles.calcGroup}>
+          <FormGroup>
+            <InputLabel id="mount-label">Select a Mount</InputLabel>
+            <Select
+              labelId="mount-label"
+              label="Select a Mount"
+              id="mount-select"
+              value={selectedItem}
+              onChange={(e) => setSelectedItem(e.target.value)}
             >
-              {item.item} - {convertToDnDCurrency(item.baseCost)}
-            </option>
-          ))}
-        </select>
+              <MenuItem value="">Select a Mount</MenuItem>
+              {itemsData.map((item, index) => (
+                <MenuItem
+                  key={index}
+                  value={item.item}
+                >
+                  {item.item} - {convertToDnDCurrency(item.baseCost)}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormGroup>
 
-        {selectedItem && itemsData.find(item => item.item === selectedItem)?.types && (
-          <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)}>
-            <option value="">Select Type</option>
-            {itemsData.find(item => item.item === selectedItem).types.map((type, index) => (
-              <option key={index} value={type.type}>{type.type}</option>
-            ))}
-          </select>
-        )}
+          {selectedItem && itemsData.find(item => item.item === selectedItem)?.types && (
+            <FormGroup>
+              <InputLabel id="type-label">Select Type</InputLabel>
+              <Select
+                labelId="type-label"
+                label="Select Type"
+                id="type-select"
+                value={selectedType}
+                onChange={(e) => setSelectedType(e.target.value)}
+              >
+                <MenuItem value="">Select Type</MenuItem>
+                {itemsData.find(item => item.item === selectedItem).types.map((type, index) => (
+                  <MenuItem
+                    key={index}
+                    value={type.type}
+                  >
+                    {type.type}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormGroup>
+          )}
 
-        {itemsData.find(item => item.item === selectedItem)?.specials && (
-          itemsData.find(item => item.item === selectedItem).specials.map((special, index) => (
-            <div key={index}>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={selectedFeatures.includes(special.feature)}
-                  onChange={(e) => handleFeatureChange(special.feature, e.target.checked)}
+          {itemsData.find(item => item.item === selectedItem)?.specials && (
+            itemsData.find(item => item.item === selectedItem).specials.map((special, index) => (
+              <FormGroup key={index}>
+                <FormControlLabel
+                  label={`${special.feature} (+${special.additionalCost} gp)`}
+                  control={
+                    <Checkbox
+                      checked={selectedFeatures.includes(special.feature)}
+                      onChange={(e) => handleFeatureChange(special.feature, e.target.checked)}
+                    />
+                  }
                 />
-                {special.feature} (+{special.additionalCost} gp)
-              </label>
-            </div>
-          ))
-        )}
+              </FormGroup>
+            ))
+          )}
 
-        <label>
-          <input
+          <TextField
             type="number"
-            min="0"
             value={miles}
             onChange={(e) => setMiles(parseInt(e.target.value, 10) || 0)}
-            placeholder="Miles (if applicable)"
             onBlur={handleBlur(miles)}
             onFocus={handleFocus}
+            label="Miles"
           />
-          Miles
-        </label>
+        </FormControl>
       </div>
     </>
   )
