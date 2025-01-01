@@ -165,21 +165,21 @@ export default function MountCalculator() {
     }
 
     if (item.perDay) {
-      const [distance, _] = item.perDay.split(' ')
+      const [distance] = item.perDay.split(' ')
 
       if (miles < distance) {
-        let hours = Math.floor(miles / distance)
-        let totalMinutes = (miles / distance * 60)
-        let minutes = Math.floor(totalMinutes % 60)
-        let seconds = Math.floor((totalMinutes * 60) % 60)
+        const hours = Math.floor(miles / distance)
+        const totalMinutes = (miles / distance * 60)
+        const minutes = Math.floor(totalMinutes % 60)
+        const seconds = Math.floor((totalMinutes * 60) % 60)
         setTotalDays(formatDuration(0, hours, minutes, seconds))
       } else {
-        let days = Math.floor(miles / distance)
-        let totalHours = (miles / distance * 24)
-        let hours = Math.floor(totalHours % 24)
-        let totalMinutes = (totalHours * 60)
-        let minutes = Math.floor(totalMinutes % 60)
-        let seconds = Math.floor((totalMinutes * 60) % 60)
+        const days = Math.floor(miles / distance)
+        const totalHours = (miles / distance * 24)
+        const hours = Math.floor(totalHours % 24)
+        const totalMinutes = (totalHours * 60)
+        const minutes = Math.floor(totalMinutes % 60)
+        const seconds = Math.floor((totalMinutes * 60) % 60)
         setTotalDays(formatDuration(days, hours, minutes, seconds))
       }
     }
