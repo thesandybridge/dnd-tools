@@ -132,16 +132,6 @@ h2 {
   padding: 1rem;
 }
 
-label:not(.rcp-field-label, .themeSwitch, .MuiFormLabel-root) {
-  display: flex;
-  align-items: center;
-  background: var(--bg);
-  padding: .5rem;
-  color: var(--fg);
-  gap: .5rem;
-  border: solid 1px var(--fg);
-}
-
 .mapContainer {
   background-color: var(--bg) !important;
   background-image: url("/images/paper.jpg") !important;

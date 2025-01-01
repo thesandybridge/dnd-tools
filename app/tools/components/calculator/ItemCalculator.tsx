@@ -9,6 +9,7 @@ import {
 } from './helper'
 import Banner from '../Banner'
 import { useCurrency } from "../../providers/CurrencyContext"
+import { FormControl, InputLabel, Select, MenuItem, Button, TextField, Checkbox, FormGroup, FormControlLabel, Box } from "@mui/material"
 
 const View = ({
   rarity,
@@ -43,66 +44,72 @@ const View = ({
             )}
           </AnimatePresence>
         </Banner>
-        <select value={rarity} onChange={(e) => setRarity(e.target.value)}>
-          <option value="">Select Rarity</option>
-          <option value="Common">Common</option>
-          <option value="Uncommon">Uncommon</option>
-          <option value="Rare">Rare</option>
-          <option value="Very Rare">Very Rare</option>
-          <option value="Legendary">Legendary</option>
-        </select>
-        <label
-          style={{
-            borderColor: isConsumable ? 'var(--alt)' : 'var(--fg)'
-          }}
-        >Consumable:
-          <input
-            type="checkbox"
-            checked={isConsumable}
-            onChange={(e) => setIsConsumable(e.target.checked)}
-          />
-        </label>
-        <label
-          style={{
-            borderColor: requiresAttunement ? 'var(--alt)' : 'var(--fg)'
-          }}
-        >Requires Attunement:
-          <input
-            type="checkbox"
-            checked={requiresAttunement}
-            onChange={(e) => setRequiresAttunement(e.target.checked)}
-          />
-        </label>
-        <div
-          className={styles.calcGroup}
-        >
-          {Object.keys(attributes).map((attr) => (
-            <label key={attr} className={styles.label}
-              style={{
-                borderColor: attributes[attr] > 0 ? 'var(--alt)' : 'var(--fg)'
-              }}
+        <FormControl sx={{gap: "1rem"}}>
+          <FormGroup>
+            <InputLabel id="rarity-label">Select Rarity</InputLabel>
+            <Select
+              labelId="Select Rarity"
+              id="rarity-select"
+              value={rarity}
+              label="Select Rarity"
+              autoWidth
+              onChange={e => setRarity(e.target.value)}
             >
-              {attr.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}:
-              <input
-                type="number"
-                value={attributes[attr]}
-                onChange={handleAttributeChange(attr)}
-                onFocus={handleFocus}
-                onBlur={handleBlur(attr)}
-                placeholder={attr.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}
-              />
-            </label>
-          ))}
-        </div>
-        {reset && (
-          <button
-            onClick={resetValues}
-            className={styles.resetButton}
-            style={{ marginTop: '20px' }}
+              <MenuItem value="">Select Rarity</MenuItem>
+              <MenuItem value="Common">Common</MenuItem>
+              <MenuItem value="Uncommon">Uncommon</MenuItem>
+              <MenuItem value="Rare">Rare</MenuItem>
+              <MenuItem value="Very Rare">Very Rare</MenuItem>
+              <MenuItem value="Legendary">Legendary</MenuItem>
+            </Select>
+          </FormGroup>
+          <FormGroup>
+            <FormControlLabel
+              label="Consumable"
+              control={
+                <Checkbox
+                  checked={isConsumable}
+                  onChange={e => setIsConsumable(e.target.checked)}
+                />
+              }
+            />
+            <FormControlLabel
+              label="Requires Attunement"
+              control={
+                <Checkbox
+                  checked={requiresAttunement}
+                  onChange={e => setRequiresAttunement(e.target.checked)}
+                />
+              }
+            />
+          </FormGroup>
+          <div
+            className={styles.calcGroup}
           >
-            Reset to Defaults
-          </button>
-        )}
+            {Object.keys(attributes).map((attr) => (
+              <FormGroup key={attr} className={styles.inputGroup}>
+                <TextField
+                  type="number"
+                  label={attr.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}
+                  value={attributes[attr]}
+                  onChange={handleAttributeChange(attr)}
+                  onFocus={handleFocus}
+                  onBlur={handleBlur(attr)}
+                  placeholder={attr.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}
+                />
+              </FormGroup>
+            ))}
+          </div>
+          {reset && (
+            <Button
+              onClick={resetValues}
+              color="primary"
+              variant="outlined"
+            >
+              Reset to Defaults
+            </Button>
+          )}
+        </FormControl>
       </div>
     </>
   )

@@ -78,8 +78,8 @@
 
 .calcGroup {
   display: flex;
-  flex-direction: column;
   gap: 1rem;
+  flex-wrap: wrap;
 }
 
 .label {
@@ -105,4 +105,14 @@
 
 .additionalService {
   padding-left: 1rem;
+}
+
+.inputGroup {
+  flex: 1 1 calc(50% - 1rem);
+}
+
+@media (max-width: 960px) {
+  .inputGroup {
+    flex: 1 1 100%; /* Stacks into one column on tablet and smaller screens */
+  }
 }
