@@ -12,6 +12,7 @@ import Platinum from "./currency_svgs/Platinum"
 import Electrum from "./currency_svgs/Electrum"
 import { useCurrency } from "../../providers/CurrencyContext"
 import { handleFocus, convertToLabel } from "./helper"
+import { FormControl, InputLabel, Select, TextField, MenuItem } from "@mui/material"
 
 function convertCurrency(type, amount) {
   const rates = {
@@ -52,23 +53,30 @@ const View = ({
     <div className={styles.calculatorWrapper}>
       <h2>Currency Converter</h2>
       <div className={styles.calculator}>
-        <label>
-          <input
-            type="number"
-            value={currency}
-            onChange={handleCurrencyChange}
-            onBlur={handleBlur}
-            onFocus={handleFocus}
-          />
-        </label>
-        <select value={selectedCurrency} onChange={handleCurrencyTypeChange}>
-          <option value="">Select Currency</option>
-          <option value="CP">Copper</option>
-          <option value="SP">Silver</option>
-          <option value="EP">Electrum</option>
-          <option value="GP">Gold</option>
-          <option value="PP">Platinum</option>
-        </select>
+        <TextField
+          type="number"
+          value={currency}
+          onChange={handleCurrencyChange}
+          onBlur={handleBlur}
+          onFocus={handleFocus}
+        />
+        <FormControl>
+          <InputLabel id="currency-label">Select Currency</InputLabel>
+          <Select
+            labelId="currency-label"
+            id="currency-select"
+            value={selectedCurrency}
+            label="Select Currency"
+            autoWidth
+            onChange={handleCurrencyTypeChange}
+          >
+            <MenuItem value="CP">Copper</MenuItem>
+            <MenuItem value="SP">Silver</MenuItem>
+            <MenuItem value="EP">Electrum</MenuItem>
+            <MenuItem value="GP">Gold</MenuItem>
+            <MenuItem value="PP">Platinum</MenuItem>
+          </Select>
+        </FormControl>
       </div>
       <div className={styles.conversion}>
         {conversionResult.map((result, index) => (

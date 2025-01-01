@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { deleteGuild } from "@/lib/guilds"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useGuild } from "../providers/GuildProvider"
+import { Button } from '@mui/material'
 
 export default function GuildSettings({userId}) {
   const queryClient = useQueryClient()
@@ -33,13 +34,14 @@ export default function GuildSettings({userId}) {
   return (
     <div>
       <h1>Settings</h1>
-        <button
-          onClick={handleDeleteClick}
-          className="danger"
-          disabled={isDeleting}
-        >
-          {isDeleting ? 'Deleting Gulid...' : 'Delete Guild'}
-        </button>
+      <Button
+        onClick={handleDeleteClick}
+        disabled={isDeleting}
+        variant='outlined'
+        color='error'
+      >
+        {isDeleting ? 'Deleting Gulid...' : 'Delete Guild'}
+      </Button>
     </div>
   )
 }

@@ -73,6 +73,7 @@ select:not(.tsqd-main-panel select) {
   padding: 1rem;
 }
 
+/*
 button:not(
 .map-btn,
 .Toastify__close-button,
@@ -96,6 +97,7 @@ button:not(
 button.danger {
   background-color: var(--danger) !important;
 }
+*/
 
 nav {
   display: flex;

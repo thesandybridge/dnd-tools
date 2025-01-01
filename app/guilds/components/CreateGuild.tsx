@@ -5,6 +5,7 @@ import useCreateGuildMutation from "../hooks/useCreateGuildMutation"
 import { formOptions, useForm } from "@tanstack/react-form";
 import { uuid } from "@/utils/helpers";
 import { Guild } from "@/lib/guilds";
+import { Button, TextField } from "@mui/material";
 
 export default function CreateGuild({ userId }: { userId: string }) {
   const { mutation } = useCreateGuildMutation(userId);
@@ -46,11 +47,13 @@ export default function CreateGuild({ userId }: { userId: string }) {
       >
         {(field) => (
           <>
-            <input
+            <TextField
               type="text"
               name={field.name}
               value={field.state.value}
               onBlur={field.handleBlur}
+              error={isError}
+              helperText={isError && error.message}
               onChange={(e) => field.handleChange(e.target.value)}
               required
               placeholder="Enter guild name"
@@ -59,14 +62,9 @@ export default function CreateGuild({ userId }: { userId: string }) {
         )}
       </form.Field>
 
-      <button type="submit" disabled={isPending}>
+      <Button type="submit" disabled={isPending} variant="outlined">
         {isPending ? 'Creating...' : 'Create Guild'}
-      </button>
-      {isError && (
-        <p style={{ color: 'red' }}>
-          Error: {error instanceof Error && error.message}
-        </p>
-      )}
+      </Button>
     </form>
   )
 }

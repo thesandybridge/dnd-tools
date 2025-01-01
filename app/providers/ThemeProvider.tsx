@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useEffect, useCallback } from 'rea
 import { useQuery } from '@tanstack/react-query'
 import { fetchUser } from '@/lib/users'
 import { useSession } from 'next-auth/react'
+import { ThemeProvider as MUIThemeProvider, createTheme } from '@mui/material/styles';
 
 const ThemeContext = createContext()
 
@@ -12,6 +13,29 @@ export default function ThemeProvider({ children }) {
     primaryColor: '#8ec07c',
     themeMode: "dark",
   })
+
+  const mui_theme = createTheme({
+    typography: {
+      fontFamily: 'var(--font-roboto)',
+    },
+    palette: {
+      mode: theme.themeMode,
+      primary: {
+        main: "#928374",
+        dark: "#928374",
+        contrastText: "#928374",
+      },
+      secondary: {
+        main: theme.primaryColor
+      },
+      background: {
+        default: "#282828"
+      },
+      text: {
+        primary: "#928374",
+      }
+    }
+  });
 
   const { data: session } = useSession()
 
@@ -66,7 +90,9 @@ export default function ThemeProvider({ children }) {
       changePrimaryColor,
       toggleThemeMode
     }}>
-      {children}
+      <MUIThemeProvider theme={mui_theme}>
+        {children}
+      </MUIThemeProvider>
     </ThemeContext.Provider>
   )
 }

@@ -5,7 +5,7 @@ import { fetchUsersPartial } from '@/lib/users'
 import styles from "./search.module.css"
 import { useDebounce } from '@/app/hooks/useDebounce'
 import { formOptions, useForm, useStore } from '@tanstack/react-form'
-import { Autocomplete, TextField } from '@mui/material'
+import { Autocomplete, Button, TextField } from '@mui/material'
 import { Guild } from '@/lib/guilds'
 import useAddMemberMutation from '@/app/guilds/hooks/useAddMemberMutation'
 
@@ -88,9 +88,9 @@ export default function UserSearch({
           />
         )}
       </form.Field>
-      <button type="submit" disabled={!form.state.values.selectedUser}>
+      <Button variant='outlined' type='submit' disabled={!form.state.values.selectedUser} >
         {submitText}
-      </button>
+      </Button>
     </form>
   )
 }

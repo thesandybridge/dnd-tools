@@ -4,6 +4,7 @@ import { useGuild } from "../providers/GuildProvider"
 import { createColumnHelper, useReactTable, getCoreRowModel, flexRender } from "@tanstack/react-table"
 import styles from "./members.module.css"
 import useDeleteMemberMutation from '../../hooks/useDeleteMemberMutation'
+import { Button } from "@mui/material"
 
 export default function GuildMembers({ userId }) {
   const { guildData, membersData, isAdminOrOwner } = useGuild()
@@ -39,13 +40,14 @@ export default function GuildMembers({ userId }) {
         header: 'Actions',
         cell: ({ row }) => (
           <div className={styles.tableData}>
-            <button
+            <Button
               onClick={(e) => handleDeleteClick(e, row.original.user_id)}
               disabled={isDeleting}
-              className={`guild-btn ${styles.guildActionBtns}`}
+              variant="outlined"
+              color="error"
             >
               {isDeleting ? 'Deleting...' : 'Delete'}
-            </button>
+            </Button>
           </div>
         ),
       }),

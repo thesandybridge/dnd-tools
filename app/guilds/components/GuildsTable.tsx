@@ -9,6 +9,7 @@ import { fetchGuildsByUser } from "@/lib/users"
 
 import styles from "./guilds.module.css"
 import OwnerChip from './OwnerChip'
+import { Button } from '@mui/material'
 
 export default function GuildsTable({ userId, isUserProfile = false }) {
   const queryClient = useQueryClient()
@@ -76,13 +77,14 @@ export default function GuildsTable({ userId, isUserProfile = false }) {
           <div
             className={styles.tableData}
           >
-            <button
+            <Button
               onClick={(e) => handleDeleteClick(e, row.original.id)} // Handle delete click
               disabled={isDeleting}
-              className={`guild-btn ${styles.guildActionBtns}`}
+              variant='outlined'
+              color='error'
             >
               {isDeleting ? 'Deleting...' : 'Delete'}
-            </button>
+            </Button>
           </div>
         ),
       }),

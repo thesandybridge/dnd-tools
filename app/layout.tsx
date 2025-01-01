@@ -8,8 +8,6 @@ import { config } from "@fortawesome/fontawesome-svg-core"
 import ThemeProvider from "@/app/providers/ThemeProvider"
 import QueryClientProvider from "@/app/providers/QueryClientProvider"
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
-import { ThemeProvider as MUIThemeProvider } from '@mui/material/styles';
-import theme from "./theme"
 
 config.autoAddCss = false
 
@@ -27,15 +25,13 @@ export default function RootLayout({ children }) {
       <body className={roboto.className}>
         <SessionProvider>
           <QueryClientProvider>
-            <MUIThemeProvider theme={theme}>
-              <ThemeProvider>
-                <Nav />
-                {children}
-                <footer>
-                  <p>© {year} - made with ♥ by sandybridge</p>
-                </footer>
-              </ThemeProvider>
-            </MUIThemeProvider>
+            <ThemeProvider>
+              <Nav />
+              {children}
+              <footer>
+                <p>© {year} - made with ♥ by sandybridge</p>
+              </footer>
+            </ThemeProvider>
             <ReactQueryDevtools
               initialIsOpen={false}
               buttonPosition="bottom-left"
