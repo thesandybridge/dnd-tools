@@ -6,6 +6,7 @@ import servicesData from './services.json'
 import { convertToDnDCurrency } from "./helper"
 import Banner from "../Banner"
 import { useCurrency } from '../../providers/CurrencyContext'
+import { Checkbox, FormControl, FormControlLabel, FormGroup, FormLabel, TextField } from '@mui/material'
 
 const View = ({
   totalCost,
@@ -36,66 +37,74 @@ const View = ({
             )}
           </AnimatePresence>
         </Banner>
-        {servicesData.map((house, _) => (
-          <div key={house.house} className={styles.calcGroup}>
-            <h3>{house.house}</h3>
-            {house.services.map((service, _) => (
-              Object.entries(service).map(([serviceName, serviceDetails]) => {
-                const serviceKey = `${house.house}|${serviceName}`
-                return (
-                  <div key={serviceKey}>
-                    <label>
-                      <input
-                        type="checkbox"
-                        checked={!!serviceSelections[serviceKey]}
-                        onChange={() => toggleMainService(house.house, serviceName, serviceDetails.type === 'markup')}
-                      />
-                      {serviceName} - {convertToDnDCurrency(serviceDetails.price)}
-                      {serviceSelections[serviceKey] && (
-                        <>
-                          {serviceDetails.unit && (
-                            <input
-                              type="number"
-                              placeholder={`${serviceDetails.unit.split(' / ')[1]}`}
-                              value={unitInputs[serviceKey] || ''}
-                              onChange={(e) => setUnitInputs({ ...unitInputs, [serviceKey]: parseFloat(e.target.value) })}
-                              key={`unitInput-${serviceKey}`}
+        <div className={styles.calcGroup}>
+        {servicesData.map(house => (
+          <div key={house.house} className={styles.inputGroup}>
+            <FormControl>
+              <FormLabel component="legend">{house.house}</FormLabel>
+              {house.services.map(service => (
+                Object.entries(service).map(([serviceName, serviceDetails]) => {
+                  const serviceKey = `${house.house}|${serviceName}`
+                  return (
+                    <div key={serviceKey}>
+                      <FormGroup>
+                        <FormControlLabel
+                          label={`${serviceName} - ${convertToDnDCurrency(serviceDetails.price)}`}
+                          control={
+                            <Checkbox
+                              checked={!!serviceSelections[serviceKey]}
+                              onChange={() => toggleMainService(house.house, serviceName, serviceDetails.type === 'markup')}
                             />
-                          )}
-                          {serviceDetails.type === 'markup' && (
-                            <input
-                              type="number"
-                              placeholder="Base cost"
-                              value={markupPrices[serviceKey] || ''}
-                              onChange={(e) => setMarkupPrices({ ...markupPrices, [serviceKey]: parseFloat(e.target.value) })}
-                              key={`markupInput-${serviceKey}`}
-                            />
-                          )}
-                          {serviceDetails.additionalServices?.map((additional, _) => {
-                            const additionalServiceName = Object.keys(additional)[0]
-                            const additionalServiceKey = `${serviceKey}|additional|${additionalServiceName}`
-                            return (
-                              <div key={additionalServiceKey} className={styles.additionalService}>
-                                <label>
-                                  <input
-                                    type="checkbox"
-                                    checked={!!additionalServicesSelected[additionalServiceKey]}
-                                    onChange={() => toggleAdditionalService(house.house, serviceName, additionalServiceName)}
+                          }
+                        />
+                        {serviceSelections[serviceKey] && (
+                          <>
+                            {serviceDetails.unit && (
+                              <TextField
+                                label={`${serviceDetails.unit.split(' / ')[1]}`}
+                                type="number"
+                                value={unitInputs[serviceKey] || ''}
+                                onChange={(e) => setUnitInputs({ ...unitInputs, [serviceKey]: parseFloat(e.target.value) })}
+                                key={`unitInput-${serviceKey}`}
+                              />
+                            )}
+                            {serviceDetails.type === 'markup' && (
+                              <TextField
+                                type="number"
+                                label="Base Cost"
+                                value={markupPrices[serviceKey] || ''}
+                                onChange={(e) => setMarkupPrices({ ...markupPrices, [serviceKey]: parseFloat(e.target.value) })}
+                                key={`markupInput-${serviceKey}`}
+                              />
+                            )}
+                            {serviceDetails.additionalServices?.map(additional => {
+                              const additionalServiceName = Object.keys(additional)[0]
+                              const additionalServiceKey = `${serviceKey}|additional|${additionalServiceName}`
+                              return (
+                                <div key={additionalServiceKey} className={styles.additionalService}>
+                                  <FormControlLabel
+                                    label={additionalServiceName}
+                                    control={
+                                      <Checkbox
+                                        checked={!!additionalServicesSelected[additionalServiceKey]}
+                                        onChange={() => toggleAdditionalService(house.house, serviceName, additionalServiceName)}
+                                      />
+                                    }
                                   />
-                                  {additionalServiceName}
-                                </label>
-                              </div>
-                            )
-                          })}
-                        </>
-                      )}
-                    </label>
-                  </div>
-                )
-              })
-            ))}
+                                </div>
+                              )
+                            })}
+                          </>
+                        )}
+                      </FormGroup>
+                    </div>
+                  )
+                })
+              ))}
+            </FormControl>
           </div>
         ))}
+        </div>
       </div>
     </>
   )
