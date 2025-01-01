@@ -81,7 +81,7 @@ const View = ({
           </FormGroup>
 
           {selectedItem && itemsData.find(item => item.item === selectedItem)?.types && (
-            <FormGroup>
+            <FormControl>
               <InputLabel id="type-label">Select Type</InputLabel>
               <Select
                 labelId="type-label"
@@ -100,12 +100,12 @@ const View = ({
                   </MenuItem>
                 ))}
               </Select>
-            </FormGroup>
+            </FormControl>
           )}
 
           {itemsData.find(item => item.item === selectedItem)?.specials && (
             itemsData.find(item => item.item === selectedItem).specials.map((special, index) => (
-              <FormGroup key={index}>
+              <FormControl key={index}>
                 <FormControlLabel
                   label={`${special.feature} (+${special.additionalCost} gp)`}
                   control={
@@ -115,7 +115,7 @@ const View = ({
                     />
                   }
                 />
-              </FormGroup>
+              </FormControl>
             ))
           )}
 
