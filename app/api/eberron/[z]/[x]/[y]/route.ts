@@ -1,42 +1,21 @@
-import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3"
-
-const s3Client = new S3Client({
-  region: "us-east-1",
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
-  }
-})
-
-export async function GET(_, { params }: { params: Promise<{ z: string; x: string; y: string }> }) {
+export async function GET(_: Request, { params }: { params: Promise<{ z: string; x: string; y: string }> }) {
   const { z, x, y } = await params
-  const fileName = `${y}`
-
-  const command = new GetObjectCommand({
-    Bucket: 'dndeberron',
-    Key: `eberron/${z}/${x}/${fileName}`
-  })
 
   try {
-    const { Body } = await s3Client.send(command)
+    const res = await fetch(`${process.env.STORAGE_URL}/eberron/${z}/${x}/${y}`)
 
-    return new Response(Body as BodyInit, {
-      status: 200,
-      headers: {
-        'Content-Type': 'image/png'
-      }
+    if (!res.ok) {
+      return new Response(null, { status: res.status })
+    }
+
+    return new Response(res.body, {
+      headers: { 'Content-Type': 'image/png' },
     })
   } catch (error) {
     console.error('Error fetching tile:', error)
-    console.log(`Z: ${z}, X: ${x}, Y: ${y}`)
-
-    return new Response(JSON.stringify({
-      error: 'Failed to fetch tile', details: error.message
-    }), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
+    return Response.json({
+      error: 'Failed to fetch tile',
+      details: (error as Error).message,
+    }, { status: 500 })
   }
 }
