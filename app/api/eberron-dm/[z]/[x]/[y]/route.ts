@@ -1,8 +1,10 @@
+import { fetchFromStorage } from "@/lib/storage"
+
 export async function GET(_: Request, { params }: { params: Promise<{ z: string; x: string; y: string }> }) {
   const { z, x, y } = await params
 
   try {
-    const res = await fetch(`${process.env.STORAGE_URL}/eberron-dm/${z}/${x}/${y}`)
+    const res = await fetchFromStorage(`eberron-dm/${z}/${x}/${y}`)
 
     if (!res.ok) {
       return new Response(null, { status: res.status })
