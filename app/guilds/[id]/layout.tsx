@@ -10,11 +10,13 @@ export default async function GuildLayout({ params, children }) {
     redirect('/')
   }
 
+  const { id } = await params
+
   return (
     <main className="main">
       <div className="wrapper">
-        <GuildProvider guildId={params.id}>
-          <GuildNav guildId={params.id} userId={session.user.id}/>
+        <GuildProvider guildId={id}>
+          <GuildNav guildId={id} userId={session.user.id}/>
           <GuildBanner />
           {children}
         </GuildProvider>

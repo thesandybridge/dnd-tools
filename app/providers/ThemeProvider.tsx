@@ -5,7 +5,6 @@ import { useQuery } from '@tanstack/react-query'
 import { fetchUser } from '@/lib/users'
 import { useSession } from 'next-auth/react'
 import { ThemeProvider as MUIThemeProvider, createTheme } from '@mui/material/styles';
-import { ConfigProvider } from 'antd'
 
 const ThemeContext = createContext()
 
@@ -37,15 +36,6 @@ export default function ThemeProvider({ children }) {
       }
     }
   });
-
-  const antd_theme = {
-    token: {
-      colorPrimary: '#928374',
-      borderRadius: 4,
-
-      backgroundColor: '#282828'
-    },
-  }
 
   const { data: session } = useSession()
 
@@ -101,9 +91,7 @@ export default function ThemeProvider({ children }) {
       toggleThemeMode
     }}>
       <MUIThemeProvider theme={mui_theme}>
-        <ConfigProvider theme={antd_theme}>
           {children}
-        </ConfigProvider>
       </MUIThemeProvider>
     </ThemeContext.Provider>
   )

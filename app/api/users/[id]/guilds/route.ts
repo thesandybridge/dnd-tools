@@ -33,7 +33,7 @@ export const GET = auth(async function GET(request, { params }) {
   )
 
   try {
-    const { id } = params
+    const { id } = await params
     const { data, error } = await supabase
       .from('guilds')
       .select('id, name, guild_id, owner')

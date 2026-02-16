@@ -8,8 +8,8 @@ const s3Client = new S3Client({
   }
 })
 
-export async function GET(_, { params }) {
-  const { z, x, y } = params
+export async function GET(_, { params }: { params: Promise<{ z: string; x: string; y: string }> }) {
+  const { z, x, y } = await params
   const fileName = `${y}`
 
   const command = new GetObjectCommand({

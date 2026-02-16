@@ -1,7 +1,8 @@
 import ColorPickerComponent from "../components/settings/ColorPicker"
 
-export default function Settings({ params }) {
+export default async function Settings({ params }) {
+  const { id } = await params
   return (
-    <ColorPickerComponent userId={params.id}/>
+    <ColorPickerComponent userId={id}/>
   )
 }

@@ -36,7 +36,7 @@ export const GET = auth(async function PATCH(request: NextRequest, { params }) {
   )
 
   try {
-    const { guild_id } = params
+    const { guild_id } = await params
 
     const { data, error } = await supabase
       .from('guilds')
@@ -102,7 +102,7 @@ export const PATCH = auth(async function PATCH(request, { params }) {
   )
 
   try {
-    const { guild_id } = params
+    const { guild_id } = await params
     const requestData = await request.json()
     const { guildData } = requestData
 
@@ -170,7 +170,7 @@ export const DELETE = auth(async function DELETE(request, { params }) {
   )
 
   try {
-    const { guild_id } = params
+    const { guild_id } = await params
 
     const { data, error } = await supabase
       .from('guilds')

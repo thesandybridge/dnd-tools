@@ -10,11 +10,13 @@ export default async function UserLayout({ children, params }) {
     redirect('/')
   }
 
+  const { id } = await params
+
   return (
     <main className="main">
       <div className="wrapper">
-        <UserProvider userId={params.id}>
-          <UserNav userId={params.id} />
+        <UserProvider userId={id}>
+          <UserNav userId={id} />
           <UserComponent/>
           {children}
         </UserProvider>

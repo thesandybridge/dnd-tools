@@ -1,3 +1,3 @@
-export default async function User({ params }) {
+export default async function User() {
   return null
 }

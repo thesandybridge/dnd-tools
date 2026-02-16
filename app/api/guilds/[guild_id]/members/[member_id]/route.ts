@@ -36,7 +36,7 @@ export const GET = auth(async function GET(request, { params }) {
   const supabase = createSupabaseClient(session)
 
   try {
-    const { guild_id, member_id } = params
+    const { guild_id, member_id } = await params
 
     const { data, error } = await supabase
       .from('guild_members')
@@ -85,7 +85,7 @@ export const PATCH = auth(async function PATCH(request, { params }) {
   const supabase = createSupabaseClient(session)
 
   try {
-    const { guild_id, member_id } = params
+    const { guild_id, member_id } = await params
     const requestData = await request.json()
     const { role } = requestData
 
@@ -153,7 +153,7 @@ export const DELETE = auth(async function DELETE(request, { params }) {
   const supabase = createSupabaseClient(session)
 
   try {
-    const { guild_id, member_id } = params
+    const { guild_id, member_id } = await params
 
     const { data: memberData, error: memberError } = await supabase
       .from('guild_members')

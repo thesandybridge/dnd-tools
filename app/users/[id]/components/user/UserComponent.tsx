@@ -3,7 +3,6 @@
 import Image from "next/image"
 import "react-color-palette/css"
 import { useTheme } from "@/app/providers/ThemeProvider"
-import 'react-toastify/dist/ReactToastify.css'
 import styles from "./user.module.css"
 import { useUser } from "../../providers/UserProvider"
 

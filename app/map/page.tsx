@@ -1,6 +1,6 @@
-import dynamic from 'next/dynamic'
 import { auth } from '@/auth'
 import { redirect } from 'next/navigation'
+import MapLoader from './MapLoader'
 
 export default async function Map() {
   const session = await auth()
@@ -8,9 +8,7 @@ export default async function Map() {
     redirect('/')
   }
 
-  const MapComponent = dynamic(() => import("./components/map/Map"), { ssr: false })
-
   return (
-    <MapComponent user_id={session?.user.id} />
+    <MapLoader user_id={session.user.id} />
   )
 }

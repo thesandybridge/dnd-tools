@@ -36,7 +36,7 @@ export const GET = auth(async function GET(request, { params }) {
   const supabase = createSupabaseClient(session)
 
   try {
-    const { guild_id } = params
+    const { guild_id } = await params
 
     const { data, error } = await supabase
       .from('guild_members')
@@ -93,7 +93,7 @@ export const POST = auth(async function POST(request, { params }) {
   const supabase = createSupabaseClient(session)
 
   try {
-    const { guild_id } = params
+    const { guild_id } = await params
     const { memberId, role } = await request.json()
 
     const { data: currentUser, error: userError } = await supabase

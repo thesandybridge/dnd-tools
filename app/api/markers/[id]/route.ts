@@ -35,7 +35,7 @@ export const DELETE = auth(async function DELETE(request, { params }) {
   )
 
   try {
-    const { id } = params
+    const { id } = await params
 
     const { data: referencingMarkers, error: referencingError } = await supabase
       .from('markers')
@@ -133,7 +133,7 @@ export const PATCH = auth(async function PATCH(request, { params }) {
   )
 
   try {
-    const { id } = params
+    const { id } = await params
     const requestData = await request.json()
     const { distance } = requestData
 

@@ -6,7 +6,6 @@ import { useTheme } from "@/app/providers/ThemeProvider"
 import { updateUser } from "@/lib/users"
 import { useMutation } from '@tanstack/react-query'
 import { ToastContainer, toast } from 'react-toastify'
-import 'react-toastify/dist/ReactToastify.css'
 import styles from "./settings.module.css"
 
 export default function ColorPickerComponent({ userId }) {
