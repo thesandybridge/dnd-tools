@@ -1,141 +1,74 @@
 import { auth } from "@/auth"
-import { createClient } from '@supabase/supabase-js'
-
-const createSupabaseClient = (session) => {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    {
-      global: {
-        headers: {
-          Authorization: `Bearer ${session.supabaseAccessToken}`,
-        },
-      },
-    }
-  )
-}
+import { prisma } from "@/lib/prisma"
+import { serializeMember } from "@/lib/serializers"
 
 export const GET = auth(async function GET(request, { params }) {
-  let session
-  try {
-    session = request.auth
-  } catch (error) {
-    return new Response(JSON.stringify({
-      error: 'Authentication failed',
-      details: error.message
-    }), {
-      status: 401,
-      headers: { 'Content-Type': 'application/json' }
-    })
-  }
+  const session = request.auth
 
   if (!session?.user) {
     return new Response(null, { status: 302, headers: { Location: '/' } })
   }
-
-  const supabase = createSupabaseClient(session)
 
   try {
     const { guild_id } = await params
 
-    const { data, error } = await supabase
-      .from('guild_members')
-      .select(`
-        guild_id,
-        user_id,
-        role,
-        users ( id, name, email )
-      `)
-      .eq('guild_id', guild_id)
-
-    if (error) {
-      throw new Error(error.message)
-    }
-
-    return new Response(JSON.stringify(data), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json'
-      }
+    const members = await prisma.guildMember.findMany({
+      where: { guildId: guild_id as string },
+      include: {
+        user: { select: { id: true, name: true, email: true } },
+      },
     })
+
+    return Response.json(members.map(serializeMember))
   } catch (error) {
-    console.error('Failed to fetch members:', error.message)
-    return new Response(JSON.stringify({
+    console.error('Failed to fetch members:', (error as Error).message)
+    return Response.json({
       error: 'Failed to fetch members',
-      details: error.message
-    }), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
+      details: (error as Error).message
+    }, { status: 500 })
   }
 })
 
 export const POST = auth(async function POST(request, { params }) {
-  let session
-  try {
-    session = request.auth
-  } catch (error) {
-    return new Response(JSON.stringify({
-      error: 'Authentication failed',
-      details: error.message
-    }), {
-      status: 401,
-      headers: { 'Content-Type': 'application/json' }
-    })
-  }
+  const session = request.auth
 
   if (!session?.user) {
     return new Response(null, { status: 302, headers: { Location: '/' } })
   }
-
-  const supabase = createSupabaseClient(session)
 
   try {
     const { guild_id } = await params
     const { memberId, role } = await request.json()
 
-    const { data: currentUser, error: userError } = await supabase
-      .from('guild_members')
-      .select('role')
-      .eq('guild_id', guild_id)
-      .eq('user_id', session.user.id)
-      .single()
+    const currentUser = await prisma.guildMember.findUnique({
+      where: {
+        guildId_userId: {
+          guildId: guild_id as string,
+          userId: session.user.id!,
+        },
+      },
+    })
 
-    if (userError || (currentUser.role !== 'owner' && currentUser.role !== 'admin')) {
-      return new Response(JSON.stringify({
+    if (!currentUser || (currentUser.role !== 'owner' && currentUser.role !== 'admin')) {
+      return Response.json({
         error: 'Unauthorized to add members'
-      }), {
-        status: 403,
-        headers: { 'Content-Type': 'application/json' }
-      })
+      }, { status: 403 })
     }
 
-    const { data, error } = await supabase
-      .from('guild_members')
-      .insert({
-        guild_id,
-        user_id: memberId,
-        role: role || 'member'
-      })
-
-    if (error) {
-      throw new Error(error.message)
-    }
-
-    return new Response(JSON.stringify(data), {
-      status: 201,
-      headers: { 'Content-Type': 'application/json' }
+    const data = await prisma.guildMember.create({
+      data: {
+        guildId: guild_id as string,
+        userId: memberId,
+        role: role || 'member',
+      },
     })
+
+    return Response.json(data, { status: 201 })
   } catch (error) {
-    console.error('Failed to add member:', error.message)
-    return new Response(JSON.stringify({
+    console.error('Failed to add member:', (error as Error).message)
+    return Response.json({
       error: 'Failed to add member',
-      details: error.message
-    }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' }
-    })
+      details: (error as Error).message
+    }, { status: 500 })
   }
 })

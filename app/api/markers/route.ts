@@ -1,202 +1,81 @@
 import { auth } from "@/auth"
-import { Marker } from "@/lib/markers"
-import { createClient } from '@supabase/supabase-js'
-import { redirect } from 'next/navigation'
+import { prisma } from "@/lib/prisma"
+import { serializeMarker } from "@/lib/serializers"
+import type { Marker } from "@/lib/markers"
 
 export const GET = auth(async function GET(request) {
-  let session
-  try {
-    session = request.auth
-  } catch (error) {
-    console.error('Authentication failed:', error.message)
-    return redirect('/')
-  }
+  const session = request.auth
 
   if (!session?.user) {
     return new Response(null, { status: 302, headers: { Location: '/' } })
   }
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    {
-      global: {
-        headers: {
-          Authorization: `Bearer ${session.supabaseAccessToken}`,
-        },
-      },
-    }
-  )
-
   try {
-    const { data, error } = await supabase
-      .from("markers")
-      .select("*")
-      .eq('user_id', session.user.id)
-
-    if (error) {
-      throw new Error(error.message)
-    }
-
-    return new Response(JSON.stringify(data), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json'
-      }
+    const markers = await prisma.marker.findMany({
+      where: { userId: session.user.id! },
     })
+
+    return Response.json(markers.map(serializeMarker))
   } catch (error) {
-    console.error('Failed to fetch markers:', error.message)
-    return new Response(JSON.stringify({
+    console.error('Failed to fetch markers:', (error as Error).message)
+    return Response.json({
       error: 'Failed to fetch markers',
-      details: error.message
-    }), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
+      details: (error as Error).message
+    }, { status: 500 })
   }
 })
 
-
 export const POST = auth(async function POST(request) {
-  let session
-  try {
-    session = request.auth
-  } catch (error) {
-    console.error('Authentication failed:', error.message)
-    return new Response(JSON.stringify({
-      error: 'Authentication failed',
-      details: error.message
-    }), {
-      status: 401,
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
-  }
+  const session = request.auth
 
   if (!session?.user) {
     return new Response(null, { status: 302, headers: { Location: '/' } })
   }
-
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    {
-      global: {
-        headers: {
-          Authorization: `Bearer ${session.supabaseAccessToken}`,
-        },
-      },
-    }
-  )
 
   try {
     const requestData: Marker = await request.json()
     const { position, prev_marker, distance, uuid } = requestData
 
-    const { data, error } = await supabase
-      .from('markers')
-      .insert([{
+    const marker = await prisma.marker.create({
+      data: {
         uuid: uuid,
-        user_id: session.user.id,
-        position: position,
-        distance: distance,
-        prev_marker: prev_marker
-      }])
-      .select("*")
-      .single()
-
-
-    if (error) {
-      throw new Error(error.message)
-    }
-
-    return new Response(JSON.stringify(data), {
-      status: 201,
-      headers: {
-        'Content-Type': 'application/json'
-      }
+        userId: session.user.id!,
+        position: position as object,
+        distance: distance != null ? Number(distance) : 0,
+        prevMarker: prev_marker != null ? String(prev_marker) : null,
+      },
     })
+
+    return Response.json(serializeMarker(marker), { status: 201 })
   } catch (error) {
-    console.error('Failed to insert marker:', error.message)
-    return new Response(JSON.stringify({
+    console.error('Failed to insert marker:', (error as Error).message)
+    return Response.json({
       error: 'Failed to insert marker',
-      details: error.message
-    }), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
+      details: (error as Error).message
+    }, { status: 500 })
   }
 })
 
 export const DELETE = auth(async function DELETE(request) {
-  let session
-  try {
-    session = request.auth
-  } catch (error) {
-    console.error('Authentication failed:', error.message)
-    return new Response(JSON.stringify({
-      error: 'Authentication failed',
-      details: error.message
-    }), {
-      status: 401,
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
-  }
+  const session = request.auth
 
   if (!session?.user) {
     return new Response(null, { status: 302, headers: { Location: '/' } })
   }
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    {
-      global: {
-        headers: {
-          Authorization: `Bearer ${session.supabaseAccessToken}`,
-        },
-      },
-    }
-  )
-
   try {
-    const requestData = await request.json()
-    const { id } = requestData
+    const { id } = await request.json()
 
-    const { data, error } = await supabase
-      .from('markers')
-      .delete()
-      .eq('id', id)
-      .single()
-
-
-    if (error) {
-      throw new Error(error.message)
-    }
-
-    return new Response(JSON.stringify(data), {
-      status: 201,
-      headers: {
-        'Content-Type': 'application/json'
-      }
+    await prisma.marker.delete({
+      where: { id },
     })
+
+    return Response.json(null, { status: 201 })
   } catch (error) {
-    console.error('Failed to insert marker:', error.message)
-    return new Response(JSON.stringify({
+    console.error('Failed to delete marker:', (error as Error).message)
+    return Response.json({
       error: 'Failed to delete marker',
-      details: error.message
-    }), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
+      details: (error as Error).message
+    }, { status: 500 })
   }
 })

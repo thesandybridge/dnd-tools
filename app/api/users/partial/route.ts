@@ -1,68 +1,32 @@
 import { auth } from "@/auth"
-import { createClient } from '@supabase/supabase-js'
+import { prisma } from "@/lib/prisma"
 
 export const GET = auth(async function GET(request) {
-  let session
-  try {
-    session = request.auth
-  } catch (error) {
-    console.error('Authentication failed:', error.message)
-    return new Response(JSON.stringify({
-      error: 'Authentication failed',
-      details: error.message
-    }), {
-      status: 401,
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
-  }
+  const session = request.auth
 
   if (!session?.user) {
     return new Response(null, { status: 302, headers: { Location: '/' } })
   }
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    {
-      global: {
-        headers: {
-          Authorization: `Bearer ${session.supabaseAccessToken}`,
-        },
-      },
-    }
-  )
-
   try {
     const url = new URL(request.url)
-    const take = url.searchParams.get('take') || 5
+    const take = parseInt(url.searchParams.get('take') || '5', 10)
     const match = url.searchParams.get('match') || ''
 
-    const { data, error } = await supabase
-      .from('users')
-      .select('id, name, email')
-      .ilike('name', `%${match}%`)
-      .limit(parseInt(take, 10))
-
-    if (error) {
-      throw new Error(error.message)
-    }
-
-    return new Response(JSON.stringify(data), {
-      status: 200,
-      headers: { 'Content-Type': 'application/json' }
+    const data = await prisma.user.findMany({
+      where: {
+        name: { contains: match, mode: 'insensitive' },
+      },
+      select: { id: true, name: true, email: true },
+      take,
     })
+
+    return Response.json(data)
   } catch (error) {
-    console.error('Failed to fetch users:', error.message)
-    return new Response(JSON.stringify({
+    console.error('Failed to fetch users:', (error as Error).message)
+    return Response.json({
       error: 'Failed to fetch users',
-      details: error.message
-    }), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
+      details: (error as Error).message
+    }, { status: 500 })
   }
 })

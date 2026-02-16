@@ -1,0 +1,109 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ── NextAuth models ──────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime? @map("email_verified")
+  image         String?
+  color         String?
+
+  accounts     Account[]
+  sessions     Session[]
+  guilds       Guild[]       @relation("GuildOwner")
+  guildMembers GuildMember[]
+  markers      Marker[]
+
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ── App models ───────────────────────────────────────────────────────
+
+model Guild {
+  id      Int    @id @default(autoincrement())
+  guildId String @unique @default(uuid()) @map("guild_id")
+  name    String
+  ownerId String @map("owner")
+
+  ownerUser User          @relation("GuildOwner", fields: [ownerId], references: [id])
+  members   GuildMember[]
+
+  @@map("guilds")
+}
+
+model GuildMember {
+  guildId  String   @map("guild_id")
+  userId   String   @map("user_id")
+  role     String   @default("member")
+  joinedAt DateTime @default(now()) @map("joined_at")
+
+  guild Guild @relation(fields: [guildId], references: [guildId], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@id([guildId, userId])
+  @@map("guild_members")
+}
+
+model Marker {
+  id         Int      @id @default(autoincrement())
+  uuid       String   @unique @default(uuid())
+  userId     String   @map("user_id")
+  position   Json
+  distance   Float?   @default(0)
+  prevMarker String?  @map("prev_marker")
+  createdAt  DateTime @default(now()) @map("created_at")
+  text       String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("markers")
+}

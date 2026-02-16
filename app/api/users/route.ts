@@ -1,64 +1,22 @@
 import { auth } from "@/auth"
-import { createClient } from '@supabase/supabase-js'
+import { prisma } from "@/lib/prisma"
 
-export const GET = auth(async function PATCH(request) {
-  let session
-  try {
-    session = request.auth
-  } catch (error) {
-    console.error('Authentication failed:', error.message)
-    return new Response(JSON.stringify({
-      error: 'Authentication failed',
-      details: error.message
-    }), {
-      status: 401,
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
-  }
+export const GET = auth(async function GET(request) {
+  const session = request.auth
 
   if (!session?.user) {
     return new Response(null, { status: 302, headers: { Location: '/' } })
   }
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    {
-      global: {
-        headers: {
-          Authorization: `Bearer ${session.supabaseAccessToken}`,
-        },
-      },
-    }
-  )
-
   try {
-    const { data, error } = await supabase
-      .from('users')
-      .select("*")
+    const data = await prisma.user.findMany()
 
-    if (error) {
-      throw new Error(error.message)
-    }
-
-    return new Response(JSON.stringify(data), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
+    return Response.json(data)
   } catch (error) {
-    console.error('Failed to fetch users:', error.message)
-    return new Response(JSON.stringify({
+    console.error('Failed to fetch users:', (error as Error).message)
+    return Response.json({
       error: 'Failed to fetch users',
-      details: error.message
-    }), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    })
+      details: (error as Error).message
+    }, { status: 500 })
   }
 })
