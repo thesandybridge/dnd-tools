@@ -13,7 +13,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
-const cinzel = Cinzel({ subsets: ["latin"], variable: "--font-cinzel", weight: ["400", "700"] })
+const cinzel = Cinzel({ subsets: ["latin"], variable: "--font-cinzel", weight: ["400", "700"], preload: false })
 
 export const metadata = {
   title: "Dungeon Syndrome",
