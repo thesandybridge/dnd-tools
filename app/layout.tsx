@@ -20,8 +20,14 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const year = new Date().getFullYear()
   return (
-    <html lang="en">
+    <html lang="en" data-theme="parchment" data-mode="dark">
       <body className={`${inter.variable} ${cinzel.variable} ${inter.className}`}>
+        <svg width="0" height="0" aria-hidden="true" className="absolute">
+          <filter id="corona-filter">
+            <feTurbulence type="fractalNoise" baseFrequency="0.04 0.06" numOctaves={4} seed="3" result="noise" />
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale={6} xChannelSelector="R" yChannelSelector="G" />
+          </filter>
+        </svg>
         <SessionProvider>
           <QueryClientProvider>
               <ThemeProvider>
@@ -39,7 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </ThemeProvider>
             <ReactQueryDevtools
               initialIsOpen={false}
-              buttonPosition="bottom-left"
+              buttonPosition="top-right"
             />
           </QueryClientProvider>
         </SessionProvider>

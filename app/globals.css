@@ -57,6 +57,8 @@
   --sidebar-accent-foreground: #c4b99a;
   --sidebar-border: #3a3428;
   --sidebar-ring: #c8a44e;
+  --corona-rgb: 200, 164, 78;
+  --corona-intensity: 0.8;
 }
 
 [data-theme="parchment"][data-mode="light"] {
@@ -98,6 +100,8 @@
   --sidebar-accent-foreground: #2c2416;
   --sidebar-border: #d4cbb5;
   --sidebar-ring: #8b6d1f;
+  --corona-rgb: 139, 109, 31;
+  --corona-intensity: 0.5;
 }
 
 /* --- Shadowfell --- */
@@ -141,6 +145,8 @@
   --sidebar-accent-foreground: #b8b2d0;
   --sidebar-border: #302e3d;
   --sidebar-ring: #8b5cf6;
+  --corona-rgb: 139, 92, 246;
+  --corona-intensity: 0.8;
 }
 
 [data-theme="shadowfell"][data-mode="light"] {
@@ -182,6 +188,8 @@
   --sidebar-accent-foreground: #1a1630;
   --sidebar-border: #ccc8e0;
   --sidebar-ring: #6d28d9;
+  --corona-rgb: 109, 40, 217;
+  --corona-intensity: 0.5;
 }
 
 /* --- Dragonfire --- */
@@ -225,6 +233,8 @@
   --sidebar-accent-foreground: #d0b2b2;
   --sidebar-border: #3d2e2e;
   --sidebar-ring: #dc4a4a;
+  --corona-rgb: 220, 74, 74;
+  --corona-intensity: 0.8;
 }
 
 [data-theme="dragonfire"][data-mode="light"] {
@@ -266,6 +276,8 @@
   --sidebar-accent-foreground: #301616;
   --sidebar-border: #dcc8c8;
   --sidebar-ring: #b91c1c;
+  --corona-rgb: 185, 28, 28;
+  --corona-intensity: 0.5;
 }
 
 /* --- Feywild --- */
@@ -309,6 +321,8 @@
   --sidebar-accent-foreground: #b2d0b8;
   --sidebar-border: #2e3d30;
   --sidebar-ring: #4ade80;
+  --corona-rgb: 74, 222, 128;
+  --corona-intensity: 0.8;
 }
 
 [data-theme="feywild"][data-mode="light"] {
@@ -350,6 +364,96 @@
   --sidebar-accent-foreground: #163016;
   --sidebar-border: #c8dccb;
   --sidebar-ring: #16a34a;
+  --corona-rgb: 22, 163, 74;
+  --corona-intensity: 0.5;
+}
+
+/* ===================================================================
+   Corona Effect System
+   =================================================================== */
+
+@property --corona-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes corona-drift {
+  to { --corona-angle: 360deg; }
+}
+
+@keyframes corona-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* Corona border glow - apply to positioned elements */
+.corona-border::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  z-index: -1;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%,
+    rgba(var(--corona-rgb), 0.25) 5%,
+    rgba(var(--corona-rgb), 0.12) 10%,
+    transparent 20%,
+    rgba(var(--corona-rgb), 0.06) 40%,
+    transparent 50%,
+    rgba(var(--corona-rgb), 0.18) 55%,
+    rgba(var(--corona-rgb), 0.08) 60%,
+    transparent 70%,
+    transparent 100%
+  );
+  box-shadow: 0 0 8px 2px rgba(var(--corona-rgb), 0.12),
+              0 0 3px 1px rgba(var(--corona-rgb), 0.08);
+  filter: url(#corona-filter);
+  pointer-events: none;
+}
+
+/* Rotating corona sweep */
+.corona-border::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  z-index: -1;
+  background: conic-gradient(
+    from var(--corona-angle),
+    transparent 0%,
+    rgba(var(--corona-rgb), 0.35) 5%,
+    rgba(var(--corona-rgb), 0.22) 12%,
+    rgba(var(--corona-rgb), 0.08) 22%,
+    transparent 32%,
+    transparent 100%
+  );
+  animation: corona-drift 25s linear infinite;
+  pointer-events: none;
+}
+
+/* Hover-only corona */
+.corona-hover {
+  position: relative;
+}
+.corona-hover::before,
+.corona-hover::after {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.corona-hover:hover::before,
+.corona-hover:hover::after,
+.corona-hover:focus-within::before,
+.corona-hover:focus-within::after {
+  opacity: 1;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .corona-border::after {
+    animation: none;
+  }
 }
 
 /* ===================================================================
@@ -358,17 +462,6 @@
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-cinzel), serif;
-}
-
-h2 {
-  text-align: center;
-  text-shadow: var(--alt) 1px 0 2px;
-}
-
-* {
-  box-sizing: border-box;
-  padding: 0;
-  margin: 0;
 }
 
 html,
