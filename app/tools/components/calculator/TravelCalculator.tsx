@@ -1,13 +1,14 @@
 "use client"
 
 import { motion, AnimatePresence } from "framer-motion"
-import styles from "./calculator.module.css"
 import { useState, useEffect, useCallback, useMemo } from "react"
 import transportationData from "./travel.json"
 import { convertToDnDCurrency, formatDuration, handleFocus } from "./helper"
 import Banner from "../Banner"
 import { useCurrency } from "../../providers/CurrencyContext"
-import { FormControl, FormGroup, InputLabel, MenuItem, Select, TextField } from "@mui/material"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 const View = ({
   selectedTransport,
@@ -24,13 +25,13 @@ const View = ({
   totalDays,
 }) => {
   return (
-    <div className={styles.calculatorItem}>
+    <div className="p-4 border border-border rounded-lg flex flex-col gap-4 max-w-[900px] w-full overflow-y-auto">
       <Banner image="/images/travel.png">
         <h2>Transportation Calculator</h2>
         <AnimatePresence>
           {totalCost > 0 && (
             <motion.div
-              className={styles.totals}
+              className="border border-primary p-4 sticky bottom-0 bg-background"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -43,7 +44,7 @@ const View = ({
       <AnimatePresence>
         {totalDays && (
           <motion.div
-            className={styles.totals}
+            className="border border-primary p-4 sticky bottom-0 bg-background"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -52,53 +53,57 @@ const View = ({
           </motion.div>
         )}
       </AnimatePresence>
-      <FormControl className={styles.calcGroup}>
-        <FormGroup>
-          <InputLabel id="transportation-label">Select Transportation</InputLabel>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-1.5">
+          <Label>Select Transportation</Label>
           <Select
-            labelId="transportation-label"
-            label="Select Transportation"
-            id="transportation-select"
             value={selectedTransport}
-            autoWidth
-            onChange={(e) => setSelectedTransport(e.target.value)}
+            onValueChange={(val) => setSelectedTransport(val)}
           >
-            <MenuItem value="">Select Transportation</MenuItem>
-            {transportationData.map((option, index) => (
-              <MenuItem
-                key={index}
-                value={option.type}
-              >
-                {option.type} - {option.fare}
-              </MenuItem>
-            ))}
+            <SelectTrigger>
+              <SelectValue placeholder="Select Transportation" />
+            </SelectTrigger>
+            <SelectContent>
+              {transportationData.map((option, index) => (
+                <SelectItem
+                  key={index}
+                  value={option.type}
+                >
+                  {option.type} - {option.fare}
+                </SelectItem>
+              ))}
+            </SelectContent>
           </Select>
-        </FormGroup>
+        </div>
 
         {selectedTransportData.speed !== "Instant" && (
           <>
-            <TextField
-              label="Miles"
-              type="number"
-              onChange={(e) => setDistance(parseFloat(e.target.value) || 0)}
-              value={distance}
-              onFocus={handleFocus}
-              onBlur={resetDistance}
-            />
+            <div className="flex flex-col gap-1.5">
+              <Label>Miles</Label>
+              <Input
+                type="number"
+                onChange={(e) => setDistance(parseFloat(e.target.value) || 0)}
+                value={distance}
+                onFocus={handleFocus}
+                onBlur={resetDistance}
+              />
+            </div>
 
             {selectedTransportData.cargoRate && (
-              <TextField
-                label="Weight (lbs)"
-                value={cargoWeight}
-                type="number"
-                onChange={(e) => setCargoWeight(parseFloat(e.target.value) || 0)}
-                onFocus={handleFocus}
-                onBlur={resetWeight}
-              />
+              <div className="flex flex-col gap-1.5">
+                <Label>Weight (lbs)</Label>
+                <Input
+                  type="number"
+                  value={cargoWeight}
+                  onChange={(e) => setCargoWeight(parseFloat(e.target.value) || 0)}
+                  onFocus={handleFocus}
+                  onBlur={resetWeight}
+                />
+              </div>
             )}
           </>
         )}
-      </FormControl>
+      </div>
     </div>
   )
 }

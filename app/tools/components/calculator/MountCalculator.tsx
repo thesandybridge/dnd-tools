@@ -1,7 +1,6 @@
 "use client"
 
 import { motion, AnimatePresence } from "framer-motion"
-import styles from "./calculator.module.css"
 import { useState, useEffect, useCallback } from "react"
 import itemsData from './items.json'
 import {
@@ -11,7 +10,10 @@ import {
 } from "./helper"
 import Banner from "../Banner"
 import { useCurrency } from "../../providers/CurrencyContext"
-import { Checkbox, FormControl, FormControlLabel, FormGroup, InputLabel, MenuItem, Select, TextField } from "@mui/material"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
 
 const View = ({
   totalCost,
@@ -30,13 +32,13 @@ const View = ({
 }) => {
   return (
     <>
-      <div className={styles.calculatorItem}>
+      <div className="p-4 border border-border rounded-lg flex flex-col gap-4 max-w-[900px] w-full overflow-y-auto">
         <Banner image="/images/mounts.png">
           <h2>Mount Calculator</h2>
           <AnimatePresence>
             {totalCost > 0 && (
               <motion.div
-                className={styles.totals}
+                className="border border-primary p-4 sticky bottom-0 bg-background"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -49,7 +51,7 @@ const View = ({
         <AnimatePresence>
           {totalDays && (
             <motion.div
-              className={styles.totals}
+              className="border border-primary p-4 sticky bottom-0 bg-background"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -58,76 +60,74 @@ const View = ({
             </motion.div>
           )}
         </AnimatePresence>
-        <FormControl className={styles.calcGroup}>
-          <FormGroup>
-            <InputLabel id="mount-label">Select a Mount</InputLabel>
-            <Select
-              labelId="mount-label"
-              label="Select a Mount"
-              id="mount-select"
-              value={selectedItem}
-              onChange={(e) => setSelectedItem(e.target.value)}
-            >
-              <MenuItem value="">Select a Mount</MenuItem>
-              {itemsData.map((item, index) => (
-                <MenuItem
-                  key={index}
-                  value={item.item}
-                >
-                  {item.item} - {convertToDnDCurrency(item.baseCost)}
-                </MenuItem>
-              ))}
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="mount-select">Select a Mount</Label>
+            <Select value={selectedItem} onValueChange={(val) => setSelectedItem(val)}>
+              <SelectTrigger id="mount-select">
+                <SelectValue placeholder="Select a Mount" />
+              </SelectTrigger>
+              <SelectContent>
+                {itemsData.map((item, index) => (
+                  <SelectItem
+                    key={index}
+                    value={item.item}
+                  >
+                    {item.item} - {convertToDnDCurrency(item.baseCost)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
             </Select>
-          </FormGroup>
+          </div>
 
           {selectedItem && itemsData.find(item => item.item === selectedItem)?.types && (
-            <FormControl>
-              <InputLabel id="type-label">Select Type</InputLabel>
-              <Select
-                labelId="type-label"
-                label="Select Type"
-                id="type-select"
-                value={selectedType}
-                onChange={(e) => setSelectedType(e.target.value)}
-              >
-                <MenuItem value="">Select Type</MenuItem>
-                {itemsData.find(item => item.item === selectedItem).types.map((type, index) => (
-                  <MenuItem
-                    key={index}
-                    value={type.type}
-                  >
-                    {type.type}
-                  </MenuItem>
-                ))}
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="type-select">Select Type</Label>
+              <Select value={selectedType} onValueChange={(val) => setSelectedType(val)}>
+                <SelectTrigger id="type-select">
+                  <SelectValue placeholder="Select Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {itemsData.find(item => item.item === selectedItem).types.map((type, index) => (
+                    <SelectItem
+                      key={index}
+                      value={type.type}
+                    >
+                      {type.type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
               </Select>
-            </FormControl>
+            </div>
           )}
 
           {itemsData.find(item => item.item === selectedItem)?.specials && (
             itemsData.find(item => item.item === selectedItem).specials.map((special, index) => (
-              <FormControl key={index}>
-                <FormControlLabel
-                  label={`${special.feature} (+${special.additionalCost} gp)`}
-                  control={
-                    <Checkbox
-                      checked={selectedFeatures.includes(special.feature)}
-                      onChange={(e) => handleFeatureChange(special.feature, e.target.checked)}
-                    />
-                  }
+              <div key={index} className="flex items-center gap-2">
+                <Checkbox
+                  id={`special-${index}`}
+                  checked={selectedFeatures.includes(special.feature)}
+                  onCheckedChange={(checked) => handleFeatureChange(special.feature, !!checked)}
                 />
-              </FormControl>
+                <Label htmlFor={`special-${index}`}>
+                  {special.feature} (+{special.additionalCost} gp)
+                </Label>
+              </div>
             ))
           )}
 
-          <TextField
-            type="number"
-            value={miles}
-            onChange={(e) => setMiles(parseInt(e.target.value, 10) || 0)}
-            onBlur={handleBlur(miles)}
-            onFocus={handleFocus}
-            label="Miles"
-          />
-        </FormControl>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="miles-input">Miles</Label>
+            <Input
+              id="miles-input"
+              type="number"
+              value={miles}
+              onChange={(e) => setMiles(parseInt(e.target.value, 10) || 0)}
+              onBlur={handleBlur(miles)}
+              onFocus={handleFocus}
+            />
+          </div>
+        </div>
       </div>
     </>
   )

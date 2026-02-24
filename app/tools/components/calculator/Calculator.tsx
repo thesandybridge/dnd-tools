@@ -1,10 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faClipboardCheck } from "@fortawesome/free-solid-svg-icons"
+import { ClipboardCheck } from "lucide-react"
 
-import styles from "./calculator.module.css"
 import Gold from "./currency_svgs/Gold"
 import Silver from "./currency_svgs/Silver"
 import Copper from "./currency_svgs/Copper"
@@ -12,7 +10,9 @@ import Platinum from "./currency_svgs/Platinum"
 import Electrum from "./currency_svgs/Electrum"
 import { useCurrency } from "../../providers/CurrencyContext"
 import { handleFocus, convertToLabel } from "./helper"
-import { FormControl, InputLabel, Select, TextField, MenuItem } from "@mui/material"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 function convertCurrency(type, amount) {
   const rates = {
@@ -50,50 +50,50 @@ const View = ({
   handleBlur,
 }) => {
   return (
-    <div className={styles.calculatorWrapper}>
+    <div className="flex flex-col items-center">
       <h2>Currency Converter</h2>
-      <div className={styles.calculator}>
-        <TextField
+      <div className="flex gap-4 p-4 justify-center flex-wrap">
+        <Input
           type="number"
           value={currency}
           onChange={handleCurrencyChange}
           onBlur={handleBlur}
           onFocus={handleFocus}
         />
-        <FormControl>
-          <InputLabel id="currency-label">Select Currency</InputLabel>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="currency-select">Select Currency</Label>
           <Select
-            labelId="currency-label"
-            id="currency-select"
             value={selectedCurrency}
-            label="Select Currency"
-            autoWidth
-            onChange={handleCurrencyTypeChange}
+            onValueChange={handleCurrencyTypeChange}
           >
-            <MenuItem value="CP">Copper</MenuItem>
-            <MenuItem value="SP">Silver</MenuItem>
-            <MenuItem value="EP">Electrum</MenuItem>
-            <MenuItem value="GP">Gold</MenuItem>
-            <MenuItem value="PP">Platinum</MenuItem>
+            <SelectTrigger id="currency-select">
+              <SelectValue placeholder="Select Currency" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="CP">Copper</SelectItem>
+              <SelectItem value="SP">Silver</SelectItem>
+              <SelectItem value="EP">Electrum</SelectItem>
+              <SelectItem value="GP">Gold</SelectItem>
+              <SelectItem value="PP">Platinum</SelectItem>
+            </SelectContent>
           </Select>
-        </FormControl>
+        </div>
       </div>
-      <div className={styles.conversion}>
+      <div className="flex p-4 gap-4 justify-between w-full flex-wrap">
         {conversionResult.map((result, index) => (
           <div
             key={index}
-            className={styles.conversionItem}
+            className="flex relative gap-2 p-2 rounded-lg border border-border flex-1 basis-[calc(25%-2rem)] w-full cursor-pointer hover:border-primary"
             onClick={() => handleCopy(result.amount, index)}
           >
             {result.icon}
-            <div className={styles.conversionText} title={convertToLabel(result.currency)}>
+            <div className="flex gap-1 shrink items-center" title={convertToLabel(result.currency)}>
               <span>{parseInt(result.amount).toLocaleString()}</span>
               <span>{result.currency}</span>
             </div>
             {copiedIndex === index && (
-              <FontAwesomeIcon
-                icon={faClipboardCheck}
-                className={styles.copiedIcon}
+              <ClipboardCheck
+                className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 text-primary"
               />
             )}
           </div>
@@ -132,8 +132,7 @@ const Calculator = () => {
     setCurrency(newAmount)
   }
 
-  const handleCurrencyTypeChange = (e) => {
-    const newType = e.target.value
+  const handleCurrencyTypeChange = (newType) => {
     setSelectedCurrency(newType)
   }
 

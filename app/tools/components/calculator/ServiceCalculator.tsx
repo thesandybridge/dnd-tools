@@ -1,12 +1,13 @@
 "use client"
 import { motion, AnimatePresence } from 'framer-motion'
-import styles from "./calculator.module.css"
 import { useState, useEffect } from "react"
 import servicesData from './services.json'
 import { convertToDnDCurrency } from "./helper"
 import Banner from "../Banner"
 import { useCurrency } from '../../providers/CurrencyContext'
-import { Checkbox, FormControl, FormControlLabel, FormGroup, FormLabel, TextField } from '@mui/material'
+import { Checkbox } from "@/components/ui/checkbox"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 const View = ({
   totalCost,
@@ -21,13 +22,13 @@ const View = ({
 }) => {
   return (
     <>
-      <div className={styles.calculatorItem}>
+      <div className="p-4 border border-border rounded-lg flex flex-col gap-4 max-w-[900px] w-full overflow-y-auto">
         <Banner image="/images/tavern.png">
           <h2>Services Calculator</h2>
           <AnimatePresence>
             {totalCost > 0 && (
               <motion.div
-                className={styles.totals}
+                className="border border-primary p-4 sticky bottom-0 bg-background"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -37,71 +38,77 @@ const View = ({
             )}
           </AnimatePresence>
         </Banner>
-        <div className={styles.calcGroup}>
+        <div className="flex gap-4 flex-wrap">
         {servicesData.map(house => (
-          <div key={house.house} className={styles.inputGroup}>
-            <FormControl>
-              <FormLabel component="legend">{house.house}</FormLabel>
-              {house.services.map(service => (
-                Object.entries(service).map(([serviceName, serviceDetails]) => {
-                  const serviceKey = `${house.house}|${serviceName}`
-                  return (
-                    <div key={serviceKey}>
-                      <FormGroup>
-                        <FormControlLabel
-                          label={`${serviceName} - ${convertToDnDCurrency(serviceDetails.price)}`}
-                          control={
-                            <Checkbox
-                              checked={!!serviceSelections[serviceKey]}
-                              onChange={() => toggleMainService(house.house, serviceName, serviceDetails.type === 'markup')}
-                            />
-                          }
+          <div key={house.house} className="flex-1 basis-[calc(50%-1rem)] max-md:basis-full flex flex-col gap-2">
+            <h3 className="font-semibold text-sm text-foreground">{house.house}</h3>
+            {house.services.map(service => (
+              Object.entries(service).map(([serviceName, serviceDetails]) => {
+                const serviceKey = `${house.house}|${serviceName}`
+                const mainCheckboxId = `main-${serviceKey}`
+                return (
+                  <div key={serviceKey}>
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center gap-2">
+                        <Checkbox
+                          id={mainCheckboxId}
+                          checked={!!serviceSelections[serviceKey]}
+                          onCheckedChange={() => toggleMainService(house.house, serviceName, serviceDetails.type === 'markup')}
                         />
-                        {serviceSelections[serviceKey] && (
-                          <>
-                            {serviceDetails.unit && (
-                              <TextField
-                                label={`${serviceDetails.unit.split(' / ')[1]}`}
+                        <Label htmlFor={mainCheckboxId}>
+                          {`${serviceName} - ${convertToDnDCurrency(serviceDetails.price)}`}
+                        </Label>
+                      </div>
+                      {serviceSelections[serviceKey] && (
+                        <>
+                          {serviceDetails.unit && (
+                            <div className="flex flex-col gap-1.5">
+                              <Label>{serviceDetails.unit.split(' / ')[1]}</Label>
+                              <Input
                                 type="number"
                                 value={unitInputs[serviceKey] || ''}
                                 onChange={(e) => setUnitInputs({ ...unitInputs, [serviceKey]: parseFloat(e.target.value) })}
                                 key={`unitInput-${serviceKey}`}
                               />
-                            )}
-                            {serviceDetails.type === 'markup' && (
-                              <TextField
+                            </div>
+                          )}
+                          {serviceDetails.type === 'markup' && (
+                            <div className="flex flex-col gap-1.5">
+                              <Label>Base Cost</Label>
+                              <Input
                                 type="number"
-                                label="Base Cost"
                                 value={markupPrices[serviceKey] || ''}
                                 onChange={(e) => setMarkupPrices({ ...markupPrices, [serviceKey]: parseFloat(e.target.value) })}
                                 key={`markupInput-${serviceKey}`}
                               />
-                            )}
-                            {serviceDetails.additionalServices?.map(additional => {
-                              const additionalServiceName = Object.keys(additional)[0]
-                              const additionalServiceKey = `${serviceKey}|additional|${additionalServiceName}`
-                              return (
-                                <div key={additionalServiceKey} className={styles.additionalService}>
-                                  <FormControlLabel
-                                    label={additionalServiceName}
-                                    control={
-                                      <Checkbox
-                                        checked={!!additionalServicesSelected[additionalServiceKey]}
-                                        onChange={() => toggleAdditionalService(house.house, serviceName, additionalServiceName)}
-                                      />
-                                    }
+                            </div>
+                          )}
+                          {serviceDetails.additionalServices?.map(additional => {
+                            const additionalServiceName = Object.keys(additional)[0]
+                            const additionalServiceKey = `${serviceKey}|additional|${additionalServiceName}`
+                            const additionalCheckboxId = `additional-${additionalServiceKey}`
+                            return (
+                              <div key={additionalServiceKey} className="pl-4">
+                                <div className="flex items-center gap-2">
+                                  <Checkbox
+                                    id={additionalCheckboxId}
+                                    checked={!!additionalServicesSelected[additionalServiceKey]}
+                                    onCheckedChange={() => toggleAdditionalService(house.house, serviceName, additionalServiceName)}
                                   />
+                                  <Label htmlFor={additionalCheckboxId}>
+                                    {additionalServiceName}
+                                  </Label>
                                 </div>
-                              )
-                            })}
-                          </>
-                        )}
-                      </FormGroup>
+                              </div>
+                            )
+                          })}
+                        </>
+                      )}
                     </div>
-                  )
-                })
-              ))}
-            </FormControl>
+                  </div>
+                )
+              })
+            ))}
           </div>
         ))}
         </div>
