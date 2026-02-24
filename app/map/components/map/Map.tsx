@@ -1,6 +1,6 @@
 "use client"
 
-import { memo, useEffect, useMemo, useState } from "react"
+import { memo, useEffect, useMemo, useState, useCallback, type MutableRefObject } from "react"
 import {
   MapContainer,
   TileLayer,
@@ -12,18 +12,14 @@ import {
   useMap
 } from 'react-leaflet'
 import L from "leaflet"
-import CustomControls from "./Controls"
-import MarkerButton from "./MarkerButton"
-import RulerButton from "./RulerButton"
 import { calculateDistance } from "./utils"
 import { useTheme } from "@/app/providers/ThemeProvider"
-import DMButton from "./DMButton"
-import useRemoveMarkerMutation from "../../hooks/useRemoveMarkerMutation"
 import useAddMarkerMutation from "../../hooks/useAddMarkerMutation"
 import { svgToBase64, uuid } from "@/utils/helpers"
 import useGetMarkers from "../../hooks/useGetMarkers"
+import type { MapHandle, MarkerScreenPosition } from "../../MapLoader"
 
-const RulerHandler = memo(({ addRulerPoint }) => {
+const RulerHandler = memo(({ addRulerPoint }: { addRulerPoint: (latlng: L.LatLng) => void }) => {
   const map = useMap()
   useMapEvents({
     click: (e) => {
@@ -37,7 +33,11 @@ const RulerHandler = memo(({ addRulerPoint }) => {
 
 RulerHandler.displayName = 'RulerHandler'
 
-const MarkerHandler = memo(({ markers, lastMarkerId, addMarker }) => {
+const MarkerHandler = memo(({ markers, lastMarkerId, addMarker }: {
+  markers: Array<{ position: L.LatLng; uuid: string; distance: string }>
+  lastMarkerId: string | null
+  addMarker: (marker: unknown) => void
+}) => {
   const map = useMap()
 
   useMapEvents({
@@ -60,55 +60,94 @@ const MarkerHandler = memo(({ markers, lastMarkerId, addMarker }) => {
   return null
 })
 
-const DebugLogger = () => {
-  const map = useMap();
-
-  useEffect(() => {
-    const logMapDetails = () => {
-      console.log("Center:", map.getCenter());
-      console.log("Bounds:", map.getBounds());
-      console.log("Zoom:", map.getZoom());
-    };
-
-    // Log initial state
-    logMapDetails();
-
-    // Add event listeners
-    map.on('move', logMapDetails); // Log on pan/zoom
-    map.on('zoomend', logMapDetails);
-
-    map.on('tileerror', (error) => {
-      console.log("Tile Load Error:", error.coords);
-    });
-
-    // Cleanup listeners on unmount
-    return () => {
-      map.off('move', logMapDetails);
-      map.off('zoomend', logMapDetails);
-      map.off('tileerror');
-    };
-  }, [map]);
-
-  return null;
-};
-
 MarkerHandler.displayName = 'MarkerHandler'
 
-export default function MapComponent() {
+/** Exposes flyToMarker and zoom via a ref so parent can control the map */
+function MapHandleBridge({ mapHandleRef }: { mapHandleRef: MutableRefObject<MapHandle | null> }) {
+  const map = useMap()
+
+  useEffect(() => {
+    mapHandleRef.current = {
+      flyToMarker: (position) => {
+        map.flyTo([position.lat, position.lng], Math.max(map.getZoom(), 4), {
+          duration: 0.8,
+        })
+      },
+      zoomIn: () => map.zoomIn(),
+      zoomOut: () => map.zoomOut(),
+    }
+    return () => { mapHandleRef.current = null }
+  }, [map, mapHandleRef])
+
+  return null
+}
+
+/** Reports the screen position of the selected marker to the parent on move/zoom */
+function SelectedMarkerTracker({
+  selectedMarkerUuid,
+  markers,
+  onPositionChange,
+}: {
+  selectedMarkerUuid: string | null
+  markers: Array<{ uuid: string; position?: { lat: string | number; lng: string | number } }>
+  onPositionChange: (pos: MarkerScreenPosition) => void
+}) {
+  const map = useMap()
+
+  const update = useCallback(() => {
+    if (!selectedMarkerUuid) {
+      onPositionChange(null)
+      return
+    }
+    const marker = markers.find(m => m.uuid === selectedMarkerUuid)
+    if (!marker?.position) {
+      onPositionChange(null)
+      return
+    }
+    const latlng = L.latLng(Number(marker.position.lat), Number(marker.position.lng))
+    const point = map.latLngToContainerPoint(latlng)
+    onPositionChange({ x: point.x, y: point.y })
+  }, [map, selectedMarkerUuid, markers, onPositionChange])
+
+  useEffect(() => {
+    update()
+  }, [update])
+
+  useMapEvents({
+    move: update,
+    zoom: update,
+    moveend: update,
+    zoomend: update,
+  })
+
+  return null
+}
+
+type MapComponentProps = {
+  selectedMarkerUuid: string | null
+  setSelectedMarkerUuid: (uuid: string | null) => void
+  mapHandleRef: MutableRefObject<MapHandle | null>
+  markerActive: boolean
+  rulerActive: boolean
+  dmActive: boolean
+  onMarkerScreenPositionChange: (pos: MarkerScreenPosition) => void
+}
+
+export default function MapComponent({
+  selectedMarkerUuid, setSelectedMarkerUuid, mapHandleRef,
+  markerActive, rulerActive, dmActive,
+  onMarkerScreenPositionChange,
+}: MapComponentProps) {
   const { theme } = useTheme()
 
   const mutateAddMarker = useAddMarkerMutation();
-  const mutateRemoveMarker = useRemoveMarkerMutation();
   const { data: markers = [] } = useGetMarkers();
 
   const standard_map_tiles_path = "/api/eberron"
   const dm_map_tiles_path = "/api/eberron-dm"
 
   const [lastMarkerId] = useState(null)
-  const [rulerHandler, setRulerHandler] = useState(false)
-  const [markerHandler, setMarkerHandler] = useState(false)
-  const [dmHandler, setDMHandler] = useState(false)
-  const [rulerPoints, setRulerPoints] = useState([])
+  const [rulerPoints, setRulerPoints] = useState<L.LatLng[]>([])
   const [url, setUrl] = useState(standard_map_tiles_path)
 
   const customIcon = useMemo(() => {
@@ -133,6 +172,23 @@ export default function MapComponent() {
     })
   }, [theme.primaryColor])
 
+  const selectedIcon = useMemo(() => {
+    const svgString = `
+    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="200px" height="200px" viewBox="0 0 512 512" fill="${theme.primaryColor}">
+      <g>
+        <path d="M390.54,55.719C353.383,18.578,304.696,0,255.993,0c-48.688,0-97.391,18.578-134.547,55.719 c-59.219,59.219-74.641,149.563-36.094,218.875C129.586,354.109,255.993,512,255.993,512s126.422-157.891,170.656-237.406 C465.195,205.281,449.773,114.938,390.54,55.719z M255.993,305.844c-63.813,0-115.563-51.75-115.563-115.547 c0-63.859,51.75-115.609,115.563-115.609c63.828,0,115.578,51.75,115.578,115.609C371.571,254.094,319.821,305.844,255.993,305.844z"></path>
+      </g>
+    </svg>`
+
+    const base64Svg = svgToBase64(svgString)
+
+    return new L.Icon({
+      iconUrl: base64Svg,
+      iconSize: [32, 32],
+      iconAnchor: [16, 20],
+    })
+  }, [theme.primaryColor])
+
   const mapBounds = [
     [-9674, 0],
     [0, 15360],
@@ -140,32 +196,7 @@ export default function MapComponent() {
 
   const mapCenter = [-75, 125];
 
-  const toggleMarkers = () => {
-    if (rulerHandler) {
-      setRulerHandler(false)
-      setRulerPoints([])
-    }
-
-    setMarkerHandler(prev => !prev)
-  }
-
-  const toggleDM = () => {
-    setDMHandler(prev => !prev)
-  }
-
-  const toggleRuler = () => {
-    if (markerHandler) {
-      setMarkerHandler(false)
-    }
-
-    if (rulerHandler) {
-      setRulerPoints([])
-    }
-
-    setRulerHandler(prev => !prev)
-  }
-
-  const addRulerPoint = (latlng) => {
+  const addRulerPoint = (latlng: L.LatLng) => {
     setRulerPoints(prevPoints => {
       if (prevPoints.length === 2) {
         return [latlng]
@@ -175,44 +206,32 @@ export default function MapComponent() {
     })
   }
 
-  const handleAddMarker = (newMarker) => {
-    if (rulerHandler) {
-      return
+  // Clear ruler points when ruler is deactivated
+  useEffect(() => {
+    if (!rulerActive) {
+      setRulerPoints([])
     }
+  }, [rulerActive])
 
+  const handleAddMarker = (newMarker: unknown) => {
+    if (rulerActive) return
     mutateAddMarker.mutate(newMarker)
   }
 
   useEffect(() => {
-    if (dmHandler) {
-      setUrl(dm_map_tiles_path)
-    } else {
-      setUrl(standard_map_tiles_path)
-    }
-  }, [dmHandler])
+    setUrl(dmActive ? dm_map_tiles_path : standard_map_tiles_path)
+  }, [dmActive])
 
   const memoizedMarkers = useMemo(() => markers.map((marker) => (
     <Marker
       position={marker.position}
       key={marker.uuid}
-      icon={customIcon}
-    >
-      <Popup>
-        <div className="flex flex-col gap-2">
-          {marker.distance === "Start" ? "Starting Point" : `Marker - ${marker.distance} miles from last marker`}
-          <button
-            className="text-destructive hover:underline text-sm cursor-pointer"
-            onClick={(e) => {
-              e.stopPropagation()
-              mutateRemoveMarker.mutate(marker.uuid)
-            }}
-          >
-            Delete Marker
-          </button>
-        </div>
-      </Popup>
-    </Marker>
-  )), [markers, customIcon, mutateRemoveMarker])
+      icon={marker.uuid === selectedMarkerUuid ? selectedIcon : customIcon}
+      eventHandlers={{
+        click: () => setSelectedMarkerUuid(marker.uuid),
+      }}
+    />
+  )), [markers, customIcon, selectedIcon, selectedMarkerUuid, setSelectedMarkerUuid])
 
   return (
     <MapContainer
@@ -228,12 +247,19 @@ export default function MapComponent() {
       zoomSnap={1}
       preferCanvas={true}
       attributionControl={false}
+      zoomControl={false}
       style={{
         height: '100%',
         width: '100%',
       }}
       crs={L.CRS.Simple}
     >
+      <MapHandleBridge mapHandleRef={mapHandleRef} />
+      <SelectedMarkerTracker
+        selectedMarkerUuid={selectedMarkerUuid}
+        markers={markers}
+        onPositionChange={onMarkerScreenPositionChange}
+      />
       <TileLayer
         url={`${url}/{z}/{x}/{y}.png`}
         noWrap={true}
@@ -273,22 +299,16 @@ export default function MapComponent() {
           <Tooltip permanent>{`Distance: ${calculateDistance(rulerPoints[0], rulerPoints[1])} miles`}</Tooltip>
         </Polyline>
       )}
-      <CustomControls position="topleft" className="custom-controls">
-        <MarkerButton onClick={toggleMarkers} isActive={markerHandler} />
-        <RulerButton onClick={toggleRuler} isActive={rulerHandler} />
-        <DMButton onClick={toggleDM} isActive={dmHandler} />
-      </CustomControls>
-      {markerHandler && (
+      {markerActive && (
         <MarkerHandler
           addMarker={handleAddMarker}
           markers={markers}
           lastMarkerId={lastMarkerId}
         />
       )}
-      {rulerHandler && (
+      {rulerActive && (
         <RulerHandler
           addRulerPoint={addRulerPoint}
-          rulerPoints={rulerPoints}
         />
       )}
     </MapContainer>
