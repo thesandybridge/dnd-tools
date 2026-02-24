@@ -246,7 +246,7 @@ export default function MapSidePanel({ guildId, mapId, open, onClose, selectedMa
       )}
 
       <Sheet open={open} onOpenChange={(isOpen) => { if (!isOpen) onClose() }}>
-        <SheetContent side="bottom" className="md:hidden h-[60vh] rounded-t-xl backdrop-blur-lg bg-card/90 border-t border-white/[0.08]">
+        <SheetContent side="bottom" className="md:hidden h-[60vh] rounded-t-xl backdrop-blur-lg bg-card/90 border-t border-white/[0.08]" overlayClassName="md:hidden">
           <SheetHeader>
             <SheetTitle className="font-cinzel">Map Markers</SheetTitle>
           </SheetHeader>

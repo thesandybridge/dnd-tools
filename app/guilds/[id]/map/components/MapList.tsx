@@ -117,7 +117,7 @@ function EditMapDialog({ map, guildId, open, onOpenChange }: {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle className="font-cinzel">Edit Map</DialogTitle>
         </DialogHeader>
