@@ -13,14 +13,16 @@ export default async function GuildLayout({ params, children }) {
   const { id } = await params
 
   return (
-    <main className="main">
-      <div className="wrapper">
+    <div className="flex justify-center p-4">
+      <div className="max-w-[1200px] w-full flex flex-col items-center gap-4">
         <GuildProvider guildId={id}>
-          <GuildNav guildId={id} userId={session.user.id}/>
           <GuildBanner />
-          {children}
+          <GuildNav guildId={id} userId={session.user.id} />
+          <div className="w-full py-4">
+            {children}
+          </div>
         </GuildProvider>
       </div>
-    </main>
+    </div>
   )
 }
