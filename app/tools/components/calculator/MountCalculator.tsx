@@ -8,8 +8,8 @@ import {
   formatDuration,
   handleFocus,
 } from "./helper"
-import Banner from "../Banner"
 import { useCurrency } from "../../providers/CurrencyContext"
+import { GlassPanel } from "@/app/components/ui/GlassPanel"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -31,36 +31,12 @@ const View = ({
   miles,
 }) => {
   return (
-    <>
-      <div className="p-4 border border-border rounded-lg flex flex-col gap-4 max-w-[900px] w-full overflow-y-auto">
-        <Banner image="/images/mounts.png">
-          <h2>Mount Calculator</h2>
-          <AnimatePresence>
-            {totalCost > 0 && (
-              <motion.div
-                className="border border-primary p-4 sticky bottom-0 bg-background"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
-                Total Cost: {convertToDnDCurrency(totalCost)}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </Banner>
-        <AnimatePresence>
-          {totalDays && (
-            <motion.div
-              className="border border-primary p-4 sticky bottom-0 bg-background"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              Total Time: {totalDays}
-            </motion.div>
-          )}
-        </AnimatePresence>
-        <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6 w-full">
+      <h2 className="text-2xl font-bold">Mount Calculator</h2>
+
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+        {/* Left: Form (3 cols) */}
+        <GlassPanel className="md:col-span-3 p-6 flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="mount-select">Select a Mount</Label>
             <Select value={selectedItem} onValueChange={(val) => setSelectedItem(val)}>
@@ -102,18 +78,20 @@ const View = ({
           )}
 
           {itemsData.find(item => item.item === selectedItem)?.specials && (
-            itemsData.find(item => item.item === selectedItem).specials.map((special, index) => (
-              <div key={index} className="flex items-center gap-2">
-                <Checkbox
-                  id={`special-${index}`}
-                  checked={selectedFeatures.includes(special.feature)}
-                  onCheckedChange={(checked) => handleFeatureChange(special.feature, !!checked)}
-                />
-                <Label htmlFor={`special-${index}`}>
-                  {special.feature} (+{special.additionalCost} gp)
-                </Label>
-              </div>
-            ))
+            <div className="flex flex-col gap-2">
+              {itemsData.find(item => item.item === selectedItem).specials.map((special, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <Checkbox
+                    id={`special-${index}`}
+                    checked={selectedFeatures.includes(special.feature)}
+                    onCheckedChange={(checked) => handleFeatureChange(special.feature, !!checked)}
+                  />
+                  <Label htmlFor={`special-${index}`}>
+                    {special.feature} (+{special.additionalCost} gp)
+                  </Label>
+                </div>
+              ))}
+            </div>
           )}
 
           <div className="flex flex-col gap-1.5">
@@ -127,9 +105,30 @@ const View = ({
               onFocus={handleFocus}
             />
           </div>
-        </div>
+        </GlassPanel>
+
+        {/* Right: Result (2 cols) */}
+        <GlassPanel corona className="md:col-span-2 p-6 flex flex-col items-center justify-center gap-4">
+          <h3 className="text-lg font-semibold text-muted-foreground">Estimated Cost</h3>
+          <div className="text-4xl font-bold text-primary">
+            {totalCost > 0 ? convertToDnDCurrency(totalCost) : "\u2014"}
+          </div>
+          <AnimatePresence>
+            {totalDays && (
+              <motion.div
+                className="text-center"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <h3 className="text-lg font-semibold text-muted-foreground">Travel Time</h3>
+                <div className="text-2xl font-bold text-primary">{totalDays}</div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </GlassPanel>
       </div>
-    </>
+    </div>
   )
 }
 
