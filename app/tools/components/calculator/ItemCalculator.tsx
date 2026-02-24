@@ -1,13 +1,12 @@
 "use client"
 
-import { motion, AnimatePresence } from "framer-motion"
 import { useState, useEffect, useCallback } from 'react'
 import {
   convertToDnDCurrency,
   handleFocus
 } from './helper'
-import Banner from '../Banner'
 import { useCurrency } from "../../providers/CurrencyContext"
+import { GlassPanel } from "@/app/components/ui/GlassPanel"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -29,25 +28,12 @@ const View = ({
   reset,
 }) => {
   return (
-    <>
-      <div className="p-4 border border-border rounded-lg flex flex-col gap-4 max-w-[900px] w-full overflow-y-auto">
-        <Banner image="/images/blacksmith.png">
-          <h2>Item Calculator</h2>
-          <AnimatePresence>
-            {gp > 0 && (
-              <motion.div
-                className="border border-primary p-4 sticky bottom-0 bg-background"
-                style={{ marginTop: '20px' }}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
-                Total Price {convertToDnDCurrency(gp)}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </Banner>
-        <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6 w-full">
+      <h2 className="text-2xl font-bold">Item Calculator</h2>
+
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+        {/* Left: Form (3 cols) */}
+        <GlassPanel className="md:col-span-3 p-6 flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
             <Label>Select Rarity</Label>
             <Select value={rarity} onValueChange={setRarity}>
@@ -63,6 +49,7 @@ const View = ({
               </SelectContent>
             </Select>
           </div>
+
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
               <Checkbox
@@ -81,34 +68,39 @@ const View = ({
               <Label htmlFor="requires-attunement">Requires Attunement</Label>
             </div>
           </div>
-          <div className="flex gap-4 flex-wrap">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {Object.keys(attributes).map((attr) => (
-              <div key={attr} className="flex-1 basis-[calc(50%-1rem)] max-md:basis-full">
-                <div className="flex flex-col gap-1.5">
-                  <Label>{attr.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}</Label>
-                  <Input
-                    type="number"
-                    value={attributes[attr]}
-                    onChange={handleAttributeChange(attr)}
-                    onFocus={handleFocus}
-                    onBlur={handleBlur(attr)}
-                    placeholder={attr.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}
-                  />
-                </div>
+              <div key={attr} className="flex flex-col gap-1.5">
+                <Label>{attr.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}</Label>
+                <Input
+                  type="number"
+                  value={attributes[attr]}
+                  onChange={handleAttributeChange(attr)}
+                  onFocus={handleFocus}
+                  onBlur={handleBlur(attr)}
+                  placeholder={attr.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}
+                />
               </div>
             ))}
           </div>
+
           {reset && (
-            <Button
-              onClick={resetValues}
-              variant="outline"
-            >
+            <Button variant="outline" onClick={resetValues}>
               Reset to Defaults
             </Button>
           )}
-        </div>
+        </GlassPanel>
+
+        {/* Right: Result (2 cols) */}
+        <GlassPanel corona className="md:col-span-2 p-6 flex flex-col items-center justify-center gap-4">
+          <h3 className="text-lg font-semibold text-muted-foreground">Estimated Price</h3>
+          <div className="text-4xl font-bold text-primary">
+            {gp > 0 ? convertToDnDCurrency(gp) : "\u2014"}
+          </div>
+        </GlassPanel>
       </div>
-    </>
+    </div>
   )
 }
 
