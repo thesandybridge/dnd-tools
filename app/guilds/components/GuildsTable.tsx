@@ -54,7 +54,7 @@ export default function GuildsTable({ userId, isUserProfile = false }) {
         const isOwner = guild.owner === userId
 
         return (
-          <Link key={guild.id} href={`/guilds/${guild.guild_id}`} className="group">
+          <Link key={guild.guild_id} href={`/guilds/${guild.guild_id}`} className="group">
             <GlassPanel
               coronaHover
               className="relative p-5 h-full flex flex-col gap-3 transition-all duration-200 hover:scale-[1.02]"
