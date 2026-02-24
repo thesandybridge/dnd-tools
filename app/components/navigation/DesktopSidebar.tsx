@@ -46,7 +46,7 @@ export function DesktopSidebar({ user }: { user: NavUser | null }) {
 
   return (
     <TooltipProvider delayDuration={0}>
-      <aside className="hidden md:flex fixed left-0 top-0 z-40 h-dvh w-16 flex-col items-center border-r border-border bg-sidebar py-4 gap-2">
+      <aside className="hidden md:flex fixed left-0 top-0 z-40 h-dvh w-16 flex-col items-center border-r border-border backdrop-blur-lg bg-sidebar/90 corona-border py-4 gap-2">
         {/* Logo */}
         <Link href="/" className="mb-2">
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
@@ -68,8 +68,8 @@ export function DesktopSidebar({ user }: { user: NavUser | null }) {
                     href={route.path}
                     className={`relative flex h-10 w-10 items-center justify-center rounded-lg transition-colors
                       ${active
-                        ? "bg-primary/15 text-primary before:absolute before:left-0 before:top-1 before:bottom-1 before:w-0.5 before:rounded-full before:bg-primary"
-                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                        ? "bg-primary/15 text-primary shadow-[inset_-2px_0_0_0_rgb(var(--corona-rgb)),0_0_12px_-3px_rgba(var(--corona-rgb),0.4)]"
+                        : "text-muted-foreground hover:bg-accent hover:text-accent-foreground hover:shadow-[0_0_8px_-2px_rgba(var(--corona-rgb),0.2)]"
                       }`}
                   >
                     <Icon className="h-5 w-5" />
