@@ -4,7 +4,8 @@ import { useRouter } from 'next/navigation'
 import { deleteGuild } from "@/lib/guilds"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useGuild } from "../providers/GuildProvider"
-import { Button } from '@mui/material'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function GuildSettings({userId}) {
   const queryClient = useQueryClient()
@@ -17,31 +18,38 @@ export default function GuildSettings({userId}) {
     mutationFn: deleteGuild,
     onSuccess: () => {
       router.push('/guilds')
-      queryClient.invalidateQueries('guilds')
-      queryClient.invalidateQueries(['guild', userId])
+      queryClient.invalidateQueries({ queryKey: ['guilds'] })
+      queryClient.invalidateQueries({ queryKey: ['guild', userId] })
     },
     onError: (err) => {
       console.error("Error deleting guild:", err)
     }
   })
 
-  const handleDeleteClick = (e) => {
+  const handleDeleteClick = (e: React.MouseEvent) => {
     e.stopPropagation()
     e.preventDefault()
     deleteGuildMutate(guildData.guild_id)
   }
 
   return (
-    <div>
-      <h1>Settings</h1>
-      <Button
-        onClick={handleDeleteClick}
-        disabled={isDeleting}
-        variant='outlined'
-        color='error'
-      >
-        {isDeleting ? 'Deleting Gulid...' : 'Delete Guild'}
-      </Button>
+    <div className="flex flex-col gap-6">
+      <h1 className="text-xl font-bold">Settings</h1>
+      <Card className="border-destructive/50">
+        <CardHeader>
+          <CardTitle className="text-destructive">Danger Zone</CardTitle>
+          <CardDescription>Permanently delete this guild and all its data.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button
+            onClick={handleDeleteClick}
+            disabled={isDeleting}
+            variant="destructive"
+          >
+            {isDeleting ? 'Deleting Guild...' : 'Delete Guild'}
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   )
 }
