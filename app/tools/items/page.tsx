@@ -1,10 +1,9 @@
 import ItemCalculator from "@/app/tools/components/calculator/ItemCalculator"
 import Nav from "../components/Nav"
-import styles from "../page.module.css"
 
 export default function Page() {
   return (
-    <div className={styles.calcWrap}>
+    <div className="max-w-[900px] gap-1 flex w-full flex-col justify-center items-center">
       <Nav />
       <ItemCalculator />
     </div>

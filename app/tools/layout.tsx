@@ -1,16 +1,15 @@
 import Calculator from "./components/calculator/Calculator"
 import { CurrencyProvider } from "./providers/CurrencyContext"
-import styles from "./page.module.css"
 
-export default function ToolsLayout({ children }) {
+export default function ToolsLayout({ children }: { children: React.ReactNode }) {
   return (
     <CurrencyProvider>
-      <main className={styles.main}>
+      <div className="flex flex-col items-center p-4">
         <Calculator />
-        <div className={styles.tools}>
+        <div className="max-w-[1200px] flex w-full justify-center">
           {children}
         </div>
-      </main>
+      </div>
     </CurrencyProvider>
   )
 }
