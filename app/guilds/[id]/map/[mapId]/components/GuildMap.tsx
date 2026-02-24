@@ -125,6 +125,9 @@ type GuildMapProps = {
   guildId: string
   mapId: string
   pmtilesUrl: string
+  imageWidth: number | null
+  imageHeight: number | null
+  maxZoom: number
   selectedMarkerUuid: string | null
   setSelectedMarkerUuid: (uuid: string | null) => void
   mapHandleRef: MutableRefObject<MapHandle | null>
@@ -135,6 +138,7 @@ type GuildMapProps = {
 
 export default function GuildMap({
   guildId, mapId, pmtilesUrl,
+  imageWidth, imageHeight, maxZoom,
   selectedMarkerUuid, setSelectedMarkerUuid, mapHandleRef,
   markerActive, rulerActive,
   onMarkerScreenPositionChange,
@@ -147,8 +151,17 @@ export default function GuildMap({
   const [lastMarkerId] = useState(null)
   const [rulerPoints, setRulerPoints] = useState<L.LatLng[]>([])
 
-  const mapBounds: L.LatLngBoundsLiteral = [[-256, 0], [0, 256]]
-  const mapCenter: L.LatLngExpression = [-128, 128]
+  const tileSize = 256
+  const mapBounds: L.LatLngBoundsLiteral = useMemo(() => {
+    if (imageWidth && imageHeight) {
+      const maxDim = Math.max(imageWidth, imageHeight)
+      const mapW = (imageWidth / maxDim) * tileSize
+      const mapH = (imageHeight / maxDim) * tileSize
+      return [[-mapH, 0], [0, mapW]]
+    }
+    return [[-tileSize, 0], [0, tileSize]]
+  }, [imageWidth, imageHeight])
+  const mapCenter: L.LatLngExpression = [mapBounds[0][0] / 2, mapBounds[1][1] / 2]
 
   const customIcon = useMemo(() => {
     const svgString = `
@@ -222,7 +235,7 @@ export default function GuildMap({
       className="mapContainer crosshair"
       zoom={1}
       minZoom={0}
-      maxZoom={8}
+      maxZoom={maxZoom}
       zoomSnap={1}
       preferCanvas={true}
       attributionControl={false}
@@ -239,7 +252,7 @@ export default function GuildMap({
         markers={markers}
         onPositionChange={onMarkerScreenPositionChange}
       />
-      <PmTilesLayer pmtilesUrl={pmtilesUrl} tileSize={256} maxZoom={8} />
+      <PmTilesLayer pmtilesUrl={pmtilesUrl} tileSize={tileSize} maxZoom={maxZoom} />
       {memoizedMarkers}
       {markers && (
         <Polyline

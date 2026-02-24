@@ -48,13 +48,17 @@ export const POST = auth(async function POST(request, { params }) {
       return Response.json({ error: "Only guild owner can do this" }, { status: 403 })
     }
 
-    const { name, pmtilesUrl } = await request.json()
+    const { name, pmtilesUrl, pmtilesApiKey, imageWidth, imageHeight, maxZoom } = await request.json()
 
     const map = await prisma.guildMap.create({
       data: {
         guildId: guild_id as string,
         name,
         pmtilesUrl,
+        ...(pmtilesApiKey !== undefined && { pmtilesApiKey }),
+        ...(imageWidth !== undefined && { imageWidth }),
+        ...(imageHeight !== undefined && { imageHeight }),
+        ...(maxZoom !== undefined && { maxZoom }),
       },
     })
 

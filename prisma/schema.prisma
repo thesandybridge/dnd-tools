@@ -100,6 +100,10 @@ model GuildMap {
   guildId       String   @map("guild_id")
   name          String
   pmtilesUrl    String   @map("pmtiles_url")
+  pmtilesApiKey String?  @map("pmtiles_api_key")
+  imageWidth    Int?     @map("image_width")
+  imageHeight   Int?     @map("image_height")
+  maxZoom       Int      @default(5) @map("max_zoom")
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 

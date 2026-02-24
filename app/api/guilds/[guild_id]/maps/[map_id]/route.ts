@@ -51,13 +51,17 @@ export const PATCH = auth(async function PATCH(request, { params }) {
       return Response.json({ error: "Only guild owner can do this" }, { status: 403 })
     }
 
-    const { name, pmtilesUrl } = await request.json()
+    const { name, pmtilesUrl, pmtilesApiKey, imageWidth, imageHeight, maxZoom } = await request.json()
 
     const map = await prisma.guildMap.update({
       where: { mapId: map_id as string },
       data: {
         ...(name !== undefined && { name }),
         ...(pmtilesUrl !== undefined && { pmtilesUrl }),
+        ...(pmtilesApiKey !== undefined && { pmtilesApiKey }),
+        ...(imageWidth !== undefined && { imageWidth }),
+        ...(imageHeight !== undefined && { imageHeight }),
+        ...(maxZoom !== undefined && { maxZoom }),
       },
     })
 

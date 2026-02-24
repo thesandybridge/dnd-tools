@@ -51,6 +51,9 @@ export function serializeGuildMap(m: GuildMap) {
     guild_id: m.guildId,
     name: m.name,
     pmtiles_url: m.pmtilesUrl,
+    image_width: m.imageWidth,
+    image_height: m.imageHeight,
+    max_zoom: m.maxZoom,
     created_at: m.createdAt,
     updated_at: m.updatedAt,
   }

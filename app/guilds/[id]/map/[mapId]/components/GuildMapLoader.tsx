@@ -2,11 +2,13 @@
 
 import { useState, useCallback, useRef } from "react"
 import dynamic from "next/dynamic"
+import { useQuery } from "@tanstack/react-query"
 import { FloatingToolbar } from "./FloatingToolbar"
 import MapSidePanel from "./MapSidePanel"
 import { MarkerInfoCard } from "./MarkerInfoCard"
 import useGetMarkers from "../hooks/useGetMarkers"
 import usePmtilesUrl from "../hooks/usePmtilesUrl"
+import { fetchGuildMap } from "@/lib/guild-maps"
 
 const GuildMap = dynamic(() => import("./GuildMap"), { ssr: false })
 
@@ -26,6 +28,10 @@ export default function GuildMapLoader({ guildId, mapId }: { guildId: string; ma
 
   const pmtilesUrl = usePmtilesUrl(guildId, mapId)
   const { data: markers = [] } = useGetMarkers(guildId, mapId)
+  const { data: mapData } = useQuery({
+    queryKey: ["guild-map", guildId, mapId],
+    queryFn: () => fetchGuildMap(guildId, mapId),
+  })
 
   const [markerActive, setMarkerActive] = useState(false)
   const [rulerActive, setRulerActive] = useState(false)
@@ -76,11 +82,14 @@ export default function GuildMapLoader({ guildId, mapId }: { guildId: string; ma
     : { width: 0, height: 0 }
 
   return (
-    <div ref={containerRef} className="relative h-[calc(100dvh-12rem)] overflow-hidden rounded-xl">
+    <div ref={containerRef} className="relative left-1/2 -translate-x-1/2 w-screen md:w-[calc(100vw-4rem)] h-[calc(100dvh-12rem)] overflow-hidden">
       <GuildMap
         guildId={guildId}
         mapId={mapId}
         pmtilesUrl={pmtilesUrl}
+        imageWidth={mapData?.image_width ?? null}
+        imageHeight={mapData?.image_height ?? null}
+        maxZoom={mapData?.max_zoom ?? 5}
         selectedMarkerUuid={selectedMarkerUuid}
         setSelectedMarkerUuid={setSelectedMarkerUuid}
         mapHandleRef={mapHandleRef}

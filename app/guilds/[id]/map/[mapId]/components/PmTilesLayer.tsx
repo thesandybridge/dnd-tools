@@ -56,6 +56,7 @@ export default function PmTilesLayer({ pmtilesUrl, tileSize = 256, maxZoom = 5 }
         noWrap: true,
         maxNativeZoom: maxZoom,
         minNativeZoom: 0,
+        bounds: [[-tileSize, 0], [0, tileSize]],
       })
 
       layer.addTo(map)
