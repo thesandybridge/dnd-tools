@@ -25,14 +25,16 @@ import {
 interface Props {
   guildData?: Guild
   submitText?: string
+  roleId?: number
 }
 
 export default function UserSearch({
   guildData,
-  submitText = "Submit"
+  submitText = "Submit",
+  roleId,
 }: Props) {
   const [open, setOpen] = useState(false)
-  const { mutation } = useAddMemberMutation(guildData)
+  const { mutation } = useAddMemberMutation(guildData, roleId)
   const {
     mutate: addMember,
     isPending: isAddingMember,

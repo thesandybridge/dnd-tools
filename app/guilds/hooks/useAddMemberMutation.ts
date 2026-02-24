@@ -5,7 +5,7 @@ interface AddMemberInterface {
   mutation: ReturnType<typeof useMutation>;
 }
 
-export default function useAddMemberMutation(guildData): AddMemberInterface {
+export default function useAddMemberMutation(guildData, roleId?: number): AddMemberInterface {
   const queryClient = useQueryClient();
   const key = ['guild', 'members', guildData.guild_id]
 
@@ -14,7 +14,7 @@ export default function useAddMemberMutation(guildData): AddMemberInterface {
       if (!newMember || !newMember.id) {
         throw new Error('Invalid user selected')
       }
-      return addMember(guildData.guild_id, newMember.id)
+      return addMember(guildData.guild_id, newMember.id, roleId)
     },
     onMutate: async (newMember) => {
       await queryClient.cancelQueries(key)
@@ -26,7 +26,7 @@ export default function useAddMemberMutation(guildData): AddMemberInterface {
         {
           guild_id: guildData.guild_id,
           user_id: newMember.id,
-          role: "member",
+          role: { name: "Member", color: "#6b7280" },
           users: newMember
         }
       ])

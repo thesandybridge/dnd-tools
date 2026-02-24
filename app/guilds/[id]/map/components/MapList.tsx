@@ -9,12 +9,20 @@ import { useGuild } from "../../providers/GuildProvider"
 import { GlassPanel } from "@/app/components/ui/GlassPanel"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 function MapFormFields({
   name, setName,
@@ -23,6 +31,7 @@ function MapFormFields({
   imageWidth, setImageWidth,
   imageHeight, setImageHeight,
   maxZoom, setMaxZoom,
+  visibility, setVisibility,
 }: {
   name: string; setName: (v: string) => void
   pmtilesUrl: string; setPmtilesUrl: (v: string) => void
@@ -30,6 +39,7 @@ function MapFormFields({
   imageWidth: string; setImageWidth: (v: string) => void
   imageHeight: string; setImageHeight: (v: string) => void
   maxZoom: string; setMaxZoom: (v: string) => void
+  visibility: string; setVisibility: (v: string) => void
 }) {
   return (
     <>
@@ -75,6 +85,15 @@ function MapFormFields({
           className="bg-white/[0.05] border-white/[0.08]"
         />
       </div>
+      <Select value={visibility} onValueChange={setVisibility}>
+        <SelectTrigger className="bg-white/[0.05] border-white/[0.08]">
+          <SelectValue placeholder="Visibility" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="everyone">Everyone</SelectItem>
+          <SelectItem value="dm_only">DM Only</SelectItem>
+        </SelectContent>
+      </Select>
     </>
   )
 }
@@ -92,6 +111,7 @@ function EditMapDialog({ map, guildId, open, onOpenChange }: {
   const [imageWidth, setImageWidth] = useState(map.image_width?.toString() ?? "")
   const [imageHeight, setImageHeight] = useState(map.image_height?.toString() ?? "")
   const [maxZoom, setMaxZoom] = useState((map.max_zoom ?? 5).toString())
+  const [visibility, setVisibility] = useState(map.visibility || "everyone")
 
   const editMutation = useMutation({
     mutationFn: (data: Parameters<typeof updateGuildMap>[2]) =>
@@ -112,6 +132,7 @@ function EditMapDialog({ map, guildId, open, onOpenChange }: {
       ...(imageWidth && { imageWidth: parseInt(imageWidth) }),
       ...(imageHeight && { imageHeight: parseInt(imageHeight) }),
       ...(maxZoom && { maxZoom: parseInt(maxZoom) }),
+      visibility,
     })
   }
 
@@ -129,6 +150,7 @@ function EditMapDialog({ map, guildId, open, onOpenChange }: {
             imageWidth={imageWidth} setImageWidth={setImageWidth}
             imageHeight={imageHeight} setImageHeight={setImageHeight}
             maxZoom={maxZoom} setMaxZoom={setMaxZoom}
+            visibility={visibility} setVisibility={setVisibility}
           />
           <div className="flex items-center gap-2 justify-end">
             <Button
@@ -151,8 +173,8 @@ function EditMapDialog({ map, guildId, open, onOpenChange }: {
 }
 
 export default function MapList({ guildId, userId }: { guildId: string; userId: string }) {
-  const { isAdminOrOwner } = useGuild()
-  const isOwner = isAdminOrOwner(userId)
+  const { hasPermission } = useGuild()
+  const canManageMaps = hasPermission(userId, 'manage_maps')
   const queryClient = useQueryClient()
 
   const [showForm, setShowForm] = useState(false)
@@ -162,6 +184,7 @@ export default function MapList({ guildId, userId }: { guildId: string; userId: 
   const [imageWidth, setImageWidth] = useState("")
   const [imageHeight, setImageHeight] = useState("")
   const [maxZoom, setMaxZoom] = useState("5")
+  const [visibility, setVisibility] = useState("everyone")
 
   const [editingMap, setEditingMap] = useState<GuildMap | null>(null)
 
@@ -181,6 +204,7 @@ export default function MapList({ guildId, userId }: { guildId: string; userId: 
       setImageWidth("")
       setImageHeight("")
       setMaxZoom("5")
+      setVisibility("everyone")
       setShowForm(false)
     },
   })
@@ -202,6 +226,7 @@ export default function MapList({ guildId, userId }: { guildId: string; userId: 
       ...(imageWidth && { imageWidth: parseInt(imageWidth) }),
       ...(imageHeight && { imageHeight: parseInt(imageHeight) }),
       ...(maxZoom && { maxZoom: parseInt(maxZoom) }),
+      visibility,
     })
   }
 
@@ -217,7 +242,7 @@ export default function MapList({ guildId, userId }: { guildId: string; userId: 
     <div className="w-full space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="font-cinzel text-lg font-semibold">Maps</h2>
-        {isOwner && !showForm && (
+        {canManageMaps && !showForm && (
           <Button
             variant="ghost"
             size="sm"
@@ -240,6 +265,7 @@ export default function MapList({ guildId, userId }: { guildId: string; userId: 
               imageWidth={imageWidth} setImageWidth={setImageWidth}
               imageHeight={imageHeight} setImageHeight={setImageHeight}
               maxZoom={maxZoom} setMaxZoom={setMaxZoom}
+              visibility={visibility} setVisibility={setVisibility}
             />
             <div className="flex items-center gap-2">
               <Button type="submit" size="sm" disabled={createMutation.isPending} className="cursor-pointer">
@@ -274,8 +300,11 @@ export default function MapList({ guildId, userId }: { guildId: string; userId: 
                 <div className="flex items-center gap-2 min-w-0">
                   <Map size={16} className="shrink-0 text-primary" />
                   <span className="font-cinzel text-sm font-medium truncate">{map.name}</span>
+                  {map.visibility === 'dm_only' && (
+                    <Badge variant="secondary" className="text-xs shrink-0">DM Only</Badge>
+                  )}
                 </div>
-                {isOwner && (
+                {canManageMaps && (
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={(e) => {

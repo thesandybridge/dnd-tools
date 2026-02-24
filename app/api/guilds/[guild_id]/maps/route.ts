@@ -1,5 +1,6 @@
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
+import { hasPermission } from "@/lib/permissions"
 import { serializeGuildMap } from "@/lib/serializers"
 
 export const GET = auth(async function GET(request, { params }) {
@@ -19,8 +20,13 @@ export const GET = auth(async function GET(request, { params }) {
       return Response.json({ error: "Not a member of this guild" }, { status: 403 })
     }
 
+    const canManageMaps = await hasPermission(guild_id as string, session.user.id!, 'manage_maps')
+
     const maps = await prisma.guildMap.findMany({
-      where: { guildId: guild_id as string },
+      where: {
+        guildId: guild_id as string,
+        ...(!canManageMaps ? { visibility: { not: 'dm_only' } } : {}),
+      },
     })
 
     return Response.json(maps.map(serializeGuildMap))
@@ -43,12 +49,11 @@ export const POST = auth(async function POST(request, { params }) {
   try {
     const { guild_id } = await params
 
-    const guild = await prisma.guild.findUnique({ where: { guildId: guild_id as string } })
-    if (!guild || guild.ownerId !== session.user.id) {
-      return Response.json({ error: "Only guild owner can do this" }, { status: 403 })
+    if (!await hasPermission(guild_id as string, session.user.id!, 'manage_maps')) {
+      return Response.json({ error: "You do not have permission to create maps" }, { status: 403 })
     }
 
-    const { name, pmtilesUrl, pmtilesApiKey, imageWidth, imageHeight, maxZoom } = await request.json()
+    const { name, pmtilesUrl, pmtilesApiKey, imageWidth, imageHeight, maxZoom, visibility } = await request.json()
 
     const map = await prisma.guildMap.create({
       data: {
@@ -59,6 +64,7 @@ export const POST = auth(async function POST(request, { params }) {
         ...(imageWidth !== undefined && { imageWidth }),
         ...(imageHeight !== undefined && { imageHeight }),
         ...(maxZoom !== undefined && { maxZoom }),
+        ...(visibility !== undefined && { visibility }),
       },
     })
 

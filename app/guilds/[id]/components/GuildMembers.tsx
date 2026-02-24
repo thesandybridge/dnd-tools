@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { GlassPanel } from "@/app/components/ui/GlassPanel"
 
 export default function GuildMembers({ userId }) {
-  const { guildData, membersData, isAdminOrOwner } = useGuild()
+  const { guildData, membersData, hasPermission, getMemberRole } = useGuild()
 
   const { mutation } = useDeleteMemberMutation(guildData)
   const { mutate: deleteMemberMutate, isPending: isDeleting, error } = mutation
@@ -22,13 +22,16 @@ export default function GuildMembers({ userId }) {
   if (error) return <p className="text-destructive text-center py-8">Error: {error.message}</p>
 
   const members = membersData || []
-  const canManage = isAdminOrOwner(userId)
+  const canManage = hasPermission(userId, 'manage_members')
+  const actorRole = getMemberRole(userId)
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
       {members.map((member) => {
-        const role = member.role
-        const variant = role === 'owner' ? 'default' : 'secondary'
+        const canRemove = canManage
+          && actorRole
+          && member.role.position !== 0
+          && actorRole.position < member.role.position
 
         return (
           <GlassPanel
@@ -40,12 +43,12 @@ export default function GuildMembers({ userId }) {
               <span className="text-sm font-medium text-foreground truncate">
                 {member.users?.name}
               </span>
-              <Badge variant={variant} className="capitalize shrink-0 ml-2">
-                {role}
+              <Badge className="shrink-0 ml-2 text-white" style={{ backgroundColor: member.role.color }}>
+                {member.role.name}
               </Badge>
             </div>
 
-            {canManage && (
+            {canRemove && (
               <div className="opacity-0 group-hover:opacity-100 transition-opacity">
                 <Button
                   onClick={(e) => handleDeleteClick(e, member.user_id)}

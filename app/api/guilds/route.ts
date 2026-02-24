@@ -32,17 +32,65 @@ export const POST = auth(async function POST(request) {
   try {
     const { guildData } = await request.json()
 
-    const guild = await prisma.guild.create({
-      data: {
-        name: guildData.name,
-        ownerId: guildData.owner,
-        members: {
-          create: {
-            userId: guildData.owner,
-            role: 'owner',
-          },
+    const guild = await prisma.$transaction(async (tx) => {
+      const newGuild = await tx.guild.create({
+        data: {
+          name: guildData.name,
+          ownerId: guildData.owner,
         },
-      },
+      })
+
+      const guildMaster = await tx.guildRole.create({
+        data: {
+          guildId: newGuild.guildId,
+          name: "Guild Master",
+          color: "#f59e0b",
+          position: 0,
+          manageMembers: true,
+          manageMaps: true,
+          manageMarkers: true,
+          manageGuild: true,
+          isSystem: true,
+        },
+      })
+
+      await tx.guildRole.create({
+        data: {
+          guildId: newGuild.guildId,
+          name: "Dungeon Master",
+          color: "#8b5cf6",
+          position: 1,
+          manageMembers: true,
+          manageMaps: true,
+          manageMarkers: true,
+          manageGuild: false,
+          isSystem: true,
+        },
+      })
+
+      await tx.guildRole.create({
+        data: {
+          guildId: newGuild.guildId,
+          name: "Adventurer",
+          color: "#6b7280",
+          position: 2,
+          manageMembers: false,
+          manageMaps: false,
+          manageMarkers: true,
+          manageGuild: false,
+          isSystem: true,
+        },
+      })
+
+      await tx.guildMember.create({
+        data: {
+          guildId: newGuild.guildId,
+          userId: guildData.owner,
+          roleId: guildMaster.id,
+        },
+      })
+
+      return newGuild
     })
 
     return Response.json(serializeGuild(guild))

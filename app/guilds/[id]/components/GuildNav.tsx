@@ -14,7 +14,7 @@ const routes = [
 ]
 
 export default function GuildNav({ guildId, userId }: { guildId: string; userId: string }) {
-  const { isAdminOrOwner } = useGuild()
+  const { hasPermission } = useGuild()
   const pathname = usePathname()
 
   function isActive(routePath: string) {
@@ -27,7 +27,7 @@ export default function GuildNav({ guildId, userId }: { guildId: string; userId:
     <GlassPanel variant="subtle" className="w-full rounded-full p-1.5">
       <nav className="flex gap-1">
         {routes.map((route) => {
-          if (route.permission && !isAdminOrOwner(userId)) return null
+          if (route.permission && !hasPermission(userId, 'manage_guild')) return null
 
           const active = isActive(route.path)
           return (

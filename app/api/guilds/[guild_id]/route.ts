@@ -1,5 +1,6 @@
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
+import { hasPermission, isGuildOwner } from "@/lib/permissions"
 import { serializeGuild, serializeGuildWithOwner } from "@/lib/serializers"
 
 export const GET = auth(async function GET(request, { params }) {
@@ -36,11 +37,22 @@ export const PATCH = auth(async function PATCH(request, { params }) {
 
   try {
     const { guild_id } = await params
+
+    if (!await hasPermission(guild_id as string, session.user.id!, 'manage_guild')) {
+      return Response.json({ error: 'You do not have permission to update this guild' }, { status: 403 })
+    }
+
     const { guildData } = await request.json()
+
+    const allowedFields = ['name']
+    const sanitized: Record<string, unknown> = {}
+    for (const key of allowedFields) {
+      if (key in guildData) sanitized[key] = guildData[key]
+    }
 
     const guild = await prisma.guild.update({
       where: { guildId: guild_id as string },
-      data: { ...guildData },
+      data: sanitized,
     })
 
     return Response.json([serializeGuild(guild)])
@@ -62,6 +74,10 @@ export const DELETE = auth(async function DELETE(request, { params }) {
 
   try {
     const { guild_id } = await params
+
+    if (!await isGuildOwner(guild_id as string, session.user.id!)) {
+      return Response.json({ error: 'Only the guild owner can delete this guild' }, { status: 403 })
+    }
 
     await prisma.guild.delete({
       where: { guildId: guild_id as string },

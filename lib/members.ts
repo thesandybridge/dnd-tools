@@ -23,11 +23,12 @@ export async function updateMember(guildId, memberId, memberData) {
   return response.json()
 }
 
-export async function addMember(guildId, memberId) {
+export async function addMember(guildId, memberId, roleId?) {
+  const body = roleId ? { memberId, roleId } : { memberId }
   const response = await fetch(`/api/guilds/${guildId}/members`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ memberId })
+    body: JSON.stringify(body)
   })
   if (!response.ok) throw new Error('Failed to add member')
   return response.json()

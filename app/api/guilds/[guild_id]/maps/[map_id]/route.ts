@@ -1,5 +1,6 @@
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
+import { hasPermission } from "@/lib/permissions"
 import { serializeGuildMap } from "@/lib/serializers"
 
 export const GET = auth(async function GET(request, { params }) {
@@ -26,6 +27,12 @@ export const GET = auth(async function GET(request, { params }) {
       return Response.json({ error: "Map not found" }, { status: 404 })
     }
 
+    if (map.visibility === 'dm_only') {
+      if (!await hasPermission(guild_id as string, session.user.id!, 'manage_maps')) {
+        return Response.json({ error: "You do not have permission to view this map" }, { status: 403 })
+      }
+    }
+
     return Response.json(serializeGuildMap(map))
   } catch (error) {
     console.error('Failed to fetch guild map:', (error as Error).message)
@@ -46,12 +53,11 @@ export const PATCH = auth(async function PATCH(request, { params }) {
   try {
     const { guild_id, map_id } = await params
 
-    const guild = await prisma.guild.findUnique({ where: { guildId: guild_id as string } })
-    if (!guild || guild.ownerId !== session.user.id) {
-      return Response.json({ error: "Only guild owner can do this" }, { status: 403 })
+    if (!await hasPermission(guild_id as string, session.user.id!, 'manage_maps')) {
+      return Response.json({ error: "You do not have permission to update maps" }, { status: 403 })
     }
 
-    const { name, pmtilesUrl, pmtilesApiKey, imageWidth, imageHeight, maxZoom } = await request.json()
+    const { name, pmtilesUrl, pmtilesApiKey, imageWidth, imageHeight, maxZoom, visibility } = await request.json()
 
     const map = await prisma.guildMap.update({
       where: { mapId: map_id as string },
@@ -62,6 +68,7 @@ export const PATCH = auth(async function PATCH(request, { params }) {
         ...(imageWidth !== undefined && { imageWidth }),
         ...(imageHeight !== undefined && { imageHeight }),
         ...(maxZoom !== undefined && { maxZoom }),
+        ...(visibility !== undefined && { visibility }),
       },
     })
 
@@ -85,9 +92,8 @@ export const DELETE = auth(async function DELETE(request, { params }) {
   try {
     const { guild_id, map_id } = await params
 
-    const guild = await prisma.guild.findUnique({ where: { guildId: guild_id as string } })
-    if (!guild || guild.ownerId !== session.user.id) {
-      return Response.json({ error: "Only guild owner can do this" }, { status: 403 })
+    if (!await hasPermission(guild_id as string, session.user.id!, 'manage_maps')) {
+      return Response.json({ error: "You do not have permission to delete maps" }, { status: 403 })
     }
 
     await prisma.guildMap.delete({

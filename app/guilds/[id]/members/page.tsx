@@ -10,9 +10,9 @@ export default async function Page() {
   }
 
   return (
-    <>
-      <GuildAddMember />
+    <div className="flex flex-col gap-6">
+      <GuildAddMember userId={session.user.id} />
       <GuildMembers userId={session.user.id} />
-    </>
+    </div>
   )
 }

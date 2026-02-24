@@ -3,6 +3,7 @@
 import { createContext, useContext } from "react"
 import { fetchGuild } from "@/lib/guilds"
 import { fetchMembers } from "@/lib/members"
+import { fetchRoles } from "@/lib/roles"
 import { useQuery } from "@tanstack/react-query"
 
 const GuildContext = createContext(null)
@@ -18,17 +19,32 @@ export function GuildProvider({ guildId, children }) {
     queryFn: () => fetchMembers(guildId)
   })
 
-  if (guildLoading || membersLoading) return <div>Loading guild data...</div>
+  const { data: rolesData, error: rolesError, isLoading: rolesLoading } = useQuery({
+    queryKey: ['guild', 'roles', guildId],
+    queryFn: () => fetchRoles(guildId)
+  })
+
+  if (guildLoading || membersLoading || rolesLoading) return <div>Loading guild data...</div>
   if (guildError) throw new Error(`Error loading guild: ${guildError.message}`)
   if (membersError) throw new Error(`Error loading members: ${membersError.message}`)
+  if (rolesError) throw new Error(`Error loading roles: ${rolesError.message}`)
+
+  const getMemberRole = (userId) => {
+    const member = membersData.find(member => member.user_id === userId)
+    return member?.role ?? null
+  }
+
+  const hasPermission = (userId, permission) => {
+    const role = getMemberRole(userId)
+    return role ? !!role[permission] : false
+  }
 
   const isAdminOrOwner = (userId) => {
-    const member = membersData.find(member => member.user_id === userId)
-    return member && ['admin', 'owner'].includes(member.role)
+    return hasPermission(userId, 'manage_guild')
   }
 
   return (
-    <GuildContext.Provider value={{ guildData, membersData, isAdminOrOwner }}>
+    <GuildContext.Provider value={{ guildData, membersData, rolesData, hasPermission, getMemberRole, isAdminOrOwner }}>
       {children}
     </GuildContext.Provider>
   )

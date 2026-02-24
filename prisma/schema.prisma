@@ -77,6 +77,7 @@ model Guild {
   ownerUser User          @relation("GuildOwner", fields: [ownerId], references: [id])
   members   GuildMember[]
   maps      GuildMap[]
+  roles     GuildRole[]
 
   @@map("guilds")
 }
@@ -84,14 +85,36 @@ model Guild {
 model GuildMember {
   guildId  String   @map("guild_id")
   userId   String   @map("user_id")
-  role     String   @default("member")
+  roleId   Int      @map("role_id")
   joinedAt DateTime @default(now()) @map("joined_at")
 
-  guild Guild @relation(fields: [guildId], references: [guildId], onDelete: Cascade)
-  user  User  @relation(fields: [userId], references: [id])
+  guild Guild     @relation(fields: [guildId], references: [guildId], onDelete: Cascade)
+  user  User      @relation(fields: [userId], references: [id])
+  role  GuildRole @relation(fields: [roleId], references: [id])
 
   @@id([guildId, userId])
   @@map("guild_members")
+}
+
+model GuildRole {
+  id              Int      @id @default(autoincrement())
+  guildId         String   @map("guild_id")
+  name            String
+  color           String   @default("#6b7280")
+  position        Int
+  manageMembers   Boolean  @default(false) @map("manage_members")
+  manageMaps      Boolean  @default(false) @map("manage_maps")
+  manageMarkers   Boolean  @default(false) @map("manage_markers")
+  manageGuild     Boolean  @default(false) @map("manage_guild")
+  isSystem        Boolean  @default(false) @map("is_system")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  guild   Guild         @relation(fields: [guildId], references: [guildId], onDelete: Cascade)
+  members GuildMember[]
+
+  @@unique([guildId, position])
+  @@unique([guildId, name])
+  @@map("guild_roles")
 }
 
 model GuildMap {
@@ -106,6 +129,8 @@ model GuildMap {
   maxZoom       Int      @default(5) @map("max_zoom")
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
+
+  visibility String   @default("everyone")
 
   guild   Guild    @relation(fields: [guildId], references: [guildId], onDelete: Cascade)
   markers Marker[]

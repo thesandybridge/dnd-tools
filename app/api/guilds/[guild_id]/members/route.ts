@@ -1,6 +1,7 @@
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
-import { serializeMember } from "@/lib/serializers"
+import { hasPermission } from "@/lib/permissions"
+import { serializeMember, serializeMemberBasic } from "@/lib/serializers"
 
 export const GET = auth(async function GET(request, { params }) {
   const session = request.auth
@@ -16,6 +17,7 @@ export const GET = auth(async function GET(request, { params }) {
       where: { guildId: guild_id as string },
       include: {
         user: { select: { id: true, name: true, email: true } },
+        role: true,
       },
     })
 
@@ -38,32 +40,38 @@ export const POST = auth(async function POST(request, { params }) {
 
   try {
     const { guild_id } = await params
-    const { memberId, role } = await request.json()
+    const { memberId, roleId } = await request.json()
 
-    const currentUser = await prisma.guildMember.findUnique({
-      where: {
-        guildId_userId: {
-          guildId: guild_id as string,
-          userId: session.user.id!,
-        },
-      },
-    })
-
-    if (!currentUser || (currentUser.role !== 'owner' && currentUser.role !== 'admin')) {
+    if (!await hasPermission(guild_id as string, session.user.id!, 'manage_members')) {
       return Response.json({
         error: 'Unauthorized to add members'
       }, { status: 403 })
     }
 
-    const data = await prisma.guildMember.create({
+    let assignedRoleId = roleId
+    if (!assignedRoleId) {
+      const lowestRole = await prisma.guildRole.findFirst({
+        where: { guildId: guild_id as string },
+        orderBy: { position: 'desc' },
+      })
+      if (!lowestRole) {
+        return Response.json({ error: 'No roles found for this guild' }, { status: 500 })
+      }
+      assignedRoleId = lowestRole.id
+    }
+
+    const member = await prisma.guildMember.create({
       data: {
         guildId: guild_id as string,
         userId: memberId,
-        role: role || 'member',
+        roleId: assignedRoleId,
+      },
+      include: {
+        role: true,
       },
     })
 
-    return Response.json(data, { status: 201 })
+    return Response.json(serializeMemberBasic(member), { status: 201 })
   } catch (error) {
     console.error('Failed to add member:', (error as Error).message)
     return Response.json({
