@@ -18,7 +18,7 @@ export default async function GuildLayout({ params, children }) {
         <GuildProvider guildId={id}>
           <GuildBanner />
           <GuildNav guildId={id} userId={session.user.id} />
-          <div className="w-full py-4">
+          <div className="w-full">
             {children}
           </div>
         </GuildProvider>
