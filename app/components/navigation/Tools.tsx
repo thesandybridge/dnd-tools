@@ -2,52 +2,63 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { Crown, Utensils, Route, Hammer } from "lucide-react"
+import { GlassPanel } from "@/app/components/ui/GlassPanel"
 
 const routes = [
   {
     path: "mounts",
     label: "Mounts",
-    image: "/images/mounts.png",
+    description: "Calculate mount pricing and upkeep costs",
+    icon: Crown,
   },
   {
     path: "services",
     label: "Services",
-    image: "/images/tavern.png",
+    description: "Tavern stays, hirelings, and service fees",
+    icon: Utensils,
   },
   {
     path: "transportation",
     label: "Transportation",
-    image: "/images/travel.png",
+    description: "Travel costs by land, sea, and air",
+    icon: Route,
   },
   {
     path: "items",
     label: "Items",
-    image: "/images/blacksmith.png",
+    description: "Weapons, armor, and adventuring gear pricing",
+    icon: Hammer,
   }
 ]
 
 export default function ToolsNav() {
   const currentPath = usePathname()
+
   return (
-    <nav className="flex gap-4 w-full h-[50dvh] flex-wrap">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl">
       {routes.map(route => {
+        const Icon = route.icon
         const isActive = currentPath === `/tools/${route.path}`
         return (
-          <Link
-            key={route.path}
-            href={`/tools/${route.path}`}
-            className={`group relative h-full w-full flex-1 basis-[calc(25%-1rem)] rounded-2xl flex justify-center items-center overflow-hidden border-[15px] border-ridge border-foreground text-[clamp(1rem,10vw,2rem)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[5px_5px_0_0_var(--alt),10px_10px_0_0_var(--alt)] hover:text-primary max-md:basis-full ${isActive ? 'text-primary' : ''}`}
-          >
-            <div
-              className="absolute inset-0 grayscale transition-[filter] duration-300 group-hover:grayscale-0 bg-cover bg-center"
-              style={{ backgroundImage: `url(${route.image})` }}
-            />
-            <span className="z-10">
-              {route.label}
-            </span>
+          <Link key={route.path} href={`/tools/${route.path}`}>
+            <GlassPanel
+              coronaHover
+              className={`h-full cursor-pointer transition-colors ${isActive ? 'border-primary bg-primary/5' : ''}`}
+            >
+              <div className="flex flex-col items-center text-center gap-3 p-6">
+                <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${isActive ? 'bg-primary/20' : 'bg-primary/10'}`}>
+                  <Icon className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <p className="font-medium text-foreground">{route.label}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{route.description}</p>
+                </div>
+              </div>
+            </GlassPanel>
           </Link>
         )
       })}
-    </nav>
+    </div>
   )
 }
