@@ -1,13 +1,26 @@
 'use client'
 
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { fetchUsersPartial } from '@/lib/users'
-import styles from "./search.module.css"
 import { useDebounce } from '@/app/hooks/useDebounce'
 import { formOptions, useForm, useStore } from '@tanstack/react-form'
-import { Autocomplete, Button, TextField } from '@mui/material'
 import { Guild } from '@/lib/guilds'
 import useAddMemberMutation from '@/app/guilds/hooks/useAddMemberMutation'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command'
 
 interface Props {
   guildData?: Guild
@@ -18,6 +31,7 @@ export default function UserSearch({
   guildData,
   submitText = "Submit"
 }: Props) {
+  const [open, setOpen] = useState(false)
   const { mutation } = useAddMemberMutation(guildData)
   const {
     mutate: addMember,
@@ -27,7 +41,7 @@ export default function UserSearch({
   const formOpts = formOptions({
     defaultValues: {
       searchTerm: '',
-      selectedUser: null,
+      selectedUser: null as { id: string; name: string } | null,
     }
   })
 
@@ -42,6 +56,7 @@ export default function UserSearch({
   });
 
   const searchTerm = useStore(form.store, state => state.values.searchTerm);
+  const selectedUser = useStore(form.store, state => state.values.selectedUser);
 
   const debouncedSearchTerm = useDebounce(searchTerm, 300)
 
@@ -53,42 +68,62 @@ export default function UserSearch({
   })
 
   return (
-    <form className={styles.searchForm} onSubmit={(e) => {
+    <form className="flex gap-3 justify-center w-full items-end" onSubmit={(e) => {
       e.preventDefault();
       e.stopPropagation();
       form.handleSubmit();
     }}>
       <form.Field name="searchTerm">
-        {({state, handleChange, handleBlur, form}) => (
-          <Autocomplete
-            className={styles.autocomplete}
-            freeSolo
-            options={results.map(user => user)}
-            getOptionLabel={(option) => option.name || ''}
-            isOptionEqualToValue={(option, value) => option.id === value?.id}
-            loading={isPending || isAddingMember}
-            inputValue={state.value}
-            onInputChange={(_, value) => {
-              handleChange(value)
-            }}
-            onBlur={handleBlur}
-            onChange={(_, value) => {
-              form.setFieldValue('selectedUser', value)
-            }}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                className={styles.searchInput}
-                label="Search Users"
-                placeholder="Enter at least 3 characters"
-                error={isError}
-                helperText={isError && error.message}
-              />
-            )}
-          />
+        {({ state, handleChange }) => (
+          <Popover open={open && results.length > 0} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+              <div className="flex-1 max-w-sm">
+                <Input
+                  placeholder={selectedUser ? selectedUser.name : "Search users (3+ chars)"}
+                  value={state.value}
+                  onChange={(e) => {
+                    handleChange(e.target.value)
+                    setOpen(true)
+                  }}
+                  onFocus={() => results.length > 0 && setOpen(true)}
+                  className={isError ? "border-destructive" : ""}
+                />
+                {isError && (
+                  <p className="text-xs text-destructive mt-1">{error.message}</p>
+                )}
+              </div>
+            </PopoverTrigger>
+            <PopoverContent className="p-0 w-[var(--radix-popover-trigger-width)]" align="start">
+              <Command>
+                <CommandList>
+                  {isPending || isAddingMember ? (
+                    <CommandEmpty>Loading...</CommandEmpty>
+                  ) : results.length === 0 ? (
+                    <CommandEmpty>No users found.</CommandEmpty>
+                  ) : (
+                    <CommandGroup>
+                      {results.map((user) => (
+                        <CommandItem
+                          key={user.id}
+                          value={user.name}
+                          onSelect={() => {
+                            form.setFieldValue('selectedUser', user)
+                            form.setFieldValue('searchTerm', user.name)
+                            setOpen(false)
+                          }}
+                        >
+                          {user.name}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  )}
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         )}
       </form.Field>
-      <Button variant='outlined' type='submit' disabled={!form.state.values.selectedUser} >
+      <Button variant="outline" type="submit" disabled={!selectedUser}>
         {submitText}
       </Button>
     </form>
