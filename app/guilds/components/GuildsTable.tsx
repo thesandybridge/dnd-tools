@@ -80,6 +80,7 @@ export default function GuildsTable({ userId, isUserProfile = false }) {
                 <OwnerChip
                   userId={guild.owner}
                   isOwner={isOwner}
+                  disableLink
                   className="text-sm"
                 />
               </div>

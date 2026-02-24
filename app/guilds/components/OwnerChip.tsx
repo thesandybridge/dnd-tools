@@ -6,11 +6,13 @@ interface Props {
   userId: UUID,
   isOwner: boolean,
   className?: string,
+  disableLink?: boolean,
 }
 
 export default function OwnerChip({
   userId,
   isOwner,
+  disableLink = false,
   className,
   ...props
 }: Props) {
@@ -18,7 +20,7 @@ export default function OwnerChip({
 
   if (!data) return null
 
-  return isOwner ? (
+  return isOwner && !disableLink ? (
     <Link
       href={`/users/${userId}`}
       className={`text-primary font-medium hover:underline ${className ?? ""}`}
