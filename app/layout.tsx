@@ -6,6 +6,7 @@ import "@/app/globals.css"
 import 'leaflet/dist/leaflet.css'
 import ThemeProvider from "@/app/providers/ThemeProvider"
 import { GrainOverlay } from "@/app/components/effects/GrainOverlay"
+import { AmbientParticles } from "@/app/components/effects/AmbientParticles"
 import QueryClientProvider from "@/app/providers/QueryClientProvider"
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
@@ -30,6 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </filter>
         </svg>
         <GrainOverlay />
+        <AmbientParticles />
         <SessionProvider>
           <QueryClientProvider>
               <ThemeProvider>
