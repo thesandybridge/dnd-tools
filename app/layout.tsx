@@ -5,6 +5,7 @@ import { SessionProvider } from 'next-auth/react'
 import "@/app/globals.css"
 import 'leaflet/dist/leaflet.css'
 import ThemeProvider from "@/app/providers/ThemeProvider"
+import { GrainOverlay } from "@/app/components/effects/GrainOverlay"
 import QueryClientProvider from "@/app/providers/QueryClientProvider"
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
@@ -28,6 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <feDisplacementMap in="SourceGraphic" in2="noise" scale={6} xChannelSelector="R" yChannelSelector="G" />
           </filter>
         </svg>
+        <GrainOverlay />
         <SessionProvider>
           <QueryClientProvider>
               <ThemeProvider>
