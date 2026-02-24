@@ -8,6 +8,7 @@ import { GlassPanel } from "@/app/components/ui/GlassPanel"
 const PATH = "/guilds/"
 const routes = [
   { path: '/', label: 'Overview' },
+  { path: '/map', label: 'Maps' },
   { path: '/members', label: 'Members' },
   { path: '/settings', label: 'Settings', permission: 'admin' },
 ]
