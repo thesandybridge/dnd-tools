@@ -1,5 +1,6 @@
 import { Inter, Cinzel } from "next/font/google"
 import Nav from "@/app/components/navigation/Nav"
+import { SpeedDial } from "@/app/components/navigation/SpeedDial"
 import { SessionProvider } from 'next-auth/react'
 import "@/app/globals.css"
 import 'leaflet/dist/leaflet.css'
@@ -35,6 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     {children}
                   </main>
                 </div>
+                <SpeedDial />
                 <footer className="md:ml-16 flex justify-center p-2 text-sm text-muted-foreground">
                   <p>&copy; {year} - made with ♥ by sandybridge</p>
                 </footer>
