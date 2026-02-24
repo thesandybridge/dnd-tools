@@ -1,35 +1,20 @@
 'use client'
 
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faPlus } from "@fortawesome/free-solid-svg-icons"
+import { Plus } from "lucide-react"
 import { createGuild } from "@/lib/guilds"
-import styles from "./guilds.module.css"
+import { Button } from "@/components/ui/button"
 
 export default function GuildControls() {
-  const controls = [
-    {
-      label: "Create Guild",
-      action: createGuild,
-      icon: faPlus
-    }
-  ]
-
   return (
-    <nav className={styles.guildNav}>
-      {controls.map((control, idx) => (
-        <button
-          key={idx}
-          onClick={() => control.action()}
-          aria-label={control.label}
-          title={control.label}
-          className={`${styles.guildNavButton} guild-btn`}
-        >
-          <FontAwesomeIcon
-            icon={control.icon}
-            className={styles.guildNavIcon}
-          />
-        </button>
-      ))}
+    <nav className="flex justify-center gap-3">
+      <Button
+        variant="outline"
+        onClick={() => createGuild()}
+        aria-label="Create Guild"
+        title="Create Guild"
+      >
+        <Plus className="h-4 w-4" />
+      </Button>
     </nav>
   )
 }

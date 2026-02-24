@@ -1,11 +1,11 @@
 'use client'
 
-import styles from "./guilds.module.css"
 import useCreateGuildMutation from "../hooks/useCreateGuildMutation"
 import { formOptions, useForm } from "@tanstack/react-form";
 import { uuid } from "@/utils/helpers";
 import { Guild } from "@/lib/guilds";
-import { Button, TextField } from "@mui/material";
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 
 export default function CreateGuild({ userId }: { userId: string }) {
   const { mutation } = useCreateGuildMutation(userId);
@@ -40,29 +40,31 @@ export default function CreateGuild({ userId }: { userId: string }) {
   }
 
   return (
-    <form className={styles.createGuild} onSubmit={handleSubmit}>
+    <form className="flex w-full justify-center gap-3 items-end" onSubmit={handleSubmit}>
       <form.Field
         name="name"
         asyncDebounceMs={500}
       >
         {(field) => (
-          <>
-            <TextField
+          <div className="flex flex-col gap-1">
+            <Input
               type="text"
               name={field.name}
               value={field.state.value}
               onBlur={field.handleBlur}
-              error={isError}
-              helperText={isError && error.message}
               onChange={(e) => field.handleChange(e.target.value)}
               required
               placeholder="Enter guild name"
+              className={isError ? "border-destructive" : ""}
             />
-          </>
+            {isError && (
+              <p className="text-xs text-destructive">{error.message}</p>
+            )}
+          </div>
         )}
       </form.Field>
 
-      <Button type="submit" disabled={isPending} variant="outlined">
+      <Button type="submit" disabled={isPending} variant="outline">
         {isPending ? 'Creating...' : 'Create Guild'}
       </Button>
     </form>

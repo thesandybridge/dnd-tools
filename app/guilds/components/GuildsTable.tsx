@@ -1,15 +1,12 @@
 'use client'
 
 import Link from 'next/link'
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { createColumnHelper, useReactTable, getCoreRowModel, flexRender } from "@tanstack/react-table"
 import { fetchGuilds, deleteGuild } from "@/lib/guilds"
 import { fetchGuildsByUser } from "@/lib/users"
-
-import styles from "./guilds.module.css"
 import OwnerChip from './OwnerChip'
-import { Button } from '@mui/material'
+import { Button } from '@/components/ui/button'
 
 export default function GuildsTable({ userId, isUserProfile = false }) {
   const queryClient = useQueryClient()
@@ -22,21 +19,21 @@ export default function GuildsTable({ userId, isUserProfile = false }) {
     refetchOnWindowFocus: false
   })
 
-  const { mutate: deleteGuildMutate, isLoading: isDeleting } = useMutation({
+  const { mutate: deleteGuildMutate, isPending: isDeleting } = useMutation({
     mutationFn: deleteGuild,
     onMutate: async (guildId) => {
-      await queryClient.cancelQueries(GUILDS_KEY)
+      await queryClient.cancelQueries({ queryKey: GUILDS_KEY })
 
       const previousGuilds = queryClient.getQueryData(GUILDS_KEY)
 
-      queryClient.setQueryData(GUILDS_KEY, oldGuilds =>
-        oldGuilds?.filter(guild => guild.id !== guildId) || []
+      queryClient.setQueryData(GUILDS_KEY, (oldGuilds: unknown[]) =>
+        oldGuilds?.filter((guild: { id: string }) => guild.id !== guildId) || []
       )
 
       return { previousGuilds }
     },
     onError: (err, _, context) => {
-      queryClient.setQueryData(GUILDS_KEY, context.previousGuilds)
+      queryClient.setQueryData(GUILDS_KEY, context?.previousGuilds)
       console.error("Failed to delete guild:", err.message)
       alert("Failed to delete the guild. Please try again.")
     },
@@ -44,7 +41,7 @@ export default function GuildsTable({ userId, isUserProfile = false }) {
 
   const columnHelper = createColumnHelper()
 
-  const handleDeleteClick = (e, guildId) => {
+  const handleDeleteClick = (e: React.MouseEvent, guildId: string) => {
     e.stopPropagation()
     e.preventDefault()
     deleteGuildMutate(guildId)
@@ -53,20 +50,20 @@ export default function GuildsTable({ userId, isUserProfile = false }) {
   const columns = [
     columnHelper.accessor('name', {
       header: 'Name',
-      cell: info => (
-        <Link className={styles.tableData} href={`/guilds/${info.row.original.guild_id}`}>
+      cell: (info) => (
+        <Link className="p-3 flex-1 flex hover:text-primary transition-colors" href={`/guilds/${info.row.original.guild_id}`}>
           {info.getValue()}
         </Link>
       ),
     }),
     columnHelper.accessor('owner.name', {
       header: 'Owner',
-      cell: info => {
+      cell: (info) => {
         const isOwner = info.row.original.owner === userId
         return <OwnerChip
           userId={info.row.original.owner}
           isOwner={isOwner}
-          className={styles.tableData}
+          className="p-3 flex-1 flex"
         />
       },
     }),
@@ -74,14 +71,12 @@ export default function GuildsTable({ userId, isUserProfile = false }) {
       columnHelper.display({
         header: 'Actions',
         cell: ({ row }) => (
-          <div
-            className={styles.tableData}
-          >
+          <div className="p-3 flex-1 flex">
             <Button
-              onClick={(e) => handleDeleteClick(e, row.original.id)} // Handle delete click
+              onClick={(e) => handleDeleteClick(e, row.original.id)}
               disabled={isDeleting}
-              variant='outlined'
-              color='error'
+              variant="destructive"
+              size="sm"
             >
               {isDeleting ? 'Deleting...' : 'Delete'}
             </Button>
@@ -97,16 +92,16 @@ export default function GuildsTable({ userId, isUserProfile = false }) {
     getCoreRowModel: getCoreRowModel(),
   })
 
-  if (isLoading) return <p>Loading...</p>
-  if (error) return <p>Error: {error.message}</p>
+  if (isLoading) return <p className="text-muted-foreground text-center py-8">Loading...</p>
+  if (error) return <p className="text-destructive text-center py-8">Error: {error.message}</p>
 
   return (
-    <div className={`${styles.table} ${isUserProfile ? styles.userProfile : ''}`}>
-      <div className={styles.tableHead}>
+    <div className="flex w-full flex-col rounded-lg border border-border overflow-hidden">
+      <div className="flex w-full border-b border-border bg-muted/50">
         {table.getHeaderGroups().map(headerGroup => (
-          <div className={styles.tableRow} key={headerGroup.id}>
+          <div className="flex w-full" key={headerGroup.id}>
             {headerGroup.headers.map(header => (
-              <div className={styles.tableHeader} key={header.id}>
+              <div className="p-3 flex-1 font-semibold text-sm text-foreground" key={header.id}>
                 {flexRender(
                   header.column.columnDef.header,
                   header.getContext()
@@ -116,11 +111,11 @@ export default function GuildsTable({ userId, isUserProfile = false }) {
           </div>
         ))}
       </div>
-      <div className={styles.tableBody}>
+      <div className="flex w-full flex-col">
         {table.getRowModel().rows.map(row => (
-          <div className={styles.tableRow} key={row.id}>
+          <div className="flex w-full border-b border-border last:border-0 hover:bg-muted/30 transition-colors" key={row.id}>
             {row.getVisibleCells().map(cell => (
-              <div className={styles.dataWrapper} key={cell.id}>
+              <div className="flex-1" key={cell.id}>
                 {flexRender(
                   cell.column.columnDef.cell,
                   cell.getContext()

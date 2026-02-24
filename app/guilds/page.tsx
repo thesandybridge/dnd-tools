@@ -10,11 +10,11 @@ export default async function Guilds() {
   }
 
   return (
-    <main className="main">
-      <div className="wrapper">
+    <div className="flex justify-center p-4">
+      <div className="max-w-[1200px] w-full flex flex-col items-center gap-4">
         <CreateGuild userId={session?.user.id} />
         <GuildsTable userId={session?.user.id} />
       </div>
-    </main >
+    </div>
   )
 }

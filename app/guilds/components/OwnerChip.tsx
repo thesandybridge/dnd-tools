@@ -2,8 +2,6 @@ import useFetchUser from "@/app/hooks/useFetchUser";
 import { UUID } from "@/utils/types";
 import Link from "next/link";
 
-import styles from "./guilds.module.css"
-
 interface Props {
   userId: UUID,
   isOwner: boolean,
@@ -20,20 +18,17 @@ export default function OwnerChip({
 
   if (!data) return null
 
-  const mergedClassName = `${styles.currentUser} ${className || ''}`.trim();
-
   return isOwner ? (
     <Link
       href={`/users/${userId}`}
-      className={mergedClassName}
+      className={`text-primary font-medium hover:underline ${className ?? ""}`}
       {...props}
     >
       {data.name}
     </Link>
   ) : (
-    <span
-      className={className}
-      {...props}
-    >{data.name}</span>
+    <span className={className} {...props}>
+      {data.name}
+    </span>
   )
 }
