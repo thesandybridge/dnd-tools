@@ -9,7 +9,7 @@ import { ToastContainer, toast } from 'react-toastify'
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { GlassPanel } from "@/app/components/ui/GlassPanel"
 
 const themes = [
   { name: "parchment", label: "Parchment", color: "#c8a44e" },
@@ -46,27 +46,30 @@ export default function ColorPickerComponent({ userId }) {
     <>
       <ToastContainer theme={theme.themeMode} />
       <div className="flex flex-col gap-6 w-full max-w-lg">
-        <Card>
-          <CardHeader>
-            <CardTitle className="font-cinzel">Theme</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
+        <GlassPanel corona className="p-6">
+          <h3 className="font-cinzel text-lg font-semibold mb-4">Theme</h3>
+          <div className="flex flex-col gap-4">
             <div className="grid grid-cols-4 gap-2">
               {themes.map((t) => (
                 <button
                   key={t.name}
                   onClick={() => setThemeName(t.name)}
-                  className={`flex flex-col items-center gap-1.5 p-2 rounded-lg border transition-colors cursor-pointer ${
-                    theme.themeName === t.name
-                      ? "border-primary bg-primary/10"
-                      : "border-border hover:border-primary/50"
-                  }`}
+                  className="cursor-pointer"
                 >
-                  <div
-                    className="w-8 h-8 rounded-full border border-border"
-                    style={{ backgroundColor: t.color }}
-                  />
-                  <span className="text-xs">{t.label}</span>
+                  <GlassPanel
+                    variant="subtle"
+                    className={`flex flex-col items-center gap-1.5 p-3 rounded-lg transition-all ${
+                      theme.themeName === t.name
+                        ? "shadow-[0_0_12px_-3px_rgba(var(--corona-rgb),0.5)] border-primary/30"
+                        : "hover:bg-white/[0.04]"
+                    }`}
+                  >
+                    <div
+                      className="w-10 h-10 rounded-full border border-white/10"
+                      style={{ backgroundColor: t.color }}
+                    />
+                    <span className="text-xs">{t.label}</span>
+                  </GlassPanel>
                 </button>
               ))}
             </div>
@@ -78,24 +81,20 @@ export default function ColorPickerComponent({ userId }) {
                 onCheckedChange={toggleThemeMode}
               />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </GlassPanel>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="font-cinzel">Accent Color</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSave} className="flex flex-col gap-4">
-              <div className="min-w-[25vw]">
-                <ColorPicker color={color} onChange={setColor} />
-              </div>
-              <Button type="submit" disabled={isPending}>
-                {isPending ? 'Saving...' : 'Save'}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+        <GlassPanel corona className="p-6">
+          <h3 className="font-cinzel text-lg font-semibold mb-4">Accent Color</h3>
+          <form onSubmit={handleSave} className="flex flex-col gap-4">
+            <div className="min-w-[25vw]">
+              <ColorPicker color={color} onChange={setColor} />
+            </div>
+            <Button type="submit" disabled={isPending}>
+              {isPending ? 'Saving...' : 'Save'}
+            </Button>
+          </form>
+        </GlassPanel>
       </div>
     </>
   )
