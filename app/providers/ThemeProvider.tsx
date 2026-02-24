@@ -4,70 +4,63 @@ import { createContext, useContext, useState, useEffect, useCallback } from 'rea
 import { useQuery } from '@tanstack/react-query'
 import { fetchUser } from '@/lib/users'
 import { useSession } from 'next-auth/react'
-import { ThemeProvider as MUIThemeProvider, createTheme } from '@mui/material/styles';
 
-const ThemeContext = createContext()
+type ThemeName = 'parchment' | 'shadowfell' | 'dragonfire' | 'feywild'
+type ThemeMode = 'light' | 'dark'
 
-export default function ThemeProvider({ children }) {
-  const [theme, setTheme] = useState({
-    primaryColor: '#8ec07c',
+interface ThemeState {
+  primaryColor: string
+  themeMode: ThemeMode
+  themeName: ThemeName
+}
+
+interface ThemeContextValue {
+  theme: ThemeState
+  changePrimaryColor: (color: string) => void
+  toggleThemeMode: () => void
+  setThemeName: (name: ThemeName) => void
+}
+
+const ThemeContext = createContext<ThemeContextValue | undefined>(undefined)
+
+export default function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const [theme, setTheme] = useState<ThemeState>({
+    primaryColor: '#c8a44e',
     themeMode: "dark",
+    themeName: "parchment",
   })
-
-  const mui_theme = createTheme({
-    typography: {
-      fontFamily: 'var(--font-roboto)',
-    },
-    palette: {
-      mode: theme.themeMode,
-      primary: {
-        main: "#928374",
-        dark: "#928374",
-        contrastText: "#928374",
-      },
-      secondary: {
-        main: theme.primaryColor
-      },
-      background: {
-        default: "#282828"
-      },
-      text: {
-        primary: "#928374",
-      }
-    }
-  });
 
   const { data: session } = useSession()
 
-  const changePrimaryColor = useCallback((color) => {
-    setTheme((prevTheme) => ({
-      ...prevTheme,
-      primaryColor: color,
-    }))
-  }, [setTheme])
+  const changePrimaryColor = useCallback((color: string) => {
+    setTheme((prev) => ({ ...prev, primaryColor: color }))
+  }, [])
 
   const toggleThemeMode = useCallback(() => {
-    setTheme((prevTheme) => {
-      const newThemeMode = prevTheme.themeMode === 'light' ? 'dark' : 'light'
-      localStorage.setItem('themeMode', newThemeMode)
-      return { ...prevTheme, themeMode: newThemeMode }
+    setTheme((prev) => {
+      const newMode: ThemeMode = prev.themeMode === 'light' ? 'dark' : 'light'
+      localStorage.setItem('themeMode', newMode)
+      return { ...prev, themeMode: newMode }
     })
-  }, [setTheme])
+  }, [])
+
+  const setThemeName = useCallback((name: ThemeName) => {
+    setTheme((prev) => {
+      localStorage.setItem('themeName', name)
+      return { ...prev, themeName: name }
+    })
+  }, [])
 
   const { data: user } = useQuery({
     queryKey: ['user', session?.user?.id],
     queryFn: () => fetchUser(session?.user?.id),
     enabled: !!session?.user?.id,
     staleTime: 300000,
-    onError: (error) => {
-      console.error('Failed to fetch user theme:', error.message)
-    }
   })
 
   useEffect(() => {
     if (user && Array.isArray(user) && user.length > 0) {
       const userData = user[0]
-
       if (userData.color) {
         changePrimaryColor(userData.color)
       }
@@ -75,28 +68,27 @@ export default function ThemeProvider({ children }) {
   }, [user, changePrimaryColor])
 
   useEffect(() => {
-    const savedThemeMode = localStorage.getItem('themeMode') || 'dark'
-    setTheme((prevTheme) => ({ ...prevTheme, themeMode: savedThemeMode }))
+    const savedMode = (localStorage.getItem('themeMode') as ThemeMode) || 'dark'
+    const savedName = (localStorage.getItem('themeName') as ThemeName) || 'parchment'
+    setTheme((prev) => ({ ...prev, themeMode: savedMode, themeName: savedName }))
   }, [])
 
   useEffect(() => {
-    document.documentElement.style.setProperty('--alt', theme.primaryColor)
-    document.documentElement.setAttribute('data-theme', theme.themeMode)
-  }, [theme.primaryColor, theme.themeMode])
+    const root = document.documentElement
+    root.setAttribute('data-theme', theme.themeName)
+    root.setAttribute('data-mode', theme.themeMode)
+    root.style.setProperty('--alt', theme.primaryColor)
+  }, [theme.primaryColor, theme.themeMode, theme.themeName])
 
   return (
-    <ThemeContext.Provider value={{
-      theme,
-      changePrimaryColor,
-      toggleThemeMode
-    }}>
-      <MUIThemeProvider theme={mui_theme}>
-          {children}
-      </MUIThemeProvider>
+    <ThemeContext.Provider value={{ theme, changePrimaryColor, toggleThemeMode, setThemeName }}>
+      {children}
     </ThemeContext.Provider>
   )
 }
 
 export function useTheme() {
-  return useContext(ThemeContext)
+  const ctx = useContext(ThemeContext)
+  if (!ctx) throw new Error('useTheme must be used within ThemeProvider')
+  return ctx
 }
