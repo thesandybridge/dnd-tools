@@ -449,9 +449,30 @@
   opacity: 1;
 }
 
+/* Pulsing corona - subtle breathing glow on pseudo-elements */
+.corona-pulse::before,
+.corona-pulse::after {
+  animation: corona-pulse 3s ease-in-out infinite, corona-drift 25s linear infinite;
+}
+.corona-pulse::before {
+  animation: corona-pulse 3s ease-in-out infinite;
+}
+
+/* Active/open state - more intense corona */
+.corona-active::before {
+  opacity: 1;
+  box-shadow: 0 0 12px 3px rgba(var(--corona-rgb), 0.25),
+              0 0 5px 2px rgba(var(--corona-rgb), 0.15);
+}
+.corona-active::after {
+  opacity: 1;
+}
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .corona-border::after {
+  .corona-border::after,
+  .corona-pulse::before,
+  .corona-pulse::after {
     animation: none;
   }
 }
