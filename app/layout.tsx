@@ -4,14 +4,10 @@ import { SpeedDial } from "@/app/components/navigation/SpeedDial"
 import { SessionProvider } from 'next-auth/react'
 import "@/app/globals.css"
 import 'leaflet/dist/leaflet.css'
-import "@fortawesome/fontawesome-svg-core/styles.css"
-import { config } from "@fortawesome/fontawesome-svg-core"
 import ThemeProvider from "@/app/providers/ThemeProvider"
 import QueryClientProvider from "@/app/providers/QueryClientProvider"
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
-
-config.autoAddCss = false
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
 const cinzel = Cinzel({ subsets: ["latin"], variable: "--font-cinzel", weight: ["400", "700"] })

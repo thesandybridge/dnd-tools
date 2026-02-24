@@ -1,28 +1,24 @@
 import Link from "next/link"
-import styles from "./nav.module.css"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 const PATH = "/users/"
 const routes = [
-  {
-    path: '/settings',
-    label: 'Settings'
-  },
-  {
-    path: '/guilds',
-    label: 'Guilds'
-  },
+  { path: '/settings', label: 'Settings' },
+  { path: '/guilds', label: 'Guilds' },
 ]
+
 export default function UserNav({ userId }) {
   return (
-    <nav className={styles.userNav}>
-      {routes.map((route, idx) => (
-        <Link
-          key={idx}
-          className={styles.link}
-          href={`${PATH}${userId}${route.path}`}>
-          {route.label}
-        </Link>
-      ))}
-    </nav>
+    <Tabs defaultValue="">
+      <TabsList>
+        {routes.map((route) => (
+          <TabsTrigger key={route.path} value={route.path} asChild>
+            <Link href={`${PATH}${userId}${route.path}`}>
+              {route.label}
+            </Link>
+          </TabsTrigger>
+        ))}
+      </TabsList>
+    </Tabs>
   )
 }

@@ -1,8 +1,7 @@
-import styles from "../calculator.module.css"
 export default function Gold() {
   return (
     <svg
-      className={styles.svgIcon}
+      className="w-6 h-6 shrink-0"
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
     >

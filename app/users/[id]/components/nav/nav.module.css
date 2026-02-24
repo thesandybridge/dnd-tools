@@ -1,9 +1,0 @@
-.userNav {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-}
-
-.link:hover {
-  color: var(--alt);
-}

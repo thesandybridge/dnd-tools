@@ -8,7 +8,5 @@ export default async function Map() {
     redirect('/')
   }
 
-  return (
-    <MapLoader user_id={session.user.id} />
-  )
+  return <MapLoader />
 }

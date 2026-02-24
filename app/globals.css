@@ -353,11 +353,16 @@
 }
 
 /* ===================================================================
-   Legacy styles — kept during migration, removed in Phase 8
+   Global base styles
    =================================================================== */
 
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-cinzel), serif;
+}
+
+h2 {
+  text-align: center;
+  text-shadow: var(--alt) 1px 0 2px;
 }
 
 * {
@@ -373,8 +378,6 @@ body {
 }
 
 body {
-  color: var(--fg);
-  background: var(--bg);
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
@@ -385,47 +388,9 @@ a {
   text-decoration: none;
 }
 
-input {
-  cursor: pointer;
-  background: none;
-  color: var(--fg);
-  border: none;
-  padding: 1rem;
-  border-bottom: 1px solid var(--fg);
-  font-size: 1rem;
-}
-
-select:not(.tsqd-main-panel select) {
-  background: var(--bg);
-  color: var(--fg);
-  border: solid 1px var(--fg);
-  cursor: pointer;
-  padding: 1rem;
-}
-
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
-}
-
-.calcGroup{
-  display: flex;
-  gap: 1rem;
-  padding: 1rem;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-h2 {
-  text-align: center;
-  text-shadow: var(--alt) 1px 0 2px;
-}
-
-.totals {
-  border: solid 1px var(--fg);
-  padding: 1rem;
-}
+/* ===================================================================
+   Leaflet map overrides
+   =================================================================== */
 
 .mapContainer {
   background-color: var(--bg) !important;
@@ -435,43 +400,8 @@ h2 {
   background-repeat: no-repeat !important;
 }
 
-
-.toggleControls {
-  display: flex;
-  position: absolute;
-  top: 0;
-  right: 0;
-}
-
 .crosshair {
   cursor: crosshair !important;
-}
-
-.popupContent {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.map-btn {
-  background: none;
-  border: solid 1px var(--fg);
-  cursor: pointer;
-  transition: all .5s ease;
-
-  &:hover {
-    background: var(--fg);
-    color: var(--bg);
-  }
-
-  &.active-markers {
-    background: var(--fg);
-    color: var(--bg);
-  }
-
-  svg {
-    padding: 10px;
-  }
 }
 
 .leaflet-top {
@@ -506,102 +436,8 @@ h2 {
   gap: 1rem;
 }
 
-.tools-nav {
-  display: flex;
-  gap: 1rem;
-  width: 100%;
-  height: 50dvh;
-  flex-wrap: wrap;
-}
-
-.tools-link {
-  height: 100%;
-  width: 100%;
-  font-size: clamp(1rem, 10vw, 2rem);
-  flex: 1 1 calc(25% - 1rem);
-  background-position: center;
-  background-size: cover;
-  border-radius: 20px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-  border: ridge 15px var(--fg);
-  box-shadow: none
-}
-
-.tools-link::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: inherit;
-  filter: grayscale(1);
-  transition: filter 0.3s ease;
-}
-
-.tools-link:hover {
-  transform: scale(1.01);
-  transform: translateY(-5px);
-  box-shadow:
-    5px 5px 0 0 var(--alt),
-    10px 10px 0 0 var(--alt);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.tools-link:hover .tools-link--label {
-  text-shadow: var(--fg) 1px 0 10px;
-}
-
-.tools-link:hover::after {
-  filter: grayscale(0);
-}
-
-.tools-link--label {
-  z-index: 1;
-}
-
-@media screen and (max-width: 900px) {
-  .tools-link {
-    flex: 1 1 100%;
-  }
-}
-
-.tools-link.active {
-  color: var(--alt);
-}
-
-.tools-link:hover {
-  color: var(--alt);
-  filter: grayscale(0)
-}
-
-.back:hover svg {
-  transform: translateX(-30%);
-  transition: transform 0.3s ease;
-}
-
 .leaflet-marker-icon {
   filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
-}
-
-.wrapper {
-  max-width: 1200px;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1rem;
-}
-
-.main {
-  display: flex;
-  padding: 1rem;
-  justify-content: center;
 }
 
 /* ===================================================================

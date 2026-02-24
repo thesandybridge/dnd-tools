@@ -198,12 +198,15 @@ export default function MapComponent() {
       icon={customIcon}
     >
       <Popup>
-        <div className="popupContent">
+        <div className="flex flex-col gap-2">
           {marker.distance === "Start" ? "Starting Point" : `Marker - ${marker.distance} miles from last marker`}
-          <button onClick={(e) => {
-            e.stopPropagation()
-            mutateRemoveMarker.mutate(marker.uuid)
-          }}>
+          <button
+            className="text-destructive hover:underline text-sm cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation()
+              mutateRemoveMarker.mutate(marker.uuid)
+            }}
+          >
             Delete Marker
           </button>
         </div>
@@ -226,7 +229,7 @@ export default function MapComponent() {
       preferCanvas={true}
       attributionControl={false}
       style={{
-        height: '85dvh',
+        height: '100%',
         width: '100%',
       }}
       crs={L.CRS.Simple}
