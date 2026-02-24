@@ -1,5 +1,5 @@
 import { auth } from "@/auth"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { GlassPanel } from "@/app/components/ui/GlassPanel"
 import { Shield, Map, Wrench, Castle } from "lucide-react"
 import Link from "next/link"
 import { SignInButton } from "./components/SignInButton"
@@ -60,17 +60,13 @@ function HeroPage() {
         {features.map((feature) => {
           const Icon = feature.icon
           return (
-            <Card key={feature.title} className="bg-card/50 border-border/50">
-              <CardHeader>
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 mb-2">
-                  <Icon className="h-5 w-5 text-primary" />
-                </div>
-                <CardTitle className="text-lg">{feature.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <CardDescription>{feature.description}</CardDescription>
-              </CardContent>
-            </Card>
+            <GlassPanel key={feature.title} coronaHover className="p-6">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 mb-3">
+                <Icon className="h-5 w-5 text-primary" />
+              </div>
+              <h3 className="text-lg font-semibold mb-1">{feature.title}</h3>
+              <p className="text-sm text-muted-foreground">{feature.description}</p>
+            </GlassPanel>
           )
         })}
       </div>
@@ -80,41 +76,48 @@ function HeroPage() {
 
 function Dashboard({ userName, userId }: { userName: string; userId?: string }) {
   return (
-    <div className="flex flex-col gap-8 px-4 py-8 md:px-8 max-w-5xl mx-auto w-full">
-      <div>
-        <h1 className="text-2xl md:text-3xl font-bold text-foreground">
-          Welcome back, {userName}
-        </h1>
+    <div className="flex flex-col gap-6 px-4 py-8 md:px-8 max-w-6xl mx-auto w-full">
+      {/* Welcome */}
+      <GlassPanel className="p-6">
+        <h1 className="text-2xl md:text-3xl font-bold">Welcome back, {userName}</h1>
         <p className="text-muted-foreground mt-1">What would you like to do today?</p>
-      </div>
+      </GlassPanel>
 
-      {/* Quick actions */}
+      {/* Quick Actions */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {features.map((feature) => {
           const Icon = feature.icon
           return (
             <Link key={feature.title} href={feature.href}>
-              <Card className="h-full hover:bg-accent/50 transition-colors cursor-pointer">
-                <CardContent className="flex flex-col items-center justify-center gap-3 pt-6 pb-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-                    <Icon className="h-6 w-6 text-primary" />
-                  </div>
-                  <span className="text-sm font-medium text-foreground">{feature.title}</span>
-                </CardContent>
-              </Card>
+              <GlassPanel coronaHover className="h-full p-6 flex flex-col items-center justify-center gap-3 transition-all hover:bg-accent/30">
+                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+                  <Icon className="h-6 w-6 text-primary" />
+                </div>
+                <span className="text-sm font-medium">{feature.title}</span>
+              </GlassPanel>
             </Link>
           )
         })}
         <Link href={`/users/${userId}`}>
-          <Card className="h-full hover:bg-accent/50 transition-colors cursor-pointer border-dashed">
-            <CardContent className="flex flex-col items-center justify-center gap-3 pt-6 pb-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted">
-                <Castle className="h-6 w-6 text-muted-foreground" />
-              </div>
-              <span className="text-sm font-medium text-foreground">Profile</span>
-            </CardContent>
-          </Card>
+          <GlassPanel coronaHover className="h-full p-6 flex flex-col items-center justify-center gap-3 border-dashed transition-all hover:bg-accent/30">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted">
+              <Castle className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <span className="text-sm font-medium">Profile</span>
+          </GlassPanel>
         </Link>
+      </div>
+
+      {/* Activity + Calculator row */}
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+        <GlassPanel className="md:col-span-3 p-6">
+          <h2 className="text-lg font-semibold mb-4">Recent Activity</h2>
+          <p className="text-muted-foreground text-sm">Guild activity will appear here.</p>
+        </GlassPanel>
+        <GlassPanel className="md:col-span-2 p-6">
+          <h2 className="text-lg font-semibold mb-4">Quick Convert</h2>
+          <p className="text-muted-foreground text-sm">Currency converter coming soon.</p>
+        </GlassPanel>
       </div>
     </div>
   )
