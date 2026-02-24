@@ -380,13 +380,6 @@ body {
   flex-direction: column;
 }
 
-footer {
-  margin-top: auto;
-  display: flex;
-  justify-content: center;
-  padding: .5rem;
-}
-
 a {
   color: inherit;
   text-decoration: none;
@@ -408,14 +401,6 @@ select:not(.tsqd-main-panel select) {
   border: solid 1px var(--fg);
   cursor: pointer;
   padding: 1rem;
-}
-
-nav {
-  display: flex;
-  justify-content: center;
-  padding: 1rem;
-  gap: 1rem;
-  align-items: center;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -450,22 +435,6 @@ h2 {
   background-repeat: no-repeat !important;
 }
 
-.user_profile {
-  border-radius: 50%;
-  border: solid 2px var(--alt);
-}
-
-.user-control {
-  cursor: pointer;
-
-  &.active {
-    color: var(--alt);
-  }
-
-  &:hover {
-    color: var(--alt);
-  }
-}
 
 .toggleControls {
   display: flex;
