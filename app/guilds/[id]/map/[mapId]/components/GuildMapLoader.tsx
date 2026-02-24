@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useRef } from "react"
 import dynamic from "next/dynamic"
-import { Loader2 } from "lucide-react"
 import { FloatingToolbar } from "./FloatingToolbar"
 import MapSidePanel from "./MapSidePanel"
 import { MarkerInfoCard } from "./MarkerInfoCard"
@@ -25,7 +24,7 @@ export default function GuildMapLoader({ guildId, mapId }: { guildId: string; ma
   const mapHandleRef = useRef<MapHandle | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  const { data: pmtilesUrl, isLoading: pmLoading, error: pmError } = usePmtilesUrl(guildId, mapId)
+  const pmtilesUrl = usePmtilesUrl(guildId, mapId)
   const { data: markers = [] } = useGetMarkers(guildId, mapId)
 
   const [markerActive, setMarkerActive] = useState(false)
@@ -67,22 +66,6 @@ export default function GuildMapLoader({ guildId, mapId }: { guildId: string; ma
   const handleZoomOut = useCallback(() => {
     mapHandleRef.current?.zoomOut()
   }, [])
-
-  if (pmLoading) {
-    return (
-      <div className="flex items-center justify-center h-[calc(100dvh-12rem)]">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-      </div>
-    )
-  }
-
-  if (pmError || !pmtilesUrl) {
-    return (
-      <div className="flex items-center justify-center h-[calc(100dvh-12rem)]">
-        <p className="text-sm text-destructive">Failed to load map tiles</p>
-      </div>
-    )
-  }
 
   const selectedMarker = selectedMarkerUuid
     ? markers.find(m => m.uuid === selectedMarkerUuid) ?? null
