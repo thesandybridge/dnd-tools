@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import dynamic from "next/dynamic"
 import { motion, AnimatePresence } from "framer-motion"
-import { Shield, MapPin, Dice6, Calculator, X } from "lucide-react"
+import { Shield, Dice6, Calculator, X } from "lucide-react"
 
 const DiceRoller = dynamic(() => import("@/app/components/dice/DiceRoller"), {
   ssr: false,
@@ -26,7 +26,6 @@ type Action = {
 
 const actions: Action[] = [
   { label: "Create Guild", icon: Shield, href: "/guilds?create=true", auth: true },
-  { label: "Add Marker", icon: MapPin, href: "/map?add=true", auth: true },
   { label: "Roll Dice", icon: Dice6, action: "dice" },
   { label: "Calculator", icon: Calculator, href: "/tools/items" },
 ]
