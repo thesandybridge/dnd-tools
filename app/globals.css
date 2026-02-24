@@ -569,40 +569,42 @@ a {
   cursor: crosshair !important;
 }
 
-.leaflet-top {
-  &.leaflet-left {
-    background-color: var(--bg) !important;
-    padding: 1rem !important;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    align-items: center;
-
-    .leaflet-control {
-      margin: 0 !important;
-      border: none;
-    }
-  }
-}
-
-.leaflet-bar a {
-  background-color: var(--fg) !important;
-  color: var(--bg) !important;
-  width: 50px !important;
-
-  &.leaflet-control-zoom-in {
-    border-bottom: solid 1px var(--bg) !important;
-  }
-}
-
-.custom-controls {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
 .leaflet-marker-icon {
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+  filter: drop-shadow(0 0 6px rgba(var(--corona-rgb), 0.3))
+    drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+.leaflet-popup-content-wrapper {
+  background: rgba(var(--card-rgb, 30, 30, 30), 0.9) !important;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 0.75rem !important;
+  color: var(--foreground) !important;
+  box-shadow: 0 0 12px -3px rgba(var(--corona-rgb), 0.2),
+    0 4px 16px rgba(0, 0, 0, 0.3) !important;
+}
+
+.leaflet-popup-tip {
+  background: rgba(var(--card-rgb, 30, 30, 30), 0.9) !important;
+}
+
+.leaflet-tooltip {
+  background: rgba(var(--card-rgb, 30, 30, 30), 0.9) !important;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 0.5rem !important;
+  color: var(--foreground) !important;
+  box-shadow: 0 0 8px -2px rgba(var(--corona-rgb), 0.2) !important;
+  padding: 4px 8px !important;
+  font-size: 0.8125rem !important;
+}
+
+.leaflet-tooltip-top::before {
+  border-top-color: rgba(var(--card-rgb, 30, 30, 30), 0.9) !important;
+}
+
+.leaflet-tooltip-bottom::before {
+  border-bottom-color: rgba(var(--card-rgb, 30, 30, 30), 0.9) !important;
 }
 
 /* ===================================================================
