@@ -99,8 +99,7 @@ model GuildMap {
   mapId         String   @unique @default(uuid()) @map("map_id")
   guildId       String   @map("guild_id")
   name          String
-  tileforgeSlug String   @map("tileforge_slug")
-  tileforgeKey  String   @map("tileforge_key")
+  pmtilesUrl    String   @map("pmtiles_url")
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 

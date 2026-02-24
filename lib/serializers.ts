@@ -43,14 +43,14 @@ export function serializeMemberBasic(m: GuildMember) {
   }
 }
 
-/** GuildMap → snake_case fields (excludes tileforgeKey for security) */
+/** GuildMap → snake_case fields */
 export function serializeGuildMap(m: GuildMap) {
   return {
     id: m.id,
     map_id: m.mapId,
     guild_id: m.guildId,
     name: m.name,
-    tileforge_slug: m.tileforgeSlug,
+    pmtiles_url: m.pmtilesUrl,
     created_at: m.createdAt,
     updated_at: m.updatedAt,
   }

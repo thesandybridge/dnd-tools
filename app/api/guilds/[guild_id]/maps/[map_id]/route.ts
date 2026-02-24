@@ -51,14 +51,13 @@ export const PATCH = auth(async function PATCH(request, { params }) {
       return Response.json({ error: "Only guild owner can do this" }, { status: 403 })
     }
 
-    const { name, tileforgeSlug, tileforgeKey } = await request.json()
+    const { name, pmtilesUrl } = await request.json()
 
     const map = await prisma.guildMap.update({
       where: { mapId: map_id as string },
       data: {
         ...(name !== undefined && { name }),
-        ...(tileforgeSlug !== undefined && { tileforgeSlug }),
-        ...(tileforgeKey !== undefined && { tileforgeKey }),
+        ...(pmtilesUrl !== undefined && { pmtilesUrl }),
       },
     })
 

@@ -48,14 +48,13 @@ export const POST = auth(async function POST(request, { params }) {
       return Response.json({ error: "Only guild owner can do this" }, { status: 403 })
     }
 
-    const { name, tileforgeSlug, tileforgeKey } = await request.json()
+    const { name, pmtilesUrl } = await request.json()
 
     const map = await prisma.guildMap.create({
       data: {
         guildId: guild_id as string,
         name,
-        tileforgeSlug,
-        tileforgeKey,
+        pmtilesUrl,
       },
     })
 

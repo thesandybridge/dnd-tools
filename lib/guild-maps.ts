@@ -5,7 +5,7 @@ export interface GuildMap {
   map_id: UUID
   guild_id: UUID
   name: string
-  tileforge_slug: string
+  pmtiles_url: string
   created_at?: string
   updated_at?: string
 }
@@ -22,7 +22,7 @@ export async function fetchGuildMap(guildId: UUID, mapId: UUID): Promise<GuildMa
   return response.json()
 }
 
-export async function createGuildMap(guildId: UUID, data: { name: string; tileforgeSlug: string; tileforgeKey: string }): Promise<GuildMap> {
+export async function createGuildMap(guildId: UUID, data: { name: string; pmtilesUrl: string }): Promise<GuildMap> {
   const response = await fetch(`/api/guilds/${guildId}/maps`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -32,7 +32,7 @@ export async function createGuildMap(guildId: UUID, data: { name: string; tilefo
   return response.json()
 }
 
-export async function updateGuildMap(guildId: UUID, mapId: UUID, data: { name?: string; tileforgeSlug?: string; tileforgeKey?: string }): Promise<GuildMap> {
+export async function updateGuildMap(guildId: UUID, mapId: UUID, data: { name?: string; pmtilesUrl?: string }): Promise<GuildMap> {
   const response = await fetch(`/api/guilds/${guildId}/maps/${mapId}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
@@ -47,11 +47,4 @@ export async function deleteGuildMap(guildId: UUID, mapId: UUID): Promise<void> 
     method: 'DELETE',
   })
   if (!response.ok) throw new Error('Failed to delete guild map')
-}
-
-export async function fetchPmtilesUrl(guildId: UUID, mapId: UUID): Promise<string> {
-  const response = await fetch(`/api/guilds/${guildId}/maps/${mapId}/pmtiles-url`)
-  if (!response.ok) throw new Error('Failed to fetch PMTiles URL')
-  const data = await response.json()
-  return data.url
 }

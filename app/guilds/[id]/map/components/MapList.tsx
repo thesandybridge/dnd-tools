@@ -17,8 +17,7 @@ export default function MapList({ guildId, userId }: { guildId: string; userId: 
 
   const [showForm, setShowForm] = useState(false)
   const [name, setName] = useState("")
-  const [tileforgeSlug, setTileforgeSlug] = useState("")
-  const [tileforgeKey, setTileforgeKey] = useState("")
+  const [pmtilesUrl, setPmtilesUrl] = useState("")
 
   const { data: maps = [], isLoading } = useQuery({
     queryKey: ["guild-maps", guildId],
@@ -26,13 +25,12 @@ export default function MapList({ guildId, userId }: { guildId: string; userId: 
   })
 
   const createMutation = useMutation({
-    mutationFn: (data: { name: string; tileforgeSlug: string; tileforgeKey: string }) =>
+    mutationFn: (data: { name: string; pmtilesUrl: string }) =>
       createGuildMap(guildId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["guild-maps", guildId] })
       setName("")
-      setTileforgeSlug("")
-      setTileforgeKey("")
+      setPmtilesUrl("")
       setShowForm(false)
     },
   })
@@ -46,8 +44,8 @@ export default function MapList({ guildId, userId }: { guildId: string; userId: 
 
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!name.trim() || !tileforgeSlug.trim() || !tileforgeKey.trim()) return
-    createMutation.mutate({ name: name.trim(), tileforgeSlug: tileforgeSlug.trim(), tileforgeKey: tileforgeKey.trim() })
+    if (!name.trim() || !pmtilesUrl.trim()) return
+    createMutation.mutate({ name: name.trim(), pmtilesUrl: pmtilesUrl.trim() })
   }
 
   if (isLoading) {
@@ -85,16 +83,9 @@ export default function MapList({ guildId, userId }: { guildId: string; userId: 
               className="bg-white/[0.05] border-white/[0.08]"
             />
             <Input
-              placeholder="Tileforge slug"
-              value={tileforgeSlug}
-              onChange={(e) => setTileforgeSlug(e.target.value)}
-              className="bg-white/[0.05] border-white/[0.08]"
-            />
-            <Input
-              type="password"
-              placeholder="Tileforge API key"
-              value={tileforgeKey}
-              onChange={(e) => setTileforgeKey(e.target.value)}
+              placeholder="PMTiles URL"
+              value={pmtilesUrl}
+              onChange={(e) => setPmtilesUrl(e.target.value)}
               className="bg-white/[0.05] border-white/[0.08]"
             />
             <div className="flex items-center gap-2">
