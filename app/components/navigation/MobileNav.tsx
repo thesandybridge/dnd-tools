@@ -44,7 +44,7 @@ export function MobileNav({ user }: { user: NavUser | null }) {
   }
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 flex md:hidden items-center justify-around border-t border-border bg-sidebar px-2 py-1 pb-[env(safe-area-inset-bottom)]">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 flex md:hidden items-center justify-around border-t border-border backdrop-blur-lg bg-card/85 px-2 py-1 pb-[env(safe-area-inset-bottom)]">
       {routes.map((route) => {
         const Icon = route.icon
         const active = isActive(route.path)
@@ -53,7 +53,7 @@ export function MobileNav({ user }: { user: NavUser | null }) {
             key={route.path}
             href={route.path}
             className={`flex flex-col items-center gap-0.5 px-3 py-1.5 text-[10px] transition-colors
-              ${active ? "text-primary" : "text-muted-foreground"}`}
+              ${active ? "text-primary drop-shadow-[0_0_6px_rgba(var(--corona-rgb),0.4)]" : "text-muted-foreground"}`}
           >
             <Icon className="h-5 w-5" />
             <span>{route.title}</span>
