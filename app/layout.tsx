@@ -1,4 +1,4 @@
-import { Roboto } from "next/font/google"
+import { Inter, Cinzel } from "next/font/google"
 import Nav from "@/app/components/navigation/Nav"
 import { SessionProvider } from 'next-auth/react'
 import "@/app/globals.css"
@@ -12,7 +12,8 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 config.autoAddCss = false
 
-const roboto = Roboto({ subsets: ["latin"], weight: '400' })
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" })
+const cinzel = Cinzel({ subsets: ["latin"], variable: "--font-cinzel", weight: ["400", "700"] })
 
 export const metadata = {
   title: "Dungeon Syndrome",
@@ -23,7 +24,7 @@ export default function RootLayout({ children }) {
   const year = new Date().getFullYear()
   return (
     <html lang="en">
-      <body className={roboto.className}>
+      <body className={`${inter.variable} ${cinzel.variable} ${inter.className}`}>
         <SessionProvider>
           <QueryClientProvider>
               <ThemeProvider>

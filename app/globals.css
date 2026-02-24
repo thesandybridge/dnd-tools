@@ -356,6 +356,10 @@
    Legacy styles — kept during migration, removed in Phase 8
    =================================================================== */
 
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-cinzel), serif;
+}
+
 * {
   box-sizing: border-box;
   padding: 0;
