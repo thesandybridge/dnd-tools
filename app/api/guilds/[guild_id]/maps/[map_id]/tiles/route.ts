@@ -1,6 +1,33 @@
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 
+// Cache presigned URLs in memory (they expire in 10 min, we refresh at 8)
+const presignedCache = new Map<number, { url: string; expiresAt: number }>()
+const CACHE_TTL = 8 * 60 * 1000
+
+async function resolvePresignedUrl(map: { id: number; pmtilesUrl: string; pmtilesApiKey: string | null }): Promise<string> {
+  const cached = presignedCache.get(map.id)
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.url
+  }
+
+  const headers: HeadersInit = {}
+  if (map.pmtilesApiKey) {
+    headers["Authorization"] = `Bearer ${map.pmtilesApiKey}`
+  }
+
+  const res = await fetch(map.pmtilesUrl, { headers })
+  if (!res.ok) {
+    throw new Error(`Failed to resolve presigned URL: ${res.status}`)
+  }
+
+  const data = await res.json()
+  const url = data.url as string
+
+  presignedCache.set(map.id, { url, expiresAt: Date.now() + CACHE_TTL })
+  return url
+}
+
 export const GET = auth(async function GET(request, { params }) {
   const session = request.auth
 
@@ -25,38 +52,52 @@ export const GET = auth(async function GET(request, { params }) {
       return new Response("Not found", { status: 404 })
     }
 
-    const range = request.headers.get("Range")
+    const tileUrl = await resolvePresignedUrl(map)
 
+    const range = request.headers.get("Range")
     const upstreamHeaders: HeadersInit = {}
     if (range) {
       upstreamHeaders["Range"] = range
     }
 
-    const upstream = await fetch(map.pmtilesUrl, {
+    const upstream = await fetch(tileUrl, {
       headers: upstreamHeaders,
       redirect: "follow",
     })
 
     if (!upstream.ok && upstream.status !== 206) {
-      return new Response("Failed to fetch tiles", { status: 502 })
+      // Presigned URL may have expired early, clear cache and retry once
+      presignedCache.delete(map.id)
+      const retryUrl = await resolvePresignedUrl(map)
+      const retry = await fetch(retryUrl, {
+        headers: upstreamHeaders,
+        redirect: "follow",
+      })
+      if (!retry.ok && retry.status !== 206) {
+        return new Response("Failed to fetch tiles", { status: 502 })
+      }
+      return buildTileResponse(retry)
     }
 
-    const responseHeaders = new Headers()
-    const contentType = upstream.headers.get("Content-Type")
-    if (contentType) responseHeaders.set("Content-Type", contentType)
-    const contentLength = upstream.headers.get("Content-Length")
-    if (contentLength) responseHeaders.set("Content-Length", contentLength)
-    const contentRange = upstream.headers.get("Content-Range")
-    if (contentRange) responseHeaders.set("Content-Range", contentRange)
-    const acceptRanges = upstream.headers.get("Accept-Ranges")
-    if (acceptRanges) responseHeaders.set("Accept-Ranges", acceptRanges)
-
-    return new Response(upstream.body, {
-      status: upstream.status,
-      headers: responseHeaders,
-    })
+    return buildTileResponse(upstream)
   } catch (error) {
     console.error("Tile proxy error:", (error as Error).message)
     return new Response("Internal server error", { status: 500 })
   }
 })
+
+function buildTileResponse(upstream: Response): Response {
+  const responseHeaders = new Headers()
+  const contentType = upstream.headers.get("Content-Type")
+  if (contentType) responseHeaders.set("Content-Type", contentType)
+  const contentLength = upstream.headers.get("Content-Length")
+  if (contentLength) responseHeaders.set("Content-Length", contentLength)
+  const contentRange = upstream.headers.get("Content-Range")
+  if (contentRange) responseHeaders.set("Content-Range", contentRange)
+  responseHeaders.set("Accept-Ranges", "bytes")
+
+  return new Response(upstream.body, {
+    status: upstream.status,
+    headers: responseHeaders,
+  })
+}
