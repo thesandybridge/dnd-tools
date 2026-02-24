@@ -388,6 +388,10 @@
 }
 
 /* Corona border glow - apply to positioned elements */
+.corona-border {
+  isolation: isolate;
+}
+
 .corona-border::before {
   content: '';
   position: absolute;
@@ -559,10 +563,6 @@ a {
 
 .mapContainer {
   background-color: var(--bg) !important;
-  background-image: url("/images/paper.jpg") !important;
-  background-size: cover !important;
-  background-position: fixed !important;
-  background-repeat: no-repeat !important;
 }
 
 .crosshair {

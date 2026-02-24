@@ -80,7 +80,7 @@ export default function MapLoader() {
     : { width: 0, height: 0 }
 
   return (
-    <div ref={containerRef} className="relative h-[calc(100dvh-4rem)] md:h-dvh">
+    <div ref={containerRef} className="relative h-[calc(100dvh-4rem)] md:h-[calc(100dvh-2.5rem)] overflow-hidden">
       <MapComponent
         selectedMarkerUuid={selectedMarkerUuid}
         setSelectedMarkerUuid={setSelectedMarkerUuid}
