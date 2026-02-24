@@ -91,7 +91,7 @@ function EditMapDialog({ map, guildId, open, onOpenChange }: {
   const [pmtilesApiKey, setPmtilesApiKey] = useState("")
   const [imageWidth, setImageWidth] = useState(map.image_width?.toString() ?? "")
   const [imageHeight, setImageHeight] = useState(map.image_height?.toString() ?? "")
-  const [maxZoom, setMaxZoom] = useState(map.max_zoom.toString())
+  const [maxZoom, setMaxZoom] = useState((map.max_zoom ?? 5).toString())
 
   const editMutation = useMutation({
     mutationFn: (data: Parameters<typeof updateGuildMap>[2]) =>
