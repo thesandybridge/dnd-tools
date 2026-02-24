@@ -40,3 +40,6 @@ next-env.d.ts
 /public/images/eberron-dm
 
 /lib/generated/prisma
+
+# worktrees
+.worktrees/
