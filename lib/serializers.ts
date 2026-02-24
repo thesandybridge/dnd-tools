@@ -1,4 +1,4 @@
-import type { Guild, GuildMember, Marker, User } from "@/lib/generated/prisma/client"
+import type { Guild, GuildMap, GuildMember, Marker, User } from "@/lib/generated/prisma/client"
 
 /** Guild → { id, guild_id, name, owner } */
 export function serializeGuild(g: Guild) {
@@ -40,6 +40,19 @@ export function serializeMemberBasic(m: GuildMember) {
     user_id: m.userId,
     role: m.role,
     joined_at: m.joinedAt,
+  }
+}
+
+/** GuildMap → snake_case fields (excludes tileforgeKey for security) */
+export function serializeGuildMap(m: GuildMap) {
+  return {
+    id: m.id,
+    map_id: m.mapId,
+    guild_id: m.guildId,
+    name: m.name,
+    tileforge_slug: m.tileforgeSlug,
+    created_at: m.createdAt,
+    updated_at: m.updatedAt,
   }
 }
 
