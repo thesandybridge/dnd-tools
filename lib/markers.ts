@@ -56,3 +56,12 @@ export async function updateMarkerDistance(markerId: UUID, newDistance: number):
     if (!response.ok) throw new Error('Failed to update marker distance')
     return response.json()
 }
+
+export async function updateMarkerText(markerUuid: UUID, text: string): Promise<void> {
+    const response = await fetch(`/api/markers/${markerUuid}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+    })
+    if (!response.ok) throw new Error('Failed to update marker text')
+}

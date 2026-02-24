@@ -48,11 +48,15 @@ export const PATCH = auth(async function PATCH(request, { params }) {
 
   try {
     const { id } = await params
-    const { distance } = await request.json()
+    const body = await request.json()
+
+    const data: Record<string, unknown> = {}
+    if (body.distance !== undefined) data.distance = body.distance
+    if (body.text !== undefined) data.text = body.text
 
     await prisma.marker.update({
-      where: { id: Number(id) },
-      data: { distance },
+      where: { uuid: id as string },
+      data,
     })
 
     return Response.json(null)
