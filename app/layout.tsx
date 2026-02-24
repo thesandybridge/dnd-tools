@@ -7,6 +7,7 @@ import 'leaflet/dist/leaflet.css'
 import ThemeProvider from "@/app/providers/ThemeProvider"
 import { GrainOverlay } from "@/app/components/effects/GrainOverlay"
 import { AmbientParticles } from "@/app/components/effects/AmbientParticles"
+import { CursorGlow } from "@/app/components/effects/CursorGlow"
 import QueryClientProvider from "@/app/providers/QueryClientProvider"
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
@@ -32,6 +33,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </svg>
         <GrainOverlay />
         <AmbientParticles />
+        <CursorGlow />
         <SessionProvider>
           <QueryClientProvider>
               <ThemeProvider>
