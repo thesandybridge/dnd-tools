@@ -76,6 +76,7 @@ model Guild {
 
   ownerUser User          @relation("GuildOwner", fields: [ownerId], references: [id])
   members   GuildMember[]
+  maps      GuildMap[]
 
   @@map("guilds")
 }
@@ -93,17 +94,37 @@ model GuildMember {
   @@map("guild_members")
 }
 
+model GuildMap {
+  id            Int      @id @default(autoincrement())
+  mapId         String   @unique @default(uuid()) @map("map_id")
+  guildId       String   @map("guild_id")
+  name          String
+  tileforgeSlug String   @map("tileforge_slug")
+  tileforgeKey  String   @map("tileforge_key")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  guild   Guild    @relation(fields: [guildId], references: [guildId], onDelete: Cascade)
+  markers Marker[]
+
+  @@index([guildId])
+  @@map("guild_maps")
+}
+
 model Marker {
   id         Int      @id @default(autoincrement())
   uuid       String   @unique @default(uuid())
   userId     String   @map("user_id")
+  guildMapId String   @map("guild_map_id")
   position   Json
   distance   Float?   @default(0)
   prevMarker String?  @map("prev_marker")
   createdAt  DateTime @default(now()) @map("created_at")
   text       String?
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  guildMap GuildMap @relation(fields: [guildMapId], references: [mapId], onDelete: Cascade)
 
+  @@index([guildMapId])
   @@map("markers")
 }
