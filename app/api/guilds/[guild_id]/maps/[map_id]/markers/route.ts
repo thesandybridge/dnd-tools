@@ -60,6 +60,7 @@ export const POST = auth(async function POST(request, { params }) {
     }
 
     const { position, prev_marker, distance, uuid } = await request.json()
+    const numericDistance = typeof distance === "number" ? distance : parseFloat(distance)
 
     const marker = await prisma.marker.create({
       data: {
@@ -68,7 +69,7 @@ export const POST = auth(async function POST(request, { params }) {
         guildMapId: map_id as string,
         position,
         prevMarker: prev_marker,
-        distance,
+        distance: Number.isFinite(numericDistance) ? numericDistance : 0,
       },
     })
 
