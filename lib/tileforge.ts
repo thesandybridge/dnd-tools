@@ -47,3 +47,18 @@ export function getTileForgeThumbnailUrl(storagePath: string): string {
   const jobId = storagePath.replace("tiles/", "")
   return `${TILEFORGE_API}/api/tiles/${jobId}/thumbnail`
 }
+
+export const TILEFORGE_URLS = {
+  home: "https://tileforge.sandybridge.io",
+  signup: "https://tileforge.sandybridge.io/signup",
+} as const
+
+export const TILEFORGE_COPY = {
+  tagline: "Upload any image. Get a zoomable map.",
+  pitch: "Turn any image into a zoomable PMTiles tileset. Free tier lets you generate tiles and self-host. Paid plans include hosted tile serving.",
+  ctaSignup: "Sign up on TileForge",
+  ctaLearnMore: "Learn more",
+  ctaGetStarted: "Get Started on TileForge",
+  poweredBy: "Powered by TileForge",
+  formPromo: "Don\u2019t have tilesets yet? Create zoomable map tiles from any image with TileForge \u2014 free tier available.",
+} as const
