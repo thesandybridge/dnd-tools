@@ -52,3 +52,25 @@ export async function fetchUsersPartial(take = 5, match: string) {
   if (!response.ok) throw new Error('Failed to fetch users')
   return response.json()
 }
+
+export interface DirectoryMember {
+  id: string
+  name: string | null
+  image: string | null
+  color: string | null
+  guilds: { guild_id: string; name: string }[]
+}
+
+export interface MembersResponse {
+  members: DirectoryMember[]
+  total: number
+  page: number
+  pages: number
+}
+
+export async function fetchMembersDirectory(search = "", page = 1): Promise<MembersResponse> {
+  const params = new URLSearchParams({ search, page: String(page) })
+  const response = await fetch(`/api/members?${params}`)
+  if (!response.ok) throw new Error("Failed to fetch members")
+  return response.json()
+}
