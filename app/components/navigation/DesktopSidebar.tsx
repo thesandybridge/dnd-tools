@@ -35,7 +35,7 @@ const authRoutes = [
 
 export function DesktopSidebar({ user }: { user: NavUser | null }) {
   const path = usePathname()
-  const { theme, toggleThemeMode } = useTheme()
+  const { theme, updateSettings } = useTheme()
   const routes = user ? [...publicRoutes, ...authRoutes] : publicRoutes
 
   function isActive(routePath: string) {
@@ -89,7 +89,7 @@ export function DesktopSidebar({ user }: { user: NavUser | null }) {
                 variant="ghost"
                 size="icon"
                 className="h-10 w-10 text-muted-foreground hover:text-foreground"
-                onClick={toggleThemeMode}
+                onClick={() => updateSettings({ themeMode: theme.themeMode === 'dark' ? 'light' : 'dark' })}
               >
                 {theme.themeMode === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </Button>

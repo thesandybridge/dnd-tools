@@ -34,7 +34,7 @@ const authRoutes = [
 
 export function MobileNav({ user }: { user: NavUser | null }) {
   const path = usePathname()
-  const { theme, toggleThemeMode } = useTheme()
+  const { theme, updateSettings } = useTheme()
   const routes = user ? [...publicRoutes, ...authRoutes] : publicRoutes
 
   function isActive(routePath: string) {
@@ -105,7 +105,7 @@ export function MobileNav({ user }: { user: NavUser | null }) {
                 <Separator className="my-2" />
 
                 <button
-                  onClick={toggleThemeMode}
+                  onClick={() => updateSettings({ themeMode: theme.themeMode === 'dark' ? 'light' : 'dark' })}
                   className="flex items-center gap-3 rounded-lg px-2 py-2.5 text-foreground hover:bg-accent w-full"
                 >
                   {theme.themeMode === "dark" ? (
@@ -127,7 +127,7 @@ export function MobileNav({ user }: { user: NavUser | null }) {
             ) : (
               <>
                 <button
-                  onClick={toggleThemeMode}
+                  onClick={() => updateSettings({ themeMode: theme.themeMode === 'dark' ? 'light' : 'dark' })}
                   className="flex items-center gap-3 rounded-lg px-2 py-2.5 text-foreground hover:bg-accent w-full"
                 >
                   {theme.themeMode === "dark" ? (

@@ -1,7 +1,7 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, useCallback } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { fetchUser } from '@/lib/users'
 import { useSession } from 'next-auth/react'
 
@@ -12,44 +12,41 @@ interface ThemeState {
   primaryColor: string
   themeMode: ThemeMode
   themeName: ThemeName
+  particleEffect: string
+  coronaIntensity: number
 }
 
 interface ThemeContextValue {
   theme: ThemeState
-  changePrimaryColor: (color: string) => void
-  toggleThemeMode: () => void
-  setThemeName: (name: ThemeName) => void
+  updateSettings: (partial: Partial<ThemeState>) => void
+  saveSettings: () => Promise<void>
+  hasUnsavedChanges: boolean
+}
+
+const DEFAULTS: ThemeState = {
+  primaryColor: '#c8a44e',
+  themeMode: 'dark',
+  themeName: 'parchment',
+  particleEffect: 'auto',
+  coronaIntensity: 0.5,
+}
+
+const AUTO_PARTICLES: Record<string, string> = {
+  parchment: 'ember',
+  shadowfell: 'wisp',
+  dragonfire: 'flame',
+  feywild: 'sparkle',
 }
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined)
 
 export default function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<ThemeState>({
-    primaryColor: '#c8a44e',
-    themeMode: "dark",
-    themeName: "parchment",
-  })
+  const [theme, setTheme] = useState<ThemeState>(DEFAULTS)
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  const initializedRef = useRef(false)
 
   const { data: session } = useSession()
-
-  const changePrimaryColor = useCallback((color: string) => {
-    setTheme((prev) => ({ ...prev, primaryColor: color }))
-  }, [])
-
-  const toggleThemeMode = useCallback(() => {
-    setTheme((prev) => {
-      const newMode: ThemeMode = prev.themeMode === 'light' ? 'dark' : 'light'
-      localStorage.setItem('themeMode', newMode)
-      return { ...prev, themeMode: newMode }
-    })
-  }, [])
-
-  const setThemeName = useCallback((name: ThemeName) => {
-    setTheme((prev) => {
-      localStorage.setItem('themeName', name)
-      return { ...prev, themeName: name }
-    })
-  }, [])
+  const queryClient = useQueryClient()
 
   const { data: user } = useQuery({
     queryKey: ['user', session?.user?.id],
@@ -58,30 +55,78 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
     staleTime: 300000,
   })
 
+  // Load from DB when authenticated user data arrives
   useEffect(() => {
-    if (user && Array.isArray(user) && user.length > 0) {
-      const userData = user[0]
-      if (userData.color) {
-        changePrimaryColor(userData.color)
-      }
+    if (user && !Array.isArray(user) && user.id) {
+      setTheme({
+        primaryColor: user.color || DEFAULTS.primaryColor,
+        themeMode: (user.theme_mode as ThemeMode) || DEFAULTS.themeMode,
+        themeName: (user.theme_name as ThemeName) || DEFAULTS.themeName,
+        particleEffect: user.particle_effect || DEFAULTS.particleEffect,
+        coronaIntensity: user.corona_intensity ?? DEFAULTS.coronaIntensity,
+      })
+      setHasUnsavedChanges(false)
+      initializedRef.current = true
     }
-  }, [user, changePrimaryColor])
+  }, [user])
 
+  // Fallback: load from localStorage for unauthenticated users
   useEffect(() => {
-    const savedMode = (localStorage.getItem('themeMode') as ThemeMode) || 'dark'
-    const savedName = (localStorage.getItem('themeName') as ThemeName) || 'parchment'
-    setTheme((prev) => ({ ...prev, themeMode: savedMode, themeName: savedName }))
-  }, [])
+    if (!session?.user) {
+      const savedMode = (localStorage.getItem('themeMode') as ThemeMode) || DEFAULTS.themeMode
+      const savedName = (localStorage.getItem('themeName') as ThemeName) || DEFAULTS.themeName
+      setTheme((prev) => ({ ...prev, themeMode: savedMode, themeName: savedName }))
+      initializedRef.current = true
+    }
+  }, [session?.user])
 
+  // Apply DOM attributes whenever theme changes
   useEffect(() => {
     const root = document.documentElement
     root.setAttribute('data-theme', theme.themeName)
     root.setAttribute('data-mode', theme.themeMode)
     root.style.setProperty('--alt', theme.primaryColor)
-  }, [theme.primaryColor, theme.themeMode, theme.themeName])
+
+    const resolvedParticle = theme.particleEffect === 'auto'
+      ? AUTO_PARTICLES[theme.themeName] || 'ember'
+      : theme.particleEffect
+    root.setAttribute('data-particle', resolvedParticle)
+
+    root.style.setProperty('--corona-intensity', String(theme.coronaIntensity))
+  }, [theme.primaryColor, theme.themeMode, theme.themeName, theme.particleEffect, theme.coronaIntensity])
+
+  const updateSettings = useCallback((partial: Partial<ThemeState>) => {
+    setTheme((prev) => ({ ...prev, ...partial }))
+    setHasUnsavedChanges(true)
+
+    // For unauthenticated users, persist theme/mode to localStorage
+    if (!session?.user) {
+      if (partial.themeMode) localStorage.setItem('themeMode', partial.themeMode)
+      if (partial.themeName) localStorage.setItem('themeName', partial.themeName)
+    }
+  }, [session?.user])
+
+  const saveSettings = useCallback(async () => {
+    if (!session?.user?.id) return
+
+    await fetch(`/api/users/${session.user.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        color: theme.primaryColor,
+        themeName: theme.themeName,
+        themeMode: theme.themeMode,
+        particleEffect: theme.particleEffect,
+        coronaIntensity: theme.coronaIntensity,
+      }),
+    })
+
+    await queryClient.invalidateQueries({ queryKey: ['user', session.user.id] })
+    setHasUnsavedChanges(false)
+  }, [session?.user?.id, theme, queryClient])
 
   return (
-    <ThemeContext.Provider value={{ theme, changePrimaryColor, toggleThemeMode, setThemeName }}>
+    <ThemeContext.Provider value={{ theme, updateSettings, saveSettings, hasUnsavedChanges }}>
       {children}
     </ThemeContext.Provider>
   )

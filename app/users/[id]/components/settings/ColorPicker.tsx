@@ -19,13 +19,13 @@ const themes = [
 ] as const
 
 export default function ColorPickerComponent({ userId }) {
-  const { theme, changePrimaryColor, toggleThemeMode, setThemeName } = useTheme()
+  const { theme, updateSettings } = useTheme()
   const [color, setColor] = useColor(theme.primaryColor)
 
   const { mutate, isPending, error } = useMutation({
     mutationFn: (newColor) => updateUser(userId, { color: newColor }),
     onMutate: (newColor) => {
-      changePrimaryColor(newColor)
+      updateSettings({ primaryColor: newColor })
     },
     onError: (error) => {
       toast.error(error.message)
@@ -53,7 +53,7 @@ export default function ColorPickerComponent({ userId }) {
               {themes.map((t) => (
                 <button
                   key={t.name}
-                  onClick={() => setThemeName(t.name)}
+                  onClick={() => updateSettings({ themeName: t.name })}
                   className="cursor-pointer"
                 >
                   <GlassPanel
@@ -78,7 +78,7 @@ export default function ColorPickerComponent({ userId }) {
               <Switch
                 id="dark-mode"
                 checked={theme.themeMode === "dark"}
-                onCheckedChange={toggleThemeMode}
+                onCheckedChange={() => updateSettings({ themeMode: theme.themeMode === 'dark' ? 'light' : 'dark' })}
               />
             </div>
           </div>
