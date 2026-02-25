@@ -68,7 +68,7 @@ function HeroPage() {
       </div>
 
       <a
-        href={TILEFORGE_URLS.home}
+        href={TILEFORGE_URLS.signup}
         target="_blank"
         rel="noopener noreferrer"
         className="mt-8 w-full max-w-3xl block"
@@ -100,7 +100,7 @@ function Dashboard({ userName, userId }: { userName: string; userId?: string }) 
       </GlassPanel>
 
       {/* TileForge Promo */}
-      <a href={TILEFORGE_URLS.home} target="_blank" rel="noopener noreferrer">
+      <a href={TILEFORGE_URLS.signup} target="_blank" rel="noopener noreferrer">
         <GlassPanel coronaHover className="p-4 transition-all hover:scale-[1.005]">
           <div className="flex items-center gap-4">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 shrink-0">

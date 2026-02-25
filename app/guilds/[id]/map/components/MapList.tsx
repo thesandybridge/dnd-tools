@@ -69,12 +69,12 @@ function MapFormFields({
             {TILEFORGE_COPY.formPromo}
           </p>
           <a
-            href={TILEFORGE_URLS.home}
+            href={TILEFORGE_URLS.signup}
             target="_blank"
             rel="noopener noreferrer"
             className="text-xs text-primary hover:underline whitespace-nowrap"
           >
-            {TILEFORGE_COPY.ctaLearnMore} &rarr;
+            {TILEFORGE_COPY.ctaGetStarted} &rarr;
           </a>
         </div>
       ) : null}
