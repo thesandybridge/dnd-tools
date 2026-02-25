@@ -5,7 +5,8 @@ import { signOut } from "next-auth/react"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useUser } from "../../providers/UserProvider"
 import { deleteUser, updateUser } from "@/lib/users"
-import { validateTileForgeKey } from "@/lib/tileforge"
+import { ExternalLink } from "lucide-react"
+import { validateTileForgeKey, TILEFORGE_URLS, TILEFORGE_COPY } from "@/lib/tileforge"
 import { GlassPanel } from "@/app/components/ui/GlassPanel"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -135,33 +136,52 @@ export default function AccountSettings({ userId }: { userId: string }) {
             </Button>
           </div>
         ) : (
-          <div className="flex flex-col gap-3">
-            <p className="text-sm text-muted-foreground">
-              Connect your TileForge account to import tilesets when creating maps.
-            </p>
-            <div className="flex gap-2">
-              <Input
-                type="password"
-                placeholder="tf_..."
-                value={tfKey}
-                onChange={(e) => setTfKey(e.target.value)}
-                className="max-w-xs"
-              />
-              <Button
-                size="sm"
-                disabled={!tfKey.startsWith('tf_') || tfConnectMutation.isPending}
-                onClick={() => tfConnectMutation.mutate()}
-              >
-                {tfConnectMutation.isPending ? 'Connecting...' : 'Connect'}
-              </Button>
-            </div>
-            {tfConnectMutation.isError && (
-              <p className="text-sm text-destructive">
-                {tfConnectMutation.error instanceof Error
-                  ? tfConnectMutation.error.message
-                  : 'Failed to connect'}
+          <div className="flex flex-col gap-4">
+            <div className="rounded-lg border border-primary/10 bg-primary/[0.03] p-4 space-y-3">
+              <p className="font-cinzel text-sm font-semibold text-foreground">
+                {TILEFORGE_COPY.tagline}
               </p>
-            )}
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {TILEFORGE_COPY.pitch}
+              </p>
+              <a
+                href={TILEFORGE_URLS.signup}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 text-sm text-primary hover:underline font-medium"
+              >
+                {TILEFORGE_COPY.ctaSignup}
+                <ExternalLink size={14} />
+              </a>
+            </div>
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">
+                Already have an account? Paste your API key to connect.
+              </p>
+              <div className="flex gap-2">
+                <Input
+                  type="password"
+                  placeholder="tf_..."
+                  value={tfKey}
+                  onChange={(e) => setTfKey(e.target.value)}
+                  className="max-w-xs"
+                />
+                <Button
+                  size="sm"
+                  disabled={!tfKey.startsWith('tf_') || tfConnectMutation.isPending}
+                  onClick={() => tfConnectMutation.mutate()}
+                >
+                  {tfConnectMutation.isPending ? 'Connecting...' : 'Connect'}
+                </Button>
+              </div>
+              {tfConnectMutation.isError && (
+                <p className="text-sm text-destructive">
+                  {tfConnectMutation.error instanceof Error
+                    ? tfConnectMutation.error.message
+                    : 'Failed to connect'}
+                </p>
+              )}
+            </div>
           </div>
         )}
       </GlassPanel>
