@@ -32,6 +32,8 @@ model User {
   characters           Character[]
   joinRequests         JoinRequest[] @relation("JoinRequestUser")
   reviewedJoinRequests JoinRequest[] @relation("JoinRequestReviewer")
+  receivedInvites      GuildInvite[] @relation("ReceivedInvites")
+  sentInvites          GuildInvite[] @relation("SentInvites")
 
   @@map("users")
 }
@@ -93,6 +95,7 @@ model Guild {
   maps         GuildMap[]
   roles        GuildRole[]
   joinRequests JoinRequest[]
+  invites      GuildInvite[]
 
   @@map("guilds")
 }
@@ -211,4 +214,24 @@ model JoinRequest {
 
   @@index([guildId, status])
   @@map("join_requests")
+}
+
+model GuildInvite {
+  id           Int      @id @default(autoincrement())
+  guildId      String   @map("guild_id")
+  targetUserId String   @map("target_user_id")
+  invitedById  String   @map("invited_by_id")
+  message      String?
+  status       String   @default("pending")
+  expiresAt    DateTime @map("expires_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  guild      Guild @relation(fields: [guildId], references: [guildId], onDelete: Cascade)
+  targetUser User  @relation("ReceivedInvites", fields: [targetUserId], references: [id], onDelete: Cascade)
+  invitedBy  User  @relation("SentInvites", fields: [invitedById], references: [id], onDelete: Cascade)
+
+  @@unique([guildId, targetUserId])
+  @@index([targetUserId, status])
+  @@map("guild_invites")
 }
