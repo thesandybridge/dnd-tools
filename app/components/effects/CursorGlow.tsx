@@ -22,8 +22,8 @@ function getCoronaRgb(): [number, number, number] {
   return [200, 164, 78]
 }
 
-function getThemeName(): string {
-  return document.documentElement.getAttribute("data-theme") || "parchment"
+function getParticleType(): string {
+  return document.documentElement.getAttribute("data-particle") || "ember"
 }
 
 function drawEmber(ctx: CanvasRenderingContext2D, p: CursorParticle, alpha: number, rgb: [number, number, number]) {
@@ -83,11 +83,11 @@ function drawSparkle(ctx: CanvasRenderingContext2D, p: CursorParticle, alpha: nu
   ctx.restore()
 }
 
-const THEME_DRAWERS: Record<string, typeof drawEmber> = {
-  parchment: drawEmber,
-  shadowfell: drawWisp,
-  dragonfire: drawFlame,
-  feywild: drawSparkle,
+const PARTICLE_DRAWERS: Record<string, typeof drawEmber> = {
+  ember: drawEmber,
+  wisp: drawWisp,
+  flame: drawFlame,
+  sparkle: drawSparkle,
 }
 
 export function CursorGlow() {
@@ -127,14 +127,17 @@ export function CursorGlow() {
     if (!ctx) return
 
     let rgb = getCoronaRgb()
-    let themeName = getThemeName()
+    let particleType = getParticleType()
     let animId = 0
 
     const observer = new MutationObserver(() => {
       rgb = getCoronaRgb()
-      themeName = getThemeName()
+      particleType = getParticleType()
     })
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "data-mode"] })
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme", "data-mode", "data-particle"],
+    })
 
     function resize() {
       canvas!.width = window.innerWidth
@@ -160,7 +163,7 @@ export function CursorGlow() {
       updateHoverState()
 
       moveCountRef.current++
-      if (moveCountRef.current % 3 === 0 && particlesRef.current.length < MAX_PARTICLES) {
+      if (particleType !== "off" && moveCountRef.current % 3 === 0 && particlesRef.current.length < MAX_PARTICLES) {
         if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
           particlesRef.current.push({
             x: e.clientX,
@@ -194,7 +197,7 @@ export function CursorGlow() {
       ring!.style.top = ringPosRef.current.y + "px"
 
       ctx!.clearRect(0, 0, canvas!.width, canvas!.height)
-      const drawFn = THEME_DRAWERS[themeName] || drawEmber
+      const drawFn = PARTICLE_DRAWERS[particleType] || drawEmber
 
       particlesRef.current = particlesRef.current.filter((p) => {
         p.life -= dt

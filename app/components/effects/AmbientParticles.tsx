@@ -39,9 +39,22 @@ export function AmbientParticles() {
     let animId = 0
     let particles: Particle[] = []
     let rgb = getCoronaRgb()
+    let coronaIntensity = parseFloat(
+      getComputedStyle(document.documentElement).getPropertyValue("--corona-intensity")
+    ) || 0.8
 
-    const observer = new MutationObserver(() => { rgb = getCoronaRgb() })
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme", "data-mode"] })
+    const observer = new MutationObserver(() => {
+      rgb = getCoronaRgb()
+      coronaIntensity = parseFloat(
+        getComputedStyle(document.documentElement).getPropertyValue("--corona-intensity")
+      ) || 0.8
+      const particle = document.documentElement.getAttribute("data-particle")
+      if (particle === "off") { particles = []; return }
+    })
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-theme", "data-mode", "data-particle"],
+    })
 
     function resize() {
       canvas!.width = window.innerWidth
@@ -71,8 +84,11 @@ export function AmbientParticles() {
       lastTime = now
       ctx!.clearRect(0, 0, canvas!.width, canvas!.height)
 
-      while (particles.length < MAX_PARTICLES) {
-        particles.push(spawnParticle())
+      const particle = document.documentElement.getAttribute("data-particle")
+      if (particle !== "off") {
+        while (particles.length < MAX_PARTICLES) {
+          particles.push(spawnParticle())
+        }
       }
 
       particles = particles.filter((p) => {
@@ -86,7 +102,7 @@ export function AmbientParticles() {
         const fadeIn = Math.min(progress * 5, 1)
         const fadeOut = Math.min((1 - progress) * 5, 1)
         const pulse = 0.5 + 0.5 * Math.sin(p.phase + p.life * 0.002)
-        p.opacity = fadeIn * fadeOut * pulse * 0.35
+        p.opacity = fadeIn * fadeOut * pulse * 0.35 * coronaIntensity
 
         ctx!.beginPath()
         ctx!.arc(p.x, p.y, p.size, 0, Math.PI * 2)
