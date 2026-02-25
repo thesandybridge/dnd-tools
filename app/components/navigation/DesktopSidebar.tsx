@@ -3,7 +3,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { usePathname } from "next/navigation"
-import { Castle, Calculator, Shield, LogIn, LogOut, Sun, Moon } from "lucide-react"
+import { Castle, Calculator, Shield, Sword, LogIn, LogOut, Sun, Moon } from "lucide-react"
 import { signIn, signOut } from "next-auth/react"
 import { useTheme } from "@/app/providers/ThemeProvider"
 import { Button } from "@/components/ui/button"
@@ -31,6 +31,7 @@ const publicRoutes = [
 
 const authRoutes = [
   { title: "Guilds", path: "/guilds", icon: Shield },
+  { title: "Characters", path: "/characters", icon: Sword },
 ]
 
 export function DesktopSidebar({ user }: { user: NavUser | null }) {
