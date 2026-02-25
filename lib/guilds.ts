@@ -22,7 +22,7 @@ export async function createGuild(guildData: Guild): Promise<Guild> {
   return response.json()
 }
 
-export async function updateGuild(guildId: UUID, guildData: Guild): Promise<Guild> {
+export async function updateGuild(guildId: UUID, guildData: Partial<Guild>): Promise<Guild> {
   const response = await fetch(`/api/guilds/${guildId}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
@@ -58,5 +58,29 @@ export async function deleteGuild(guildId: UUID): Promise<Guild> {
     headers: { 'Content-Type': 'application/json' },
   })
   if (!response.ok) throw new Error(`Failed to delete guild: ${guildId}`)
+  return response.json()
+}
+
+export interface DiscoverGuild {
+  id: number
+  guild_id: string
+  name: string
+  description: string | null
+  owner: { name: string | null }
+  member_count: number
+  has_pending_request: boolean
+}
+
+export interface DiscoverResponse {
+  guilds: DiscoverGuild[]
+  total: number
+  page: number
+  pages: number
+}
+
+export async function fetchDiscoverGuilds(search = "", page = 1): Promise<DiscoverResponse> {
+  const params = new URLSearchParams({ search, page: String(page) })
+  const response = await fetch(`/api/guilds/discover?${params}`)
+  if (!response.ok) throw new Error("Failed to fetch discover guilds")
   return response.json()
 }

@@ -10,7 +10,13 @@ export const GET = auth(async function GET(request) {
   }
 
   try {
-    const guilds = await prisma.guild.findMany()
+    const guilds = await prisma.guild.findMany({
+      where: {
+        members: {
+          some: { userId: session.user.id },
+        },
+      },
+    })
 
     return Response.json(guilds.map(serializeGuild))
   } catch (error) {

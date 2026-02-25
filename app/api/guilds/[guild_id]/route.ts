@@ -44,7 +44,7 @@ export const PATCH = auth(async function PATCH(request, { params }) {
 
     const { guildData } = await request.json()
 
-    const allowedFields = ['name']
+    const allowedFields = ['name', 'description', 'visibility', 'defaultRoleId', 'requestExpiryDays']
     const sanitized: Record<string, unknown> = {}
     for (const key of allowedFields) {
       if (key in guildData) sanitized[key] = guildData[key]
