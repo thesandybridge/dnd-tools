@@ -27,7 +27,7 @@ export async function submitJoinRequest(guildId: UUID, message?: string) {
 }
 
 export async function fetchJoinRequests(guildId: UUID, status?: string) {
-  const params = status ? `?status=${status}` : ""
+  const params = status ? `?${new URLSearchParams({ status })}` : ""
   const response = await fetch(`/api/guilds/${guildId}/requests${params}`)
   if (!response.ok) throw new Error("Failed to fetch requests")
   return response.json() as Promise<JoinRequest[]>

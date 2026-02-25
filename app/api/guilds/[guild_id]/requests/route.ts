@@ -36,7 +36,12 @@ export const POST = auth(async function POST(request, { params }) {
       return Response.json({ error: "You already have a pending request for this guild" }, { status: 409 })
     }
 
-    const body = await request.json()
+    let body: { message?: string } = {}
+    try {
+      body = await request.json()
+    } catch {
+      // No body or invalid JSON is fine - message is optional
+    }
     const message = body.message || null
 
     const expiresAt = guild.requestExpiryDays != null
@@ -80,7 +85,9 @@ export const GET = auth(async function GET(request, { params }) {
     })
 
     const url = new URL(request.url)
-    const status = url.searchParams.get("status")
+    const validStatuses = ["pending", "approved", "denied", "expired"]
+    const rawStatus = url.searchParams.get("status")
+    const status = rawStatus && validStatuses.includes(rawStatus) ? rawStatus : null
 
     const requests = await prisma.joinRequest.findMany({
       where: {
