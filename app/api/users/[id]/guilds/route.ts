@@ -9,9 +9,15 @@ export const GET = auth(async function GET(request, { params }) {
 
   try {
     const { id } = await params
+    const userId = id as string
+    const isOwner = session.user.id === userId
 
     const memberships = await prisma.guildMember.findMany({
-      where: { userId: id },
+      where: {
+        userId,
+        // Non-owners only see public guild memberships
+        ...(!isOwner && { guild: { visibility: 'public' } }),
+      },
       include: {
         guild: {
           include: {
@@ -26,7 +32,7 @@ export const GET = auth(async function GET(request, { params }) {
       guild_id: m.guild.guildId,
       name: m.guild.name,
       owner: m.guild.ownerId,
-      is_owner: m.guild.ownerId === id,
+      is_owner: m.guild.ownerId === userId,
       member_count: m.guild._count.members,
       role: {
         id: m.role.id,

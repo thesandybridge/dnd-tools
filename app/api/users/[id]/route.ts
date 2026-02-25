@@ -11,12 +11,24 @@ export const GET = auth(async function GET(request, { params }) {
 
   try {
     const { id } = await params
+    const isOwner = session.user.id === id
 
     const data = await prisma.user.findUniqueOrThrow({
       where: { id },
     })
 
-    return Response.json(serializeUser(data))
+    if (isOwner) {
+      return Response.json(serializeUser(data))
+    }
+
+    // Public profile: limited fields only
+    return Response.json({
+      id: data.id,
+      name: data.name,
+      image: data.image,
+      color: data.color,
+      bio: data.bio,
+    })
   } catch (error) {
     console.error('Failed to fetch user data:', (error as Error).message)
     return Response.json({
