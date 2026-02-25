@@ -6,6 +6,10 @@ export interface Guild {
   owner?: UUID,
   name: string,
   guild_id?: UUID,
+  description?: string | null,
+  visibility?: string,
+  default_role_id?: number | null,
+  request_expiry_days?: number | null,
 }
 
 export async function createGuild(guildData: Guild): Promise<Guild> {

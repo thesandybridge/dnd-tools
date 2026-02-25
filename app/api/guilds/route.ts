@@ -68,7 +68,7 @@ export const POST = auth(async function POST(request) {
         },
       })
 
-      await tx.guildRole.create({
+      const adventurer = await tx.guildRole.create({
         data: {
           guildId: newGuild.guildId,
           name: "Adventurer",
@@ -88,6 +88,11 @@ export const POST = auth(async function POST(request) {
           userId: guildData.owner,
           roleId: guildMaster.id,
         },
+      })
+
+      await tx.guild.update({
+        where: { id: newGuild.id },
+        data: { defaultRoleId: adventurer.id },
       })
 
       return newGuild

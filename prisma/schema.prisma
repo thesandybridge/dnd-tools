@@ -21,13 +21,16 @@ model User {
   themeMode       String   @default("dark") @map("theme_mode")
   particleEffect  String   @default("auto") @map("particle_effect")
   coronaIntensity Float    @default(0.8) @map("corona_intensity")
+  timezone        String   @default("UTC")
 
-  accounts     Account[]
-  sessions     Session[]
-  guilds       Guild[]       @relation("GuildOwner")
-  guildMembers GuildMember[]
-  markers      Marker[]
-  characters   Character[]
+  accounts             Account[]
+  sessions             Session[]
+  guilds               Guild[]       @relation("GuildOwner")
+  guildMembers         GuildMember[]
+  markers              Marker[]
+  characters           Character[]
+  joinRequests         JoinRequest[] @relation("JoinRequestUser")
+  reviewedJoinRequests JoinRequest[] @relation("JoinRequestReviewer")
 
   @@map("users")
 }
@@ -75,15 +78,20 @@ model VerificationToken {
 // ── App models ───────────────────────────────────────────────────────
 
 model Guild {
-  id      Int    @id @default(autoincrement())
-  guildId String @unique @default(uuid()) @map("guild_id")
-  name    String
-  ownerId String @map("owner")
+  id                Int    @id @default(autoincrement())
+  guildId           String @unique @default(uuid()) @map("guild_id")
+  name              String
+  ownerId           String @map("owner")
+  description       String?
+  visibility        String   @default("private")
+  defaultRoleId     Int?     @map("default_role_id")
+  requestExpiryDays Int?     @default(7) @map("request_expiry_days")
 
-  ownerUser User          @relation("GuildOwner", fields: [ownerId], references: [id])
-  members   GuildMember[]
-  maps      GuildMap[]
-  roles     GuildRole[]
+  ownerUser    User          @relation("GuildOwner", fields: [ownerId], references: [id])
+  members      GuildMember[]
+  maps         GuildMap[]
+  roles        GuildRole[]
+  joinRequests JoinRequest[]
 
   @@map("guilds")
 }
@@ -124,17 +132,20 @@ model GuildRole {
 }
 
 model GuildMap {
-  id            Int      @id @default(autoincrement())
-  mapId         String   @unique @default(uuid()) @map("map_id")
-  guildId       String   @map("guild_id")
-  name          String
-  pmtilesUrl    String   @map("pmtiles_url")
-  pmtilesApiKey String?  @map("pmtiles_api_key")
-  imageWidth    Int?     @map("image_width")
-  imageHeight   Int?     @map("image_height")
-  maxZoom       Int      @default(5) @map("max_zoom")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  id               Int      @id @default(autoincrement())
+  mapId            String   @unique @default(uuid()) @map("map_id")
+  guildId          String   @map("guild_id")
+  name             String
+  pmtilesUrl       String   @map("pmtiles_url")
+  pmtilesApiKey    String?  @map("pmtiles_api_key")
+  imageWidth       Int?     @map("image_width")
+  imageHeight      Int?     @map("image_height")
+  maxZoom          Int      @default(5) @map("max_zoom")
+  defaultZoom      Int?     @map("default_zoom")
+  defaultCenterLat Float?   @map("default_center_lat")
+  defaultCenterLng Float?   @map("default_center_lng")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
 
   visibility String   @default("everyone")
 
@@ -179,4 +190,23 @@ model Character {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("characters")
+}
+
+model JoinRequest {
+  id         Int       @id @default(autoincrement())
+  guildId    String    @map("guild_id")
+  userId     String    @map("user_id")
+  message    String?
+  status     String    @default("pending")
+  reviewedBy String?   @map("reviewed_by")
+  reviewedAt DateTime? @map("reviewed_at")
+  expiresAt  DateTime? @map("expires_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  guild    Guild @relation(fields: [guildId], references: [guildId], onDelete: Cascade)
+  user     User  @relation("JoinRequestUser", fields: [userId], references: [id], onDelete: Cascade)
+  reviewer User? @relation("JoinRequestReviewer", fields: [reviewedBy], references: [id])
+
+  @@index([guildId, status])
+  @@map("join_requests")
 }

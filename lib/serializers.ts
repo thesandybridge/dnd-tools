@@ -1,22 +1,46 @@
-import type { Character, Guild, GuildMap, GuildMember, GuildRole, Marker, User } from "@/lib/generated/prisma/client"
+import type { Character, Guild, GuildMap, GuildMember, GuildRole, JoinRequest, Marker, User } from "@/lib/generated/prisma/client"
 
-/** Guild → { id, guild_id, name, owner } */
+/** Guild → { id, guild_id, name, owner, description, visibility, default_role_id, request_expiry_days } */
 export function serializeGuild(g: Guild) {
   return {
     id: g.id,
     guild_id: g.guildId,
     name: g.name,
     owner: g.ownerId,
+    description: g.description,
+    visibility: g.visibility,
+    default_role_id: g.defaultRoleId,
+    request_expiry_days: g.requestExpiryDays,
   }
 }
 
-/** Guild with included ownerUser → { id, guild_id, name, owner: { name } } */
+/** Guild with included ownerUser → { id, guild_id, name, owner: { name }, description, visibility, default_role_id, request_expiry_days } */
 export function serializeGuildWithOwner(g: Guild & { ownerUser: { name: string | null } }) {
   return {
     id: g.id,
     guild_id: g.guildId,
     name: g.name,
     owner: { name: g.ownerUser.name },
+    description: g.description,
+    visibility: g.visibility,
+    default_role_id: g.defaultRoleId,
+    request_expiry_days: g.requestExpiryDays,
+  }
+}
+
+/** JoinRequest → snake_case fields with user info */
+export function serializeJoinRequest(r: JoinRequest & { user: Pick<User, "id" | "name" | "image"> }) {
+  return {
+    id: r.id,
+    guild_id: r.guildId,
+    user_id: r.userId,
+    user: { id: r.user.id, name: r.user.name, image: r.user.image },
+    message: r.message,
+    status: r.status,
+    reviewed_by: r.reviewedBy,
+    reviewed_at: r.reviewedAt,
+    expires_at: r.expiresAt,
+    created_at: r.createdAt,
   }
 }
 
@@ -70,6 +94,9 @@ export function serializeGuildMap(m: GuildMap) {
     image_width: m.imageWidth,
     image_height: m.imageHeight,
     max_zoom: m.maxZoom,
+    default_zoom: m.defaultZoom,
+    default_center_lat: m.defaultCenterLat,
+    default_center_lng: m.defaultCenterLng,
     visibility: m.visibility,
     created_at: m.createdAt,
     updated_at: m.updatedAt,
@@ -103,6 +130,7 @@ export function serializeUser(u: User) {
     theme_mode: u.themeMode,
     particle_effect: u.particleEffect,
     corona_intensity: u.coronaIntensity,
+    timezone: u.timezone,
   }
 }
 
