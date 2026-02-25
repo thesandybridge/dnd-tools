@@ -59,21 +59,14 @@ export const PATCH = auth(async function PATCH(request, { params }) {
 
     const { name, pmtilesUrl, pmtilesApiKey, useTileForgeKey, imageWidth, imageHeight, maxZoom, defaultZoom, defaultCenterLat, defaultCenterLng, visibility } = await request.json()
 
-    let resolvedApiKey = pmtilesApiKey
-    if (useTileForgeKey && !pmtilesApiKey) {
-      const user = await prisma.user.findUnique({
-        where: { id: session.user.id! },
-        select: { tileforgeApiKey: true },
-      })
-      resolvedApiKey = user?.tileforgeApiKey || undefined
-    }
-
     const map = await prisma.guildMap.update({
       where: { mapId: map_id as string },
       data: {
         ...(name !== undefined && { name }),
         ...(pmtilesUrl !== undefined && { pmtilesUrl }),
-        ...(resolvedApiKey !== undefined && { pmtilesApiKey: resolvedApiKey }),
+        ...(useTileForgeKey
+          ? { tileforgeKeyUserId: session.user.id!, pmtilesApiKey: null }
+          : pmtilesApiKey !== undefined ? { pmtilesApiKey, tileforgeKeyUserId: null } : {}),
         ...(imageWidth !== undefined && { imageWidth }),
         ...(imageHeight !== undefined && { imageHeight }),
         ...(maxZoom !== undefined && { maxZoom }),

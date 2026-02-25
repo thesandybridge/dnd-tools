@@ -5,15 +5,28 @@ import { prisma } from "@/lib/prisma"
 const presignedCache = new Map<number, { url: string; expiresAt: number }>()
 const CACHE_TTL = 8 * 60 * 1000
 
-async function resolvePresignedUrl(map: { id: number; pmtilesUrl: string; pmtilesApiKey: string | null }): Promise<string> {
+async function resolveApiKey(map: { pmtilesApiKey: string | null; tileforgeKeyUserId: string | null }): Promise<string | null> {
+  if (map.tileforgeKeyUserId) {
+    const user = await prisma.user.findUnique({
+      where: { id: map.tileforgeKeyUserId },
+      select: { tileforgeApiKey: true },
+    })
+    return user?.tileforgeApiKey ?? null
+  }
+  return map.pmtilesApiKey
+}
+
+async function resolvePresignedUrl(map: { id: number; pmtilesUrl: string; pmtilesApiKey: string | null; tileforgeKeyUserId: string | null }): Promise<string> {
   const cached = presignedCache.get(map.id)
   if (cached && cached.expiresAt > Date.now()) {
     return cached.url
   }
 
+  const apiKey = await resolveApiKey(map)
+
   const headers: HeadersInit = {}
-  if (map.pmtilesApiKey) {
-    headers["Authorization"] = `Bearer ${map.pmtilesApiKey}`
+  if (apiKey) {
+    headers["Authorization"] = `Bearer ${apiKey}`
   }
 
   const res = await fetch(map.pmtilesUrl, { headers })

@@ -55,21 +55,14 @@ export const POST = auth(async function POST(request, { params }) {
 
     const { name, pmtilesUrl, pmtilesApiKey, useTileForgeKey, imageWidth, imageHeight, maxZoom, visibility } = await request.json()
 
-    let resolvedApiKey = pmtilesApiKey
-    if (useTileForgeKey && !pmtilesApiKey) {
-      const user = await prisma.user.findUnique({
-        where: { id: session.user.id! },
-        select: { tileforgeApiKey: true },
-      })
-      resolvedApiKey = user?.tileforgeApiKey || undefined
-    }
-
     const map = await prisma.guildMap.create({
       data: {
         guildId: guild_id as string,
         name,
         pmtilesUrl,
-        ...(resolvedApiKey !== undefined && { pmtilesApiKey: resolvedApiKey }),
+        ...(useTileForgeKey
+          ? { tileforgeKeyUserId: session.user.id! }
+          : pmtilesApiKey !== undefined ? { pmtilesApiKey } : {}),
         ...(imageWidth !== undefined && { imageWidth }),
         ...(imageHeight !== undefined && { imageHeight }),
         ...(maxZoom !== undefined && { maxZoom }),
