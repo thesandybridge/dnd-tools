@@ -9,6 +9,8 @@ import { useGuild } from "../providers/GuildProvider"
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
+import { Textarea } from '@/components/ui/textarea'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { GlassPanel } from '@/app/components/ui/GlassPanel'
 import { AlertTriangle, Pencil, Trash2, Plus } from 'lucide-react'
 
@@ -129,6 +131,10 @@ export default function GuildSettings({ userId }) {
   const { guildData, rolesData, hasPermission, getMemberRole } = useGuild()
   const router = useRouter()
   const [name, setName] = useState(guildData.name)
+  const [description, setDescription] = useState(guildData.description || '')
+  const [visibility, setVisibility] = useState(guildData.visibility || 'private')
+  const [defaultRoleId, setDefaultRoleId] = useState(guildData.default_role_id?.toString() || '')
+  const [requestExpiryDays, setRequestExpiryDays] = useState(guildData.request_expiry_days?.toString() || '7')
   const [editingRoleId, setEditingRoleId] = useState<number | null>(null)
   const [isCreatingRole, setIsCreatingRole] = useState(false)
 
@@ -154,6 +160,28 @@ export default function GuildSettings({ userId }) {
     onError: (err) => {
       console.error("Error deleting guild:", err)
     }
+  })
+
+  const visibilityMutation = useMutation({
+    mutationFn: (val: string) => updateGuild(guildData.guild_id, { visibility: val } as any),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['guild', guildData.guild_id] }),
+  })
+
+  const descriptionMutation = useMutation({
+    mutationFn: () => updateGuild(guildData.guild_id, { description: description.trim() } as any),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['guild', guildData.guild_id] }),
+  })
+
+  const defaultRoleMutation = useMutation({
+    mutationFn: (roleId: string) => updateGuild(guildData.guild_id, { defaultRoleId: parseInt(roleId) } as any),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['guild', guildData.guild_id] }),
+  })
+
+  const expiryMutation = useMutation({
+    mutationFn: (days: string) => updateGuild(guildData.guild_id, {
+      requestExpiryDays: days ? parseInt(days) : null,
+    } as any),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['guild', guildData.guild_id] }),
   })
 
   const deleteRoleMutation = useMutation({
@@ -212,6 +240,104 @@ export default function GuildSettings({ userId }) {
               {isRenaming ? 'Saving...' : 'Save'}
             </Button>
           </form>
+        </div>
+      </GlassPanel>
+
+      <GlassPanel className="p-6">
+        <div className="flex flex-col gap-4">
+          <h2 className="text-lg font-semibold">Membership</h2>
+
+          {/* Visibility Toggle */}
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-sm font-medium">Public Guild</span>
+              <span className="text-xs text-muted-foreground">
+                Public guilds appear in the Discover page
+              </span>
+            </div>
+            <Switch
+              checked={visibility === 'public'}
+              onCheckedChange={(checked) => {
+                const val = checked ? 'public' : 'private'
+                setVisibility(val)
+                visibilityMutation.mutate(val)
+              }}
+            />
+          </div>
+
+          {/* Description */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm text-muted-foreground">Description</label>
+            <Textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Describe your guild..."
+              className="bg-white/[0.05] border-white/[0.08] min-h-[80px]"
+            />
+            <Button
+              size="sm"
+              className="w-fit cursor-pointer"
+              disabled={descriptionMutation.isPending || description.trim() === (guildData.description || '')}
+              onClick={() => descriptionMutation.mutate()}
+            >
+              {descriptionMutation.isPending ? 'Saving...' : 'Save Description'}
+            </Button>
+          </div>
+
+          {/* Default Join Role */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm text-muted-foreground">Default Join Role</label>
+            <span className="text-xs text-muted-foreground">
+              Role assigned to new members when join requests are approved
+            </span>
+            <Select
+              value={defaultRoleId}
+              onValueChange={(val) => {
+                setDefaultRoleId(val)
+                defaultRoleMutation.mutate(val)
+              }}
+            >
+              <SelectTrigger className="bg-white/[0.05] border-white/[0.08] w-fit min-w-[200px]">
+                <SelectValue placeholder="Select role" />
+              </SelectTrigger>
+              <SelectContent>
+                {sortedRoles.map(role => (
+                  <SelectItem key={role.id} value={role.id.toString()}>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 rounded-full" style={{ backgroundColor: role.color }} />
+                      {role.name}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Request Expiry */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-sm text-muted-foreground">Request Expiry (days)</label>
+            <span className="text-xs text-muted-foreground">
+              How long before pending join requests expire. Leave empty for no expiry.
+            </span>
+            <div className="flex items-center gap-2">
+              <Input
+                type="number"
+                min="1"
+                value={requestExpiryDays}
+                onChange={(e) => setRequestExpiryDays(e.target.value)}
+                placeholder="No expiry"
+                className="bg-white/[0.05] border-white/[0.08] w-32"
+              />
+              <Button
+                size="sm"
+                className="cursor-pointer"
+                disabled={expiryMutation.isPending}
+                onClick={() => expiryMutation.mutate(requestExpiryDays)}
+              >
+                {expiryMutation.isPending ? 'Saving...' : 'Save'}
+              </Button>
+            </div>
+          </div>
         </div>
       </GlassPanel>
 
