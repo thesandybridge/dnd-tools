@@ -4,7 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { useSession } from "next-auth/react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { Map, Plus, Trash2, Loader2, Pencil } from "lucide-react"
+import { Map, Plus, Trash2, Loader2, Pencil, ExternalLink } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { fetchGuildMaps, createGuildMap, updateGuildMap, deleteGuildMap, type GuildMap } from "@/lib/guild-maps"
 import { fetchUser } from "@/lib/users"
@@ -27,7 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import TileForgePickerDialog from "./TileForgePickerDialog"
-import { getTileForgepmtilesUrl, type TileForgeTileset } from "@/lib/tileforge"
+import { getTileForgepmtilesUrl, TILEFORGE_URLS, TILEFORGE_COPY, type TileForgeTileset } from "@/lib/tileforge"
 
 function MapFormFields({
   name, setName,
@@ -372,9 +372,41 @@ export default function MapList({ guildId, userId }: { guildId: string; userId: 
       )}
 
       {maps.length === 0 && !showForm && (
-        <GlassPanel variant="subtle" className="p-8 text-center">
-          <Map className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">No maps yet</p>
+        <GlassPanel variant="default" corona className="p-8 text-center max-w-lg mx-auto">
+          <div className="flex flex-col items-center gap-4">
+            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+              <Map className="h-6 w-6 text-primary" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="font-cinzel text-lg font-semibold">Bring your world to life</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {TILEFORGE_COPY.pitch}
+              </p>
+            </div>
+            {canManageMaps && (
+              <div className="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
+                {hasTileForge ? (
+                  <Button className="w-full sm:w-auto gap-2" onClick={() => { setShowForm(true); setShowTfPicker(true) }}>
+                    Import from TileForge
+                  </Button>
+                ) : (
+                  <Button className="w-full sm:w-auto gap-2" asChild>
+                    <a href={TILEFORGE_URLS.signup} target="_blank" rel="noopener noreferrer">
+                      {TILEFORGE_COPY.ctaGetStarted}
+                      <ExternalLink size={14} />
+                    </a>
+                  </Button>
+                )}
+                <Button
+                  variant="ghost"
+                  className="w-full sm:w-auto"
+                  onClick={() => setShowForm(true)}
+                >
+                  Add Map Manually
+                </Button>
+              </div>
+            )}
+          </div>
         </GlassPanel>
       )}
 
