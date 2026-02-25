@@ -6,7 +6,7 @@ export const GET = auth(async function GET(request, { params }) {
   const session = request.auth
 
   if (!session?.user) {
-    return new Response(null, { status: 302, headers: { Location: '/' } })
+    return Response.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   try {

@@ -10,12 +10,12 @@ interface ColorWheelProps {
 
 // --- Color conversion utilities ---
 
-function hslToRgb(h: number, s: number, l: number): [number, number, number] {
+function hsvToRgb(h: number, s: number, v: number): [number, number, number] {
   const sN = s / 100
-  const lN = l / 100
-  const c = (1 - Math.abs(2 * lN - 1)) * sN
+  const vN = v / 100
+  const c = vN * sN
   const x = c * (1 - Math.abs(((h / 60) % 2) - 1))
-  const m = lN - c / 2
+  const m = vN - c
   let r = 0, g = 0, b = 0
 
   if (h < 60) { r = c; g = x; b = 0 }
@@ -32,8 +32,8 @@ function hslToRgb(h: number, s: number, l: number): [number, number, number] {
   ]
 }
 
-function hslToHex(h: number, s: number, l: number): string {
-  const [r, g, b] = hslToRgb(h, s, l)
+function hsvToHex(h: number, s: number, v: number): string {
+  const [r, g, b] = hsvToRgb(h, s, v)
   return (
     '#' +
     r.toString(16).padStart(2, '0') +
@@ -42,7 +42,7 @@ function hslToHex(h: number, s: number, l: number): string {
   )
 }
 
-function hexToHsl(hex: string): [number, number, number] {
+function hexToHsv(hex: string): [number, number, number] {
   const cleaned = hex.replace('#', '')
   const r = parseInt(cleaned.substring(0, 2), 16) / 255
   const g = parseInt(cleaned.substring(2, 4), 16) / 255
@@ -50,13 +50,10 @@ function hexToHsl(hex: string): [number, number, number] {
 
   const max = Math.max(r, g, b)
   const min = Math.min(r, g, b)
-  const l = (max + min) / 2
+  const d = max - min
   let h = 0
-  let s = 0
 
-  if (max !== min) {
-    const d = max - min
-    s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
+  if (d !== 0) {
     switch (max) {
       case r:
         h = ((g - b) / d + (g < b ? 6 : 0)) / 6
@@ -70,7 +67,8 @@ function hexToHsl(hex: string): [number, number, number] {
     }
   }
 
-  return [Math.round(h * 360), Math.round(s * 100), Math.round(l * 100)]
+  const s = max === 0 ? 0 : d / max
+  return [Math.round(h * 360), Math.round(s * 100), Math.round(max * 100)]
 }
 
 // --- Component ---
@@ -78,18 +76,18 @@ function hexToHsl(hex: string): [number, number, number] {
 export default function ColorWheel({ color, onChange }: ColorWheelProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
-  const dragMode = useRef<'hue' | 'sl' | null>(null)
+  const dragMode = useRef<'hue' | 'sv' | null>(null)
 
-  const [hsl, setHsl] = useState<[number, number, number]>(() => hexToHsl(color))
+  const [hsv, setHsv] = useState<[number, number, number]>(() => hexToHsv(color))
   const [hexInput, setHexInput] = useState(color)
   const [canvasSize, setCanvasSize] = useState(220)
 
-  const [hue, sat, light] = hsl
+  const [hue, sat, val] = hsv
 
   // Sync from parent color prop
   useEffect(() => {
-    const newHsl = hexToHsl(color)
-    setHsl(newHsl)
+    const newHsv = hexToHsv(color)
+    setHsv(newHsv)
     setHexInput(color)
   }, [color])
 
@@ -112,7 +110,7 @@ export default function ColorWheel({ color, onChange }: ColorWheelProps) {
   const center = canvasSize / 2
   const outerRadius = canvasSize / 2 - 1
   const innerRadius = outerRadius - ringWidth
-  // SL square inscribed in the inner circle
+  // SV square inscribed in the inner circle
   const squareHalf = (innerRadius - 4) / Math.SQRT2
   const squareLeft = center - squareHalf
   const squareTop = center - squareHalf
@@ -136,27 +134,29 @@ export default function ColorWheel({ color, onChange }: ColorWheelProps) {
       ctx.beginPath()
       ctx.arc(center, center, outerRadius - ringWidth / 2, startAngle, endAngle)
       ctx.lineWidth = ringWidth
-      ctx.strokeStyle = `hsl(${angle}, 100%, 50%)`
+      ctx.strokeStyle = `hsl(${(angle + 90) % 360}, 100%, 50%)`
       ctx.stroke()
     }
 
-    // --- Draw SL square ---
-    const imgData = ctx.createImageData(Math.ceil(squareSize), Math.ceil(squareSize))
-    for (let y = 0; y < Math.ceil(squareSize); y++) {
-      for (let x = 0; x < Math.ceil(squareSize); x++) {
-        const s = (x / squareSize) * 100
-        const l = 100 - (y / squareSize) * 100
-        const [r, g, b] = hslToRgb(hue, s, l)
-        const idx = (y * Math.ceil(squareSize) + x) * 4
+    // --- Draw SV square ---
+    // putImageData ignores canvas transform, so scale coordinates/size by DPR
+    const scaledSize = Math.ceil(squareSize * dpr)
+    const imgData = ctx.createImageData(scaledSize, scaledSize)
+    for (let y = 0; y < scaledSize; y++) {
+      for (let x = 0; x < scaledSize; x++) {
+        const s = (x / scaledSize) * 100
+        const v = 100 - (y / scaledSize) * 100
+        const [r, g, b] = hsvToRgb(hue, s, v)
+        const idx = (y * scaledSize + x) * 4
         imgData.data[idx] = r
         imgData.data[idx + 1] = g
         imgData.data[idx + 2] = b
         imgData.data[idx + 3] = 255
       }
     }
-    ctx.putImageData(imgData, squareLeft, squareTop)
+    ctx.putImageData(imgData, Math.round(squareLeft * dpr), Math.round(squareTop * dpr))
 
-    // Border around SL square
+    // Border around SV square
     ctx.strokeStyle = 'rgba(255,255,255,0.15)'
     ctx.lineWidth = 1
     ctx.strokeRect(squareLeft, squareTop, squareSize, squareSize)
@@ -177,25 +177,25 @@ export default function ColorWheel({ color, onChange }: ColorWheelProps) {
     ctx.lineWidth = 1
     ctx.stroke()
 
-    // --- SL crosshair indicator ---
-    const slX = squareLeft + (sat / 100) * squareSize
-    const slY = squareTop + ((100 - light) / 100) * squareSize
+    // --- SV crosshair indicator ---
+    const svX = squareLeft + (sat / 100) * squareSize
+    const svY = squareTop + ((100 - val) / 100) * squareSize
     ctx.beginPath()
-    ctx.arc(slX, slY, 6, 0, Math.PI * 2)
+    ctx.arc(svX, svY, 6, 0, Math.PI * 2)
     ctx.strokeStyle = '#fff'
     ctx.lineWidth = 2.5
     ctx.stroke()
     ctx.beginPath()
-    ctx.arc(slX, slY, 6, 0, Math.PI * 2)
+    ctx.arc(svX, svY, 6, 0, Math.PI * 2)
     ctx.strokeStyle = '#000'
     ctx.lineWidth = 1
     ctx.stroke()
-  }, [hue, sat, light, canvasSize, center, outerRadius, innerRadius, squareHalf, squareLeft, squareTop, squareSize, ringWidth])
+  }, [hue, sat, val, canvasSize, center, outerRadius, innerRadius, squareHalf, squareLeft, squareTop, squareSize, ringWidth])
 
   const updateColor = useCallback(
-    (h: number, s: number, l: number) => {
-      setHsl([h, s, l])
-      const hex = hslToHex(h, s, l)
+    (h: number, s: number, v: number) => {
+      setHsv([h, s, v])
+      const hex = hsvToHex(h, s, v)
       setHexInput(hex)
       onChange(hex)
     },
@@ -226,24 +226,22 @@ export default function ColorWheel({ color, onChange }: ColorWheelProps) {
       const dist = Math.sqrt(dx * dx + dy * dy)
 
       if (dist >= innerRadius && dist <= outerRadius) {
-        // Hue ring
         dragMode.current = 'hue'
         const angle = ((Math.atan2(dy, dx) * 180) / Math.PI + 90 + 360) % 360
-        updateColor(Math.round(angle), sat, light)
+        updateColor(Math.round(angle), sat, val)
       } else if (
         pos.x >= squareLeft &&
         pos.x <= squareLeft + squareSize &&
         pos.y >= squareTop &&
         pos.y <= squareTop + squareSize
       ) {
-        // SL square
-        dragMode.current = 'sl'
+        dragMode.current = 'sv'
         const s = Math.round(Math.min(100, Math.max(0, ((pos.x - squareLeft) / squareSize) * 100)))
-        const l = Math.round(Math.min(100, Math.max(0, 100 - ((pos.y - squareTop) / squareSize) * 100)))
-        updateColor(hue, s, l)
+        const v = Math.round(Math.min(100, Math.max(0, 100 - ((pos.y - squareTop) / squareSize) * 100)))
+        updateColor(hue, s, v)
       }
     },
-    [center, innerRadius, outerRadius, squareLeft, squareTop, squareSize, hue, sat, light, updateColor, getCanvasPosition]
+    [center, innerRadius, outerRadius, squareLeft, squareTop, squareSize, hue, sat, val, updateColor, getCanvasPosition]
   )
 
   const handlePointerMove = useCallback(
@@ -256,14 +254,14 @@ export default function ColorWheel({ color, onChange }: ColorWheelProps) {
         const dx = pos.x - center
         const dy = pos.y - center
         const angle = ((Math.atan2(dy, dx) * 180) / Math.PI + 90 + 360) % 360
-        updateColor(Math.round(angle), sat, light)
-      } else if (dragMode.current === 'sl') {
+        updateColor(Math.round(angle), sat, val)
+      } else if (dragMode.current === 'sv') {
         const s = Math.round(Math.min(100, Math.max(0, ((pos.x - squareLeft) / squareSize) * 100)))
-        const l = Math.round(Math.min(100, Math.max(0, 100 - ((pos.y - squareTop) / squareSize) * 100)))
-        updateColor(hue, s, l)
+        const v = Math.round(Math.min(100, Math.max(0, 100 - ((pos.y - squareTop) / squareSize) * 100)))
+        updateColor(hue, s, v)
       }
     },
-    [center, squareLeft, squareTop, squareSize, hue, sat, light, updateColor, getCanvasPosition]
+    [center, squareLeft, squareTop, squareSize, hue, sat, val, updateColor, getCanvasPosition]
   )
 
   const handlePointerUp = useCallback(() => {
@@ -285,13 +283,13 @@ export default function ColorWheel({ color, onChange }: ColorWheelProps) {
     const value = e.target.value
     setHexInput(value)
     if (/^#[0-9a-fA-F]{6}$/.test(value)) {
-      const [h, s, l] = hexToHsl(value)
-      setHsl([h, s, l])
+      const [h, s, v] = hexToHsv(value)
+      setHsv([h, s, v])
       onChange(value)
     }
   }
 
-  const currentHex = hslToHex(hue, sat, light)
+  const currentHex = hsvToHex(hue, sat, val)
 
   return (
     <div ref={containerRef} className="flex flex-col items-center gap-3 w-full max-w-[280px]">

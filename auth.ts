@@ -6,13 +6,13 @@ import authConfig from "@/auth.config"
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
   adapter: PrismaAdapter(prisma),
-  logger: {
-    error: (error) => {
-      if (error.name === "JWTSessionError") return
-      console.error(error)
-    },
-  },
   callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.sub = user.id
+      }
+      return token
+    },
     async session({ session, token }) {
       if (token.sub) {
         session.user.id = token.sub

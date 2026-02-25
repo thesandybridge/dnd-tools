@@ -85,7 +85,18 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
     const root = document.documentElement
     root.setAttribute('data-theme', theme.themeName)
     root.setAttribute('data-mode', theme.themeMode)
-    root.style.setProperty('--alt', theme.primaryColor)
+
+    // Override primary color and derived variables
+    const hex = theme.primaryColor
+    root.style.setProperty('--primary', hex)
+    root.style.setProperty('--ring', hex)
+    root.style.setProperty('--alt', hex)
+
+    // Convert hex to RGB for corona-rgb
+    const r = parseInt(hex.slice(1, 3), 16)
+    const g = parseInt(hex.slice(3, 5), 16)
+    const b = parseInt(hex.slice(5, 7), 16)
+    root.style.setProperty('--corona-rgb', `${r}, ${g}, ${b}`)
 
     const resolvedParticle = theme.particleEffect === 'auto'
       ? AUTO_PARTICLES[theme.themeName] || 'ember'
