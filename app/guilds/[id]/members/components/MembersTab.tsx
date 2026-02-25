@@ -2,8 +2,17 @@
 
 import { useGuild } from '../../providers/GuildProvider'
 import useDeleteMemberMutation from '../../../hooks/useDeleteMemberMutation'
+import { updateMember } from '@/lib/members'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { GlassPanel } from '@/app/components/ui/GlassPanel'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import GuildAddMember from '../../components/GuildAddMember'
 
 export default function MembersTab({ userId }: { userId: string }) {
@@ -11,10 +20,24 @@ export default function MembersTab({ userId }: { userId: string }) {
   const { mutation } = useDeleteMemberMutation(guildData)
   const { mutate: deleteMemberMutate, isPending: isDeleting } = mutation
 
+  const queryClient = useQueryClient()
   const canManage = hasPermission(userId, 'manage_members')
   const actorRole = getMemberRole(userId)
   const members = membersData || []
   const roles = (rolesData || []).sort((a, b) => a.position - b.position)
+
+  const roleMutation = useMutation({
+    mutationFn: ({ memberId, roleId }: { memberId: string; roleId: number }) =>
+      updateMember(guildData.guild_id, memberId, { roleId }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['members', guildData.guild_id] })
+    },
+  })
+
+  // Roles the actor can assign (must outrank them)
+  const assignableRoles = actorRole
+    ? roles.filter(r => !r.is_system && r.position > actorRole.position)
+    : []
 
   // Group members by role id
   const membersByRole = new Map<number, typeof members>()
@@ -49,6 +72,12 @@ export default function MembersTab({ userId }: { userId: string }) {
                   && member.role.position !== 0
                   && actorRole.position < member.role.position
 
+                const canChangeRole = canManage
+                  && actorRole
+                  && member.role.position !== 0
+                  && actorRole.position < member.role.position
+                  && assignableRoles.length > 0
+
                 return (
                   <GlassPanel
                     key={member.user_id}
@@ -58,20 +87,45 @@ export default function MembersTab({ userId }: { userId: string }) {
                     <span className="text-sm font-medium text-foreground truncate">
                       {member.users?.name}
                     </span>
-                    {canRemove && (
-                      <Button
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          deleteMemberMutate(member.user_id)
-                        }}
-                        disabled={isDeleting}
-                        variant="destructive"
-                        size="sm"
-                        className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 cursor-pointer"
-                      >
-                        Remove
-                      </Button>
-                    )}
+                    <div className="flex items-center gap-2 shrink-0">
+                      {canChangeRole && (
+                        <Select
+                          value={member.role.id.toString()}
+                          onValueChange={(value) =>
+                            roleMutation.mutate({ memberId: member.user_id, roleId: parseInt(value) })
+                          }
+                          disabled={roleMutation.isPending}
+                        >
+                          <SelectTrigger className="h-7 w-auto min-w-[100px] text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {assignableRoles.map((r) => (
+                              <SelectItem key={r.id} value={r.id.toString()}>
+                                <div className="flex items-center gap-1.5">
+                                  <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: r.color }} />
+                                  {r.name}
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                      {canRemove && (
+                        <Button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            deleteMemberMutate(member.user_id)
+                          }}
+                          disabled={isDeleting}
+                          variant="destructive"
+                          size="sm"
+                          className="opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                        >
+                          Remove
+                        </Button>
+                      )}
+                    </div>
                   </GlassPanel>
                 )
               })}
