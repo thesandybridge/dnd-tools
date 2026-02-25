@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react"
 import transportationData from "./travel.json"
-import { convertToDnDCurrency, formatDuration, handleFocus } from "./helper"
+import { convertToDnDCurrency, formatDuration, handleFocus, preventNonNumeric } from "./helper"
 import { useCurrency } from "../../providers/CurrencyContext"
 import { GlassPanel } from "@/app/components/ui/GlassPanel"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -25,18 +25,18 @@ const View = ({
 }) => {
   return (
     <div className="flex flex-col gap-6 w-full">
-      <h2 className="text-2xl font-bold">Transportation Calculator</h2>
+      <h2 className="text-2xl font-bold font-cinzel">Transportation Calculator</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
         {/* Left: Form (3 cols) */}
         <GlassPanel className="md:col-span-3 p-6 flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label>Select Transportation</Label>
+            <Label className="text-sm text-muted-foreground">Transportation</Label>
             <Select
               value={selectedTransport}
               onValueChange={(val) => setSelectedTransport(val)}
             >
-              <SelectTrigger>
+              <SelectTrigger className="bg-white/[0.05] border-white/[0.08]">
                 <SelectValue placeholder="Select Transportation" />
               </SelectTrigger>
               <SelectContent>
@@ -54,26 +54,30 @@ const View = ({
 
           {selectedTransportData.speed !== "Instant" && (
             <>
-              <div className="flex flex-col gap-1.5">
-                <Label>Miles</Label>
+              <div className="flex flex-col gap-1.5 max-w-xs">
+                <Label className="text-sm text-muted-foreground">Miles</Label>
                 <Input
                   type="number"
                   onChange={(e) => setDistance(parseFloat(e.target.value) || 0)}
                   value={distance}
                   onFocus={handleFocus}
                   onBlur={resetDistance}
+                  onKeyDown={preventNonNumeric}
+                  className="bg-white/[0.05] border-white/[0.08]"
                 />
               </div>
 
               {selectedTransportData.cargoRate && (
-                <div className="flex flex-col gap-1.5">
-                  <Label>Weight (lbs)</Label>
+                <div className="flex flex-col gap-1.5 max-w-xs">
+                  <Label className="text-sm text-muted-foreground">Weight (lbs)</Label>
                   <Input
                     type="number"
                     value={cargoWeight}
                     onChange={(e) => setCargoWeight(parseFloat(e.target.value) || 0)}
                     onFocus={handleFocus}
                     onBlur={resetWeight}
+                    onKeyDown={preventNonNumeric}
+                    className="bg-white/[0.05] border-white/[0.08]"
                   />
                 </div>
               )}
@@ -83,14 +87,14 @@ const View = ({
 
         {/* Right: Result (2 cols) */}
         <GlassPanel corona className="md:col-span-2 p-6 flex flex-col items-center justify-center gap-4">
-          <h3 className="text-lg font-semibold text-muted-foreground">Estimated Cost</h3>
-          <div className="text-4xl font-bold text-primary">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Estimated Cost</h3>
+          <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary whitespace-nowrap">
             {totalCost > 0 ? convertToDnDCurrency(totalCost) : "\u2014"}
           </div>
           {totalDays && (
             <>
-              <h3 className="text-lg font-semibold text-muted-foreground mt-2">Travel Time</h3>
-              <div className="text-2xl font-bold text-primary">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mt-2">Travel Time</h3>
+              <div className="text-lg sm:text-xl md:text-2xl font-bold text-primary whitespace-nowrap">
                 {totalDays}
               </div>
             </>

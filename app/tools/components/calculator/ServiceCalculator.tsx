@@ -2,7 +2,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect } from "react"
 import servicesData from './services.json'
-import { convertToDnDCurrency } from "./helper"
+import { convertToDnDCurrency, preventNonNumeric } from "./helper"
 import { useCurrency } from '../../providers/CurrencyContext'
 import { GlassPanel } from "@/app/components/ui/GlassPanel"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -22,7 +22,7 @@ const View = ({
 }) => {
   return (
     <div className="flex flex-col gap-6 w-full">
-      <h2 className="text-2xl font-bold">Services Calculator</h2>
+      <h2 className="text-2xl font-bold font-cinzel">Services Calculator</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
         {/* Left: Form (3 cols) */}
@@ -52,23 +52,27 @@ const View = ({
                           <>
                             {serviceDetails.unit && (
                               <div className="flex flex-col gap-1.5">
-                                <Label>{serviceDetails.unit.split(' / ')[1]}</Label>
+                                <Label className="text-sm text-muted-foreground">{serviceDetails.unit.split(' / ')[1]}</Label>
                                 <Input
                                   type="number"
                                   value={unitInputs[serviceKey] || ''}
                                   onChange={(e) => setUnitInputs({ ...unitInputs, [serviceKey]: parseFloat(e.target.value) })}
+                                  onKeyDown={preventNonNumeric}
                                   key={`unitInput-${serviceKey}`}
+                                  className="bg-white/[0.05] border-white/[0.08]"
                                 />
                               </div>
                             )}
                             {serviceDetails.type === 'markup' && (
                               <div className="flex flex-col gap-1.5">
-                                <Label>Base Cost</Label>
+                                <Label className="text-sm text-muted-foreground">Base Cost</Label>
                                 <Input
                                   type="number"
                                   value={markupPrices[serviceKey] || ''}
                                   onChange={(e) => setMarkupPrices({ ...markupPrices, [serviceKey]: parseFloat(e.target.value) })}
+                                  onKeyDown={preventNonNumeric}
                                   key={`markupInput-${serviceKey}`}
+                                  className="bg-white/[0.05] border-white/[0.08]"
                                 />
                               </div>
                             )}
@@ -105,11 +109,11 @@ const View = ({
 
         {/* Right: Result (2 cols) */}
         <GlassPanel corona className="md:col-span-2 p-6 flex flex-col items-center justify-center gap-4">
-          <h3 className="text-lg font-semibold text-muted-foreground">Total Cost</h3>
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Total Cost</h3>
           <AnimatePresence mode="wait">
             <motion.div
               key={totalCost}
-              className="text-4xl font-bold text-primary"
+              className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary whitespace-nowrap"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}

@@ -51,6 +51,12 @@ const handleFocus = (e) => {
   }
 }
 
+const preventNonNumeric = (e) => {
+  if (['e', 'E', '+', '-'].includes(e.key)) {
+    e.preventDefault()
+  }
+}
+
 function convertToLabel(symbol) {
   const symbols = {
     CP: "Copper",
@@ -66,6 +72,7 @@ export {
   convertToDnDCurrency,
   formatDuration,
   handleFocus,
+  preventNonNumeric,
   convertToLabel,
 }
 

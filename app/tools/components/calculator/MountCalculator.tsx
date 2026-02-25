@@ -7,6 +7,7 @@ import {
   convertToDnDCurrency,
   formatDuration,
   handleFocus,
+  preventNonNumeric,
 } from "./helper"
 import { useCurrency } from "../../providers/CurrencyContext"
 import { GlassPanel } from "@/app/components/ui/GlassPanel"
@@ -32,15 +33,15 @@ const View = ({
 }) => {
   return (
     <div className="flex flex-col gap-6 w-full">
-      <h2 className="text-2xl font-bold">Mount Calculator</h2>
+      <h2 className="text-2xl font-bold font-cinzel">Mount Calculator</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
         {/* Left: Form (3 cols) */}
         <GlassPanel className="md:col-span-3 p-6 flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="mount-select">Select a Mount</Label>
+            <Label htmlFor="mount-select" className="text-sm text-muted-foreground">Mount</Label>
             <Select value={selectedItem} onValueChange={(val) => setSelectedItem(val)}>
-              <SelectTrigger id="mount-select">
+              <SelectTrigger id="mount-select" className="bg-white/[0.05] border-white/[0.08]">
                 <SelectValue placeholder="Select a Mount" />
               </SelectTrigger>
               <SelectContent>
@@ -58,9 +59,9 @@ const View = ({
 
           {selectedItem && itemsData.find(item => item.item === selectedItem)?.types && (
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="type-select">Select Type</Label>
+              <Label htmlFor="type-select" className="text-sm text-muted-foreground">Type</Label>
               <Select value={selectedType} onValueChange={(val) => setSelectedType(val)}>
-                <SelectTrigger id="type-select">
+                <SelectTrigger id="type-select" className="bg-white/[0.05] border-white/[0.08]">
                   <SelectValue placeholder="Select Type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -94,8 +95,8 @@ const View = ({
             </div>
           )}
 
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="miles-input">Miles</Label>
+          <div className="flex flex-col gap-1.5 max-w-xs">
+            <Label htmlFor="miles-input" className="text-sm text-muted-foreground">Miles</Label>
             <Input
               id="miles-input"
               type="number"
@@ -103,14 +104,16 @@ const View = ({
               onChange={(e) => setMiles(parseInt(e.target.value, 10) || 0)}
               onBlur={handleBlur(miles)}
               onFocus={handleFocus}
+              onKeyDown={preventNonNumeric}
+              className="bg-white/[0.05] border-white/[0.08]"
             />
           </div>
         </GlassPanel>
 
         {/* Right: Result (2 cols) */}
         <GlassPanel corona className="md:col-span-2 p-6 flex flex-col items-center justify-center gap-4">
-          <h3 className="text-lg font-semibold text-muted-foreground">Estimated Cost</h3>
-          <div className="text-4xl font-bold text-primary">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Estimated Cost</h3>
+          <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary whitespace-nowrap">
             {totalCost > 0 ? convertToDnDCurrency(totalCost) : "\u2014"}
           </div>
           <AnimatePresence>
@@ -121,8 +124,8 @@ const View = ({
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
               >
-                <h3 className="text-lg font-semibold text-muted-foreground">Travel Time</h3>
-                <div className="text-2xl font-bold text-primary">{totalDays}</div>
+                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mt-2">Travel Time</h3>
+                <div className="text-lg sm:text-xl md:text-2xl font-bold text-primary whitespace-nowrap">{totalDays}</div>
               </motion.div>
             )}
           </AnimatePresence>

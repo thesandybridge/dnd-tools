@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from 'react'
 import {
   convertToDnDCurrency,
-  handleFocus
+  handleFocus,
+  preventNonNumeric,
 } from './helper'
 import { useCurrency } from "../../providers/CurrencyContext"
 import { GlassPanel } from "@/app/components/ui/GlassPanel"
@@ -29,15 +30,15 @@ const View = ({
 }) => {
   return (
     <div className="flex flex-col gap-6 w-full">
-      <h2 className="text-2xl font-bold">Item Calculator</h2>
+      <h2 className="text-2xl font-bold font-cinzel">Item Calculator</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
         {/* Left: Form (3 cols) */}
         <GlassPanel className="md:col-span-3 p-6 flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <Label>Select Rarity</Label>
+            <Label className="text-sm text-muted-foreground">Rarity</Label>
             <Select value={rarity} onValueChange={setRarity}>
-              <SelectTrigger>
+              <SelectTrigger className="bg-white/[0.05] border-white/[0.08]">
                 <SelectValue placeholder="Select Rarity" />
               </SelectTrigger>
               <SelectContent>
@@ -72,14 +73,16 @@ const View = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {Object.keys(attributes).map((attr) => (
               <div key={attr} className="flex flex-col gap-1.5">
-                <Label>{attr.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}</Label>
+                <Label className="text-sm text-muted-foreground">{attr.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}</Label>
                 <Input
                   type="number"
                   value={attributes[attr]}
                   onChange={handleAttributeChange(attr)}
                   onFocus={handleFocus}
                   onBlur={handleBlur(attr)}
+                  onKeyDown={preventNonNumeric}
                   placeholder={attr.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}
+                  className="bg-white/[0.05] border-white/[0.08]"
                 />
               </div>
             ))}
@@ -94,8 +97,8 @@ const View = ({
 
         {/* Right: Result (2 cols) */}
         <GlassPanel corona className="md:col-span-2 p-6 flex flex-col items-center justify-center gap-4">
-          <h3 className="text-lg font-semibold text-muted-foreground">Estimated Price</h3>
-          <div className="text-4xl font-bold text-primary">
+          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Estimated Price</h3>
+          <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary whitespace-nowrap">
             {gp > 0 ? convertToDnDCurrency(gp) : "\u2014"}
           </div>
         </GlassPanel>

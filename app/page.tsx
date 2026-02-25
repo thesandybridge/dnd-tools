@@ -1,8 +1,9 @@
 import { auth } from "@/auth"
 import { GlassPanel } from "@/app/components/ui/GlassPanel"
-import { Shield, Map, Wrench, Castle } from "lucide-react"
+import { Shield, Wrench, Castle } from "lucide-react"
 import Link from "next/link"
 import { SignInButton } from "./components/SignInButton"
+import QuickConvert from "./components/QuickConvert"
 
 const features = [
   {
@@ -10,13 +11,6 @@ const features = [
     description: "Create and manage your adventuring parties. Track members, roles, and campaigns.",
     icon: Shield,
     href: "/guilds",
-    auth: true,
-  },
-  {
-    title: "World Map",
-    description: "Explore an interactive map of Eberron. Mark locations, measure distances, and plan routes.",
-    icon: Map,
-    href: "/map",
     auth: true,
   },
   {
@@ -56,7 +50,7 @@ function HeroPage() {
         <SignInButton />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16 w-full max-w-4xl">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-16 w-full max-w-3xl">
         {features.map((feature) => {
           const Icon = feature.icon
           return (
@@ -84,7 +78,7 @@ function Dashboard({ userName, userId }: { userName: string; userId?: string }) 
       </GlassPanel>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         {features.map((feature) => {
           const Icon = feature.icon
           return (
@@ -115,8 +109,8 @@ function Dashboard({ userName, userId }: { userName: string; userId?: string }) 
           <p className="text-muted-foreground text-sm">Guild activity will appear here.</p>
         </GlassPanel>
         <GlassPanel className="md:col-span-2 p-6">
-          <h2 className="text-lg font-semibold mb-4">Quick Convert</h2>
-          <p className="text-muted-foreground text-sm">Currency converter coming soon.</p>
+          <h2 className="text-lg font-semibold font-cinzel mb-4">Quick Convert</h2>
+          <QuickConvert />
         </GlassPanel>
       </div>
     </div>
