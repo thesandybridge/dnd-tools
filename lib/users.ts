@@ -8,7 +8,7 @@ export async function updateUser(userId: string, data: Record<string, unknown>) 
   return response.json()
 }
 
-export async function fetchUser(userId) {
+export async function fetchUser(userId: string) {
   const response = await fetch(`/api/users/${userId}`, {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' },
@@ -26,7 +26,7 @@ export async function fetchUsers() {
   return response.json()
 }
 
-export async function fetchGuildsByUser(userId) {
+export async function fetchGuildsByUser(userId: string) {
   const response = await fetch(`/api/users/${userId}/guilds`, {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' },
@@ -44,7 +44,7 @@ export async function deleteUser(userId: string) {
   return response.json()
 }
 
-export async function fetchUsersPartial(take = 5, match) {
+export async function fetchUsersPartial(take = 5, match: string) {
   const response = await fetch(`/api/users/partial?take=${take}&match=${match}`, {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' }
