@@ -1,6 +1,6 @@
 "use client"
 
-import { MapPin, Ruler, Plus, Minus, Map, List } from "lucide-react"
+import { MapPin, Ruler, Plus, Minus, Map, List, Crosshair, Loader2 } from "lucide-react"
 import { GlassPanel } from "@/app/components/ui/GlassPanel"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
@@ -15,12 +15,14 @@ type FloatingToolbarProps = {
   onTogglePanel: () => void
   onZoomIn: () => void
   onZoomOut: () => void
+  onSaveDefaultView: () => void
+  isSavingView: boolean
 }
 
 export function FloatingToolbar({
   markerActive, rulerActive, panelOpen,
   onToggleMarker, onToggleRuler, onTogglePanel,
-  onZoomIn, onZoomOut,
+  onZoomIn, onZoomOut, onSaveDefaultView, isSavingView,
 }: FloatingToolbarProps) {
   return (
     <TooltipProvider delayDuration={0}>
@@ -38,6 +40,13 @@ export function FloatingToolbar({
           <Separator orientation="vertical" className="h-6 mx-1" />
           <ToolbarButton icon={Plus} label="Zoom In" onClick={onZoomIn} />
           <ToolbarButton icon={Minus} label="Zoom Out" onClick={onZoomOut} />
+          <Separator orientation="vertical" className="h-6 mx-1" />
+          <ToolbarButton
+            icon={isSavingView ? Loader2 : Crosshair}
+            label="Set Default View"
+            onClick={onSaveDefaultView}
+            spinning={isSavingView}
+          />
         </GlassPanel>
       </div>
     </TooltipProvider>
@@ -45,9 +54,9 @@ export function FloatingToolbar({
 }
 
 function ToolbarButton({
-  icon: Icon, label, active, onClick,
+  icon: Icon, label, active, spinning, onClick,
 }: {
-  icon: typeof MapPin; label: string; active?: boolean; onClick: () => void
+  icon: typeof MapPin; label: string; active?: boolean; spinning?: boolean; onClick: () => void
 }) {
   return (
     <Tooltip>
@@ -61,8 +70,9 @@ function ToolbarButton({
               : "text-muted-foreground hover:text-foreground"
           }`}
           onClick={onClick}
+          disabled={spinning}
         >
-          <Icon className="h-4 w-4" />
+          <Icon className={`h-4 w-4 ${spinning ? "animate-spin" : ""}`} />
         </Button>
       </TooltipTrigger>
       <TooltipContent side="top">{label}</TooltipContent>

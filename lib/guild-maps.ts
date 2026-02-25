@@ -9,6 +9,9 @@ export interface GuildMap {
   image_width: number | null
   image_height: number | null
   max_zoom: number
+  default_zoom: number | null
+  default_center_lat: number | null
+  default_center_lng: number | null
   visibility: string
   created_at?: string
   updated_at?: string
@@ -36,7 +39,7 @@ export async function createGuildMap(guildId: UUID, data: { name: string; pmtile
   return response.json()
 }
 
-export async function updateGuildMap(guildId: UUID, mapId: UUID, data: { name?: string; pmtilesUrl?: string; pmtilesApiKey?: string; imageWidth?: number | null; imageHeight?: number | null; maxZoom?: number; visibility?: string }): Promise<GuildMap> {
+export async function updateGuildMap(guildId: UUID, mapId: UUID, data: { name?: string; pmtilesUrl?: string; pmtilesApiKey?: string; imageWidth?: number | null; imageHeight?: number | null; maxZoom?: number; defaultZoom?: number | null; defaultCenterLat?: number | null; defaultCenterLng?: number | null; visibility?: string }): Promise<GuildMap> {
   const response = await fetch(`/api/guilds/${guildId}/maps/${mapId}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },

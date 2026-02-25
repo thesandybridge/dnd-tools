@@ -1,19 +1,19 @@
 "use client"
 
 import Link from "next/link"
-import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { Castle, Calculator, Shield, Sword, Menu, LogIn, LogOut, Sun, Moon, User, Settings } from "lucide-react"
 import { signIn, signOut } from "next-auth/react"
 import { useTheme } from "@/app/providers/ThemeProvider"
 import { Button } from "@/components/ui/button"
 import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet"
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+  DrawerClose,
+} from "@/components/ui/drawer"
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 
@@ -61,22 +61,22 @@ export function MobileNav({ user }: { user: NavUser | null }) {
         )
       })}
 
-      {/* More menu */}
-      <Sheet>
-        <SheetTrigger asChild>
+      {/* More menu - swipable drawer */}
+      <Drawer>
+        <DrawerTrigger asChild>
           <button className="flex flex-col items-center gap-0.5 px-3 py-1.5 text-[10px] text-muted-foreground">
             <Menu className="h-5 w-5" />
             <span>More</span>
           </button>
-        </SheetTrigger>
-        <SheetContent side="bottom" className="rounded-t-xl">
-          <SheetHeader>
-            <SheetTitle className="text-left">Menu</SheetTitle>
-          </SheetHeader>
-          <div className="flex flex-col gap-1 py-4">
+        </DrawerTrigger>
+        <DrawerContent>
+          <DrawerHeader>
+            <DrawerTitle className="text-left">Menu</DrawerTitle>
+          </DrawerHeader>
+          <div className="flex flex-col gap-1 px-6 pb-8">
             {user ? (
               <>
-                <div className="flex items-center gap-3 px-2 py-2">
+                <div className="flex items-center gap-3 px-2 py-3">
                   <Avatar className="h-10 w-10 border-2 border-primary/50">
                     {user.image && <AvatarImage src={user.image} alt={user.name ?? "User"} />}
                     <AvatarFallback>{user.name?.charAt(0)?.toUpperCase() ?? "U"}</AvatarFallback>
@@ -88,26 +88,30 @@ export function MobileNav({ user }: { user: NavUser | null }) {
 
                 <Separator className="my-2" />
 
-                <Link
-                  href={`/users/${user.id}`}
-                  className="flex items-center gap-3 rounded-lg px-2 py-2.5 text-foreground hover:bg-accent"
-                >
-                  <User className="h-5 w-5 text-muted-foreground" />
-                  Profile
-                </Link>
-                <Link
-                  href={`/users/${user.id}/settings`}
-                  className="flex items-center gap-3 rounded-lg px-2 py-2.5 text-foreground hover:bg-accent"
-                >
-                  <Settings className="h-5 w-5 text-muted-foreground" />
-                  Settings
-                </Link>
+                <DrawerClose asChild>
+                  <Link
+                    href={`/users/${user.id}`}
+                    className="flex items-center gap-3 rounded-lg px-3 py-3 text-foreground hover:bg-accent active:bg-accent/80"
+                  >
+                    <User className="h-5 w-5 text-muted-foreground" />
+                    Profile
+                  </Link>
+                </DrawerClose>
+                <DrawerClose asChild>
+                  <Link
+                    href={`/users/${user.id}/settings`}
+                    className="flex items-center gap-3 rounded-lg px-3 py-3 text-foreground hover:bg-accent active:bg-accent/80"
+                  >
+                    <Settings className="h-5 w-5 text-muted-foreground" />
+                    Settings
+                  </Link>
+                </DrawerClose>
 
                 <Separator className="my-2" />
 
                 <button
                   onClick={() => updateSettings({ themeMode: theme.themeMode === 'dark' ? 'light' : 'dark' })}
-                  className="flex items-center gap-3 rounded-lg px-2 py-2.5 text-foreground hover:bg-accent w-full"
+                  className="flex items-center gap-3 rounded-lg px-3 py-3 text-foreground hover:bg-accent active:bg-accent/80 w-full"
                 >
                   {theme.themeMode === "dark" ? (
                     <Sun className="h-5 w-5 text-muted-foreground" />
@@ -119,7 +123,7 @@ export function MobileNav({ user }: { user: NavUser | null }) {
 
                 <button
                   onClick={() => signOut()}
-                  className="flex items-center gap-3 rounded-lg px-2 py-2.5 text-destructive hover:bg-accent w-full"
+                  className="flex items-center gap-3 rounded-lg px-3 py-3 text-destructive hover:bg-accent active:bg-accent/80 w-full"
                 >
                   <LogOut className="h-5 w-5" />
                   Sign out
@@ -129,7 +133,7 @@ export function MobileNav({ user }: { user: NavUser | null }) {
               <>
                 <button
                   onClick={() => updateSettings({ themeMode: theme.themeMode === 'dark' ? 'light' : 'dark' })}
-                  className="flex items-center gap-3 rounded-lg px-2 py-2.5 text-foreground hover:bg-accent w-full"
+                  className="flex items-center gap-3 rounded-lg px-3 py-3 text-foreground hover:bg-accent active:bg-accent/80 w-full"
                 >
                   {theme.themeMode === "dark" ? (
                     <Sun className="h-5 w-5 text-muted-foreground" />
@@ -150,8 +154,8 @@ export function MobileNav({ user }: { user: NavUser | null }) {
               </>
             )}
           </div>
-        </SheetContent>
-      </Sheet>
+        </DrawerContent>
+      </Drawer>
     </nav>
   )
 }

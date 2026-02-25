@@ -43,7 +43,7 @@ export default function QuickConvert() {
           className="flex-1 bg-white/[0.05] border-white/[0.08]"
         />
         <Select value={selected} onValueChange={setSelected}>
-          <SelectTrigger className="w-28 bg-white/[0.05] border-white/[0.08]">
+          <SelectTrigger className="w-24 sm:w-28 shrink-0 bg-white/[0.05] border-white/[0.08]">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -53,7 +53,7 @@ export default function QuickConvert() {
           </SelectContent>
         </Select>
       </div>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-2 min-w-0">
         {conversions.map(c => (
           <div key={c.key} className="flex items-center gap-1.5 rounded-md bg-white/[0.03] border border-white/[0.06] px-2 py-1.5 min-w-0">
             {c.icon}

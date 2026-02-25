@@ -57,7 +57,7 @@ export const PATCH = auth(async function PATCH(request, { params }) {
       return Response.json({ error: "You do not have permission to update maps" }, { status: 403 })
     }
 
-    const { name, pmtilesUrl, pmtilesApiKey, imageWidth, imageHeight, maxZoom, visibility } = await request.json()
+    const { name, pmtilesUrl, pmtilesApiKey, imageWidth, imageHeight, maxZoom, defaultZoom, defaultCenterLat, defaultCenterLng, visibility } = await request.json()
 
     const map = await prisma.guildMap.update({
       where: { mapId: map_id as string },
@@ -68,6 +68,9 @@ export const PATCH = auth(async function PATCH(request, { params }) {
         ...(imageWidth !== undefined && { imageWidth }),
         ...(imageHeight !== undefined && { imageHeight }),
         ...(maxZoom !== undefined && { maxZoom }),
+        ...(defaultZoom !== undefined && { defaultZoom }),
+        ...(defaultCenterLat !== undefined && { defaultCenterLat }),
+        ...(defaultCenterLng !== undefined && { defaultCenterLng }),
         ...(visibility !== undefined && { visibility }),
       },
     })

@@ -22,7 +22,7 @@ export default function UserNav({ userId }) {
 
   return (
     <GlassPanel variant="subtle" className="w-full rounded-full p-1.5">
-      <nav className="flex gap-1">
+      <nav className="flex gap-1 justify-center">
         {routes.map((route) => {
           const active = isActive(route.path)
           return (

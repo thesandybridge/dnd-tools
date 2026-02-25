@@ -74,6 +74,10 @@ function MapHandleBridge({ mapHandleRef }: { mapHandleRef: MutableRefObject<MapH
       },
       zoomIn: () => map.zoomIn(),
       zoomOut: () => map.zoomOut(),
+      getView: () => {
+        const center = map.getCenter()
+        return { zoom: map.getZoom(), center: { lat: center.lat, lng: center.lng } }
+      },
     }
     return () => { mapHandleRef.current = null }
   }, [map, mapHandleRef])
@@ -128,6 +132,9 @@ type GuildMapProps = {
   imageWidth: number | null
   imageHeight: number | null
   maxZoom: number
+  defaultZoom: number | null
+  defaultCenterLat: number | null
+  defaultCenterLng: number | null
   selectedMarkerUuid: string | null
   setSelectedMarkerUuid: (uuid: string | null) => void
   mapHandleRef: MutableRefObject<MapHandle | null>
@@ -139,6 +146,7 @@ type GuildMapProps = {
 export default function GuildMap({
   guildId, mapId, pmtilesUrl,
   imageWidth, imageHeight, maxZoom,
+  defaultZoom, defaultCenterLat, defaultCenterLng,
   selectedMarkerUuid, setSelectedMarkerUuid, mapHandleRef,
   markerActive, rulerActive,
   onMarkerScreenPositionChange,
@@ -161,7 +169,10 @@ export default function GuildMap({
     }
     return [[-tileSize, 0], [0, tileSize]]
   }, [imageWidth, imageHeight])
-  const mapCenter: L.LatLngExpression = [mapBounds[0][0] / 2, mapBounds[1][1] / 2]
+  const hasDefaultView = defaultCenterLat != null && defaultCenterLng != null
+  const mapCenter: L.LatLngExpression = hasDefaultView
+    ? [defaultCenterLat, defaultCenterLng]
+    : [mapBounds[0][0] / 2, mapBounds[1][1] / 2]
 
   const customIcon = useMemo(() => {
     const svgString = `
@@ -227,13 +238,13 @@ export default function GuildMap({
 
   return (
     <MapContainer
-      bounds={mapBounds}
+      {...(hasDefaultView ? {} : { bounds: mapBounds })}
       center={mapCenter}
       fadeAnimation={true}
       markerZoomAnimation={true}
       zoomAnimation={true}
       className="mapContainer crosshair"
-      zoom={1}
+      zoom={defaultZoom ?? 2}
       minZoom={0}
       maxZoom={maxZoom}
       zoomSnap={1}

@@ -7,8 +7,8 @@ export default function GuildBanner() {
   const { guildData } = useGuild()
 
   return (
-    <GlassPanel corona className="w-full px-6 py-5">
-      <h1 className="font-cinzel text-2xl font-bold text-foreground tracking-wide">
+    <GlassPanel corona className="w-full px-4 sm:px-6 py-5 min-w-0">
+      <h1 className="font-cinzel text-xl sm:text-2xl font-bold text-foreground tracking-wide truncate">
         {guildData.name}
       </h1>
       <p className="text-sm text-muted-foreground mt-1">

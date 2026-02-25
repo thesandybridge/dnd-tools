@@ -59,7 +59,7 @@ export default function CharacterForm({ open, onClose, onSubmit, isSubmitting, c
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle className="font-cinzel">{character ? 'Edit Character' : 'Create Character'}</DialogTitle>
         </DialogHeader>

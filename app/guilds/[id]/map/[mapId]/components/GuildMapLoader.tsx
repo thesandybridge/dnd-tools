@@ -2,13 +2,13 @@
 
 import { useState, useCallback, useRef } from "react"
 import dynamic from "next/dynamic"
-import { useQuery } from "@tanstack/react-query"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { FloatingToolbar } from "./FloatingToolbar"
 import MapSidePanel from "./MapSidePanel"
 import { MarkerInfoCard } from "./MarkerInfoCard"
 import useGetMarkers from "../hooks/useGetMarkers"
 import usePmtilesUrl from "../hooks/usePmtilesUrl"
-import { fetchGuildMap } from "@/lib/guild-maps"
+import { fetchGuildMap, updateGuildMap } from "@/lib/guild-maps"
 
 const GuildMap = dynamic(() => import("./GuildMap"), { ssr: false })
 
@@ -18,6 +18,7 @@ export type MapHandle = {
   flyToMarker: (position: { lat: number; lng: number }) => void
   zoomIn: () => void
   zoomOut: () => void
+  getView: () => { zoom: number; center: { lat: number; lng: number } }
 }
 
 export default function GuildMapLoader({ guildId, mapId }: { guildId: string; mapId: string }) {
@@ -33,9 +34,22 @@ export default function GuildMapLoader({ guildId, mapId }: { guildId: string; ma
     queryFn: () => fetchGuildMap(guildId, mapId),
   })
 
+  const queryClient = useQueryClient()
   const [markerActive, setMarkerActive] = useState(false)
   const [rulerActive, setRulerActive] = useState(false)
   const [panelOpen, setPanelOpen] = useState(false)
+
+  const saveViewMutation = useMutation({
+    mutationFn: (view: { zoom: number; center: { lat: number; lng: number } }) =>
+      updateGuildMap(guildId, mapId, {
+        defaultZoom: view.zoom,
+        defaultCenterLat: view.center.lat,
+        defaultCenterLng: view.center.lng,
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["guild-map", guildId, mapId] })
+    },
+  })
 
   const handleSelectMarker = useCallback((uuid: string, position: { lat: number; lng: number }) => {
     setSelectedMarkerUuid(uuid)
@@ -73,6 +87,11 @@ export default function GuildMapLoader({ guildId, mapId }: { guildId: string; ma
     mapHandleRef.current?.zoomOut()
   }, [])
 
+  const handleSaveDefaultView = useCallback(() => {
+    const view = mapHandleRef.current?.getView()
+    if (view) saveViewMutation.mutate(view)
+  }, [saveViewMutation])
+
   const selectedMarker = selectedMarkerUuid
     ? markers.find(m => m.uuid === selectedMarkerUuid) ?? null
     : null
@@ -90,6 +109,9 @@ export default function GuildMapLoader({ guildId, mapId }: { guildId: string; ma
         imageWidth={mapData?.image_width ?? null}
         imageHeight={mapData?.image_height ?? null}
         maxZoom={mapData?.max_zoom ?? 5}
+        defaultZoom={mapData?.default_zoom ?? null}
+        defaultCenterLat={mapData?.default_center_lat ?? null}
+        defaultCenterLng={mapData?.default_center_lng ?? null}
         selectedMarkerUuid={selectedMarkerUuid}
         setSelectedMarkerUuid={setSelectedMarkerUuid}
         mapHandleRef={mapHandleRef}
@@ -124,6 +146,8 @@ export default function GuildMapLoader({ guildId, mapId }: { guildId: string; ma
         onTogglePanel={togglePanel}
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
+        onSaveDefaultView={handleSaveDefaultView}
+        isSavingView={saveViewMutation.isPending}
       />
     </div>
   )
