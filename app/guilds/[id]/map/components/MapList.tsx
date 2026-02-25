@@ -39,6 +39,7 @@ function MapFormFields({
   defaultZoom, setDefaultZoom,
   visibility, setVisibility,
   onImportTileForge,
+  showTileForgePromo,
 }: {
   name: string; setName: (v: string) => void
   pmtilesUrl: string; setPmtilesUrl: (v: string) => void
@@ -49,10 +50,11 @@ function MapFormFields({
   defaultZoom: string; setDefaultZoom: (v: string) => void
   visibility: string; setVisibility: (v: string) => void
   onImportTileForge?: () => void
+  showTileForgePromo?: boolean
 }) {
   return (
     <>
-      {onImportTileForge && (
+      {onImportTileForge ? (
         <Button
           type="button"
           variant="outline"
@@ -61,7 +63,21 @@ function MapFormFields({
         >
           Import from TileForge
         </Button>
-      )}
+      ) : showTileForgePromo ? (
+        <div className="rounded-lg border border-primary/10 bg-primary/[0.03] px-4 py-3 flex flex-col sm:flex-row items-start sm:items-center gap-2">
+          <p className="text-xs text-muted-foreground flex-1">
+            {TILEFORGE_COPY.formPromo}
+          </p>
+          <a
+            href={TILEFORGE_URLS.home}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-primary hover:underline whitespace-nowrap"
+          >
+            {TILEFORGE_COPY.ctaLearnMore} &rarr;
+          </a>
+        </div>
+      ) : null}
       <Input
         placeholder="Map name"
         value={name}
@@ -194,6 +210,7 @@ function EditMapDialog({ map, guildId, open, onOpenChange, hasTileForge }: {
             defaultZoom={defaultZoom} setDefaultZoom={setDefaultZoom}
             visibility={visibility} setVisibility={setVisibility}
             onImportTileForge={hasTileForge ? () => setShowTfPicker(true) : undefined}
+            showTileForgePromo={!hasTileForge}
           />
           <div className="flex items-center gap-2 justify-end">
             <Button
@@ -352,6 +369,7 @@ export default function MapList({ guildId, userId }: { guildId: string; userId: 
               defaultZoom={defaultZoom} setDefaultZoom={setDefaultZoom}
               visibility={visibility} setVisibility={setVisibility}
               onImportTileForge={hasTileForge ? () => setShowTfPicker(true) : undefined}
+              showTileForgePromo={!hasTileForge}
             />
             <div className="flex items-center gap-2">
               <Button type="submit" size="sm" disabled={createMutation.isPending} className="cursor-pointer">
