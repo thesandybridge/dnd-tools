@@ -57,14 +57,23 @@ export const PATCH = auth(async function PATCH(request, { params }) {
       return Response.json({ error: "You do not have permission to update maps" }, { status: 403 })
     }
 
-    const { name, pmtilesUrl, pmtilesApiKey, imageWidth, imageHeight, maxZoom, defaultZoom, defaultCenterLat, defaultCenterLng, visibility } = await request.json()
+    const { name, pmtilesUrl, pmtilesApiKey, useTileForgeKey, imageWidth, imageHeight, maxZoom, defaultZoom, defaultCenterLat, defaultCenterLng, visibility } = await request.json()
+
+    let resolvedApiKey = pmtilesApiKey
+    if (useTileForgeKey && !pmtilesApiKey) {
+      const user = await prisma.user.findUnique({
+        where: { id: session.user.id! },
+        select: { tileforgeApiKey: true },
+      })
+      resolvedApiKey = user?.tileforgeApiKey || undefined
+    }
 
     const map = await prisma.guildMap.update({
       where: { mapId: map_id as string },
       data: {
         ...(name !== undefined && { name }),
         ...(pmtilesUrl !== undefined && { pmtilesUrl }),
-        ...(pmtilesApiKey !== undefined && { pmtilesApiKey }),
+        ...(resolvedApiKey !== undefined && { pmtilesApiKey: resolvedApiKey }),
         ...(imageWidth !== undefined && { imageWidth }),
         ...(imageHeight !== undefined && { imageHeight }),
         ...(maxZoom !== undefined && { maxZoom }),

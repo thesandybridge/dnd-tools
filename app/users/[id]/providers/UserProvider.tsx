@@ -17,7 +17,8 @@ export interface UserData {
   particle_effect: string
   corona_intensity: number
   timezone: string
-  tileforge_api_key: string | null
+  tileforge_connected: boolean
+  tileforge_api_key_prefix: string | null
 }
 
 const UserContext = createContext<UserData | null>(null)

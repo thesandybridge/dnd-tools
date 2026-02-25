@@ -116,12 +116,12 @@ export default function AccountSettings({ userId }: { userId: string }) {
 
       <GlassPanel variant="subtle" className="p-5">
         <h3 className="font-cinzel text-sm font-semibold mb-3 text-muted-foreground">TileForge</h3>
-        {user.tileforge_api_key ? (
+        {user.tileforge_connected ? (
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-2">
               <span className="text-sm text-green-400">Connected</span>
               <span className="text-xs text-muted-foreground font-mono">
-                {user.tileforge_api_key.slice(0, 10)}...
+                {user.tileforge_api_key_prefix}
               </span>
             </div>
             <Button

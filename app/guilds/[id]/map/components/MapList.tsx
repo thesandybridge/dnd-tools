@@ -124,13 +124,12 @@ function MapFormFields({
   )
 }
 
-function EditMapDialog({ map, guildId, open, onOpenChange, hasTileForge, tileforgeApiKey }: {
+function EditMapDialog({ map, guildId, open, onOpenChange, hasTileForge }: {
   map: GuildMap
   guildId: string
   open: boolean
   onOpenChange: (open: boolean) => void
   hasTileForge?: boolean
-  tileforgeApiKey?: string
 }) {
   const queryClient = useQueryClient()
   const [name, setName] = useState(map.name)
@@ -142,11 +141,12 @@ function EditMapDialog({ map, guildId, open, onOpenChange, hasTileForge, tilefor
   const [defaultZoom, setDefaultZoom] = useState(map.default_zoom?.toString() ?? "")
   const [visibility, setVisibility] = useState(map.visibility || "everyone")
   const [showTfPicker, setShowTfPicker] = useState(false)
+  const [useTileForgeKey, setUseTileForgeKey] = useState(false)
 
   function handleTileForgeSelect(tileset: TileForgeTileset) {
     setName(tileset.name)
     setPmtilesUrl(getTileForgepmtilesUrl(tileset.slug))
-    if (tileforgeApiKey) setPmtilesApiKey(tileforgeApiKey)
+    setUseTileForgeKey(true)
     if (tileset.width) setImageWidth(tileset.width.toString())
     if (tileset.height) setImageHeight(tileset.height.toString())
     setMaxZoom(tileset.max_zoom.toString())
@@ -173,6 +173,7 @@ function EditMapDialog({ map, guildId, open, onOpenChange, hasTileForge, tilefor
       ...(maxZoom && { maxZoom: parseInt(maxZoom) }),
       defaultZoom: defaultZoom ? parseInt(defaultZoom) : null,
       visibility,
+      useTileForgeKey,
     })
   }
 
@@ -233,7 +234,7 @@ export default function MapList({ guildId, userId }: { guildId: string; userId: 
     enabled: !!session?.user?.id,
     staleTime: 300000,
   })
-  const hasTileForge = !!currentUser?.tileforge_api_key
+  const hasTileForge = !!currentUser?.tileforge_connected
 
   const [showForm, setShowForm] = useState(false)
   const [showTfPicker, setShowTfPicker] = useState(false)
@@ -245,13 +246,14 @@ export default function MapList({ guildId, userId }: { guildId: string; userId: 
   const [maxZoom, setMaxZoom] = useState("5")
   const [defaultZoom, setDefaultZoom] = useState("")
   const [visibility, setVisibility] = useState("everyone")
+  const [useTileForgeKey, setUseTileForgeKey] = useState(false)
 
   const [editingMap, setEditingMap] = useState<GuildMap | null>(null)
 
   function handleTileForgeSelect(tileset: TileForgeTileset) {
     setName(tileset.name)
     setPmtilesUrl(getTileForgepmtilesUrl(tileset.slug))
-    if (currentUser?.tileforge_api_key) setPmtilesApiKey(currentUser.tileforge_api_key)
+    setUseTileForgeKey(true)
     if (tileset.width) setImageWidth(tileset.width.toString())
     if (tileset.height) setImageHeight(tileset.height.toString())
     setMaxZoom(tileset.max_zoom.toString())
@@ -275,6 +277,7 @@ export default function MapList({ guildId, userId }: { guildId: string; userId: 
       setMaxZoom("5")
       setDefaultZoom("")
       setVisibility("everyone")
+      setUseTileForgeKey(false)
       setShowForm(false)
     },
   })
@@ -297,6 +300,7 @@ export default function MapList({ guildId, userId }: { guildId: string; userId: 
       ...(imageHeight && { imageHeight: parseInt(imageHeight) }),
       ...(maxZoom && { maxZoom: parseInt(maxZoom) }),
       visibility,
+      useTileForgeKey,
     })
   }
 
@@ -432,7 +436,6 @@ export default function MapList({ guildId, userId }: { guildId: string; userId: 
           open={!!editingMap}
           onOpenChange={(open) => { if (!open) setEditingMap(null) }}
           hasTileForge={hasTileForge}
-          tileforgeApiKey={currentUser?.tileforge_api_key}
         />
       )}
     </div>

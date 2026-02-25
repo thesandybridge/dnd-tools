@@ -1,7 +1,6 @@
 "use client"
 
 import Link from "next/link"
-import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { Castle, Calculator, Shield, Sword, LogIn, LogOut, Sun, Moon } from "lucide-react"
 import { signIn, signOut } from "next-auth/react"

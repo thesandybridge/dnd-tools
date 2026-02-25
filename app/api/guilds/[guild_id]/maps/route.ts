@@ -53,14 +53,23 @@ export const POST = auth(async function POST(request, { params }) {
       return Response.json({ error: "You do not have permission to create maps" }, { status: 403 })
     }
 
-    const { name, pmtilesUrl, pmtilesApiKey, imageWidth, imageHeight, maxZoom, visibility } = await request.json()
+    const { name, pmtilesUrl, pmtilesApiKey, useTileForgeKey, imageWidth, imageHeight, maxZoom, visibility } = await request.json()
+
+    let resolvedApiKey = pmtilesApiKey
+    if (useTileForgeKey && !pmtilesApiKey) {
+      const user = await prisma.user.findUnique({
+        where: { id: session.user.id! },
+        select: { tileforgeApiKey: true },
+      })
+      resolvedApiKey = user?.tileforgeApiKey || undefined
+    }
 
     const map = await prisma.guildMap.create({
       data: {
         guildId: guild_id as string,
         name,
         pmtilesUrl,
-        ...(pmtilesApiKey !== undefined && { pmtilesApiKey }),
+        ...(resolvedApiKey !== undefined && { pmtilesApiKey: resolvedApiKey }),
         ...(imageWidth !== undefined && { imageWidth }),
         ...(imageHeight !== undefined && { imageHeight }),
         ...(maxZoom !== undefined && { maxZoom }),
