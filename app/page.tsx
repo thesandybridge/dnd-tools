@@ -1,10 +1,11 @@
 import { auth } from "@/auth"
 import { GlassPanel } from "@/app/components/ui/GlassPanel"
-import { Shield, Wrench, Castle } from "lucide-react"
+import { Shield, Wrench, Castle, ExternalLink } from "lucide-react"
 import Link from "next/link"
 import { SignInButton } from "./components/SignInButton"
 import QuickConvert from "./components/QuickConvert"
 import ActivityFeed from "./components/ActivityFeed"
+import { TILEFORGE_URLS, TILEFORGE_COPY } from "@/lib/tileforge"
 
 const features = [
   {
@@ -65,6 +66,26 @@ function HeroPage() {
           )
         })}
       </div>
+
+      <a
+        href={TILEFORGE_URLS.home}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-8 w-full max-w-3xl block"
+      >
+        <GlassPanel corona coronaHover className="p-6 transition-all hover:scale-[1.01]">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 shrink-0">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>
+            </div>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-lg font-semibold mb-1">TileForge</h3>
+              <p className="text-sm text-muted-foreground">{TILEFORGE_COPY.tagline} {TILEFORGE_COPY.pitch}</p>
+            </div>
+            <ExternalLink size={16} className="text-muted-foreground shrink-0 hidden sm:block" />
+          </div>
+        </GlassPanel>
+      </a>
     </div>
   )
 }
@@ -77,6 +98,22 @@ function Dashboard({ userName, userId }: { userName: string; userId?: string }) 
         <h1 className="text-2xl md:text-3xl font-bold">Welcome back, {userName}</h1>
         <p className="text-muted-foreground mt-1">What would you like to do today?</p>
       </GlassPanel>
+
+      {/* TileForge Promo */}
+      <a href={TILEFORGE_URLS.home} target="_blank" rel="noopener noreferrer">
+        <GlassPanel coronaHover className="p-4 transition-all hover:scale-[1.005]">
+          <div className="flex items-center gap-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 shrink-0">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium">{TILEFORGE_COPY.tagline}</p>
+              <p className="text-xs text-muted-foreground">Create zoomable map tilesets with TileForge &mdash; free tier available</p>
+            </div>
+            <ExternalLink size={14} className="text-muted-foreground shrink-0" />
+          </div>
+        </GlassPanel>
+      </a>
 
       {/* Quick Actions */}
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
