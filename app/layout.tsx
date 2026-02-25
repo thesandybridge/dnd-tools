@@ -40,16 +40,29 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <QueryClientProvider>
               <ThemeProvider>
                 <Nav />
-                <div className="flex min-h-dvh overflow-x-hidden">
-                  <div className="hidden md:block w-16 shrink-0" />
-                  <main className="flex-1 min-w-0 pb-16 md:pb-0">
-                    {children}
-                  </main>
+                <div className="flex flex-col min-h-dvh overflow-x-hidden">
+                  <div className="flex flex-1">
+                    <div className="hidden md:block w-16 shrink-0" />
+                    <main className="flex-1 min-w-0 pb-16 md:pb-0">
+                      {children}
+                    </main>
+                  </div>
+                  <footer className="md:ml-16 border-t border-white/[0.06] py-6 px-4">
+                    <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-muted-foreground">
+                      <p>&copy; {year} Dungeon Syndrome</p>
+                      <div className="flex items-center gap-4">
+                        <a href="https://sandybridge.io" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+                          Portfolio
+                        </a>
+                        <span className="text-white/10">|</span>
+                        <a href="https://github.com/thesandybridge/dnd-tools" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+                          GitHub
+                        </a>
+                      </div>
+                    </div>
+                  </footer>
                 </div>
                 <SpeedDial />
-                <footer className="md:ml-16 flex justify-center p-2 text-sm text-muted-foreground">
-                  <p>&copy; {year} - made with ♥ by sandybridge</p>
-                </footer>
               </ThemeProvider>
             <ReactQueryDevtools
               initialIsOpen={false}
