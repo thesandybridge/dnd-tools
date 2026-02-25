@@ -15,13 +15,19 @@ model User {
   email         String?   @unique
   emailVerified DateTime? @map("email_verified")
   image         String?
-  color         String?
+  color           String?
+  bio             String?
+  themeName       String   @default("parchment") @map("theme_name")
+  themeMode       String   @default("dark") @map("theme_mode")
+  particleEffect  String   @default("auto") @map("particle_effect")
+  coronaIntensity Float    @default(0.8) @map("corona_intensity")
 
   accounts     Account[]
   sessions     Session[]
   guilds       Guild[]       @relation("GuildOwner")
   guildMembers GuildMember[]
   markers      Marker[]
+  characters   Character[]
 
   @@map("users")
 }
@@ -155,4 +161,22 @@ model Marker {
 
   @@index([guildMapId])
   @@map("markers")
+}
+
+model Character {
+  id        Int      @id @default(autoincrement())
+  userId    String   @map("user_id")
+  name      String
+  race      String?
+  charClass String?  @map("char_class")
+  subclass  String?
+  level     Int      @default(1)
+  backstory String?
+  avatarUrl String?  @map("avatar_url")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("characters")
 }
