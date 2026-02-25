@@ -50,12 +50,21 @@ export const PATCH = auth(async function PATCH(request, { params }) {
       if (key in guildData) sanitized[key] = guildData[key]
     }
 
+    if ('defaultRoleId' in sanitized && sanitized.defaultRoleId != null) {
+      const role = await prisma.guildRole.findFirst({
+        where: { id: sanitized.defaultRoleId as number, guildId: guild_id as string },
+      })
+      if (!role) {
+        return Response.json({ error: 'Role not found in this guild' }, { status: 422 })
+      }
+    }
+
     const guild = await prisma.guild.update({
       where: { guildId: guild_id as string },
       data: sanitized,
     })
 
-    return Response.json([serializeGuild(guild)])
+    return Response.json(serializeGuild(guild))
   } catch (error) {
     console.error('Failed to update guild:', (error as Error).message)
     return Response.json({

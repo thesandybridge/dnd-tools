@@ -10,7 +10,8 @@ export const GET = auth(async function GET(request) {
   try {
     const url = new URL(request.url)
     const search = url.searchParams.get("search") || ""
-    const page = parseInt(url.searchParams.get("page") || "1")
+    const rawPage = parseInt(url.searchParams.get("page") || "1", 10)
+    const page = (!isNaN(rawPage) && rawPage >= 1) ? Math.min(rawPage, 1000) : 1
     const limit = 12
 
     const where = {
