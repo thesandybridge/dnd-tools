@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Castle, Calculator, Shield, Sword, Menu, LogIn, LogOut, Sun, Moon, User, Settings } from "lucide-react"
+import { Castle, Calculator, Shield, Users, Sword, Menu, LogIn, LogOut, Sun, Moon, User, Settings } from "lucide-react"
 import { signIn, signOut } from "next-auth/react"
 import { useTheme } from "@/app/providers/ThemeProvider"
 import { Button } from "@/components/ui/button"
@@ -30,6 +30,7 @@ const publicRoutes = [
 
 const authRoutes = [
   { title: "Guilds", path: "/guilds", icon: Shield },
+  { title: "Members", path: "/members", icon: Users },
   { title: "Characters", path: "/characters", icon: Sword },
 ]
 
