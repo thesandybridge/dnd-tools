@@ -16,6 +16,7 @@ export interface UserData {
   theme_mode: string
   particle_effect: string
   corona_intensity: number
+  timezone: string
 }
 
 const UserContext = createContext<UserData | null>(null)

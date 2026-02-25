@@ -10,8 +10,13 @@ export function useTimezoneSync() {
   useEffect(() => {
     if (!session?.user?.id) return
     const detected = Intl.DateTimeFormat().resolvedOptions().timeZone
-    if (detected && detected !== "UTC") {
-      updateUser(session.user.id, { timezone: detected }).catch(() => {})
-    }
+    if (!detected || detected === "UTC") return
+
+    const key = `tz-synced-${session.user.id}`
+    if (localStorage.getItem(key) === detected) return
+
+    updateUser(session.user.id, { timezone: detected })
+      .then(() => localStorage.setItem(key, detected))
+      .catch(() => {})
   }, [session?.user?.id])
 }
