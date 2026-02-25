@@ -59,8 +59,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                           GitHub
                         </a>
                         <span className="text-white/10">|</span>
-                        <a href="https://tileforge.sandybridge.io" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
-                          TileForge
+                        <a
+                          href="https://tileforge.sandybridge.io"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 hover:border-primary/30 transition-all text-xs font-medium"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>
+                          Powered by TileForge
                         </a>
                       </div>
                     </div>
