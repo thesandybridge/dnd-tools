@@ -1,8 +1,8 @@
-export async function updateUser(userId, userData) {
+export async function updateUser(userId: string, data: Record<string, unknown>) {
   const response = await fetch(`/api/users/${userId}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ userData })
+    body: JSON.stringify(data)
   })
   if (!response.ok) throw new Error('Failed to update user')
   return response.json()
@@ -32,6 +32,15 @@ export async function fetchGuildsByUser(userId) {
     headers: { 'Content-Type': 'application/json' },
   })
   if (!response.ok) throw new Error(`Failed to fetch user guilds for user: ${userId}`)
+  return response.json()
+}
+
+export async function deleteUser(userId: string) {
+  const response = await fetch(`/api/users/${userId}`, {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+  })
+  if (!response.ok) throw new Error('Failed to delete account')
   return response.json()
 }
 

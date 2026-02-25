@@ -1,4 +1,4 @@
-import type { Guild, GuildMap, GuildMember, GuildRole, Marker, User } from "@/lib/generated/prisma/client"
+import type { Character, Guild, GuildMap, GuildMember, GuildRole, Marker, User } from "@/lib/generated/prisma/client"
 
 /** Guild → { id, guild_id, name, owner } */
 export function serializeGuild(g: Guild) {
@@ -87,5 +87,38 @@ export function serializeMarker(m: Marker) {
     prev_marker: m.prevMarker,
     created_at: m.createdAt,
     text: m.text,
+  }
+}
+
+/** User → public profile fields */
+export function serializeUser(u: User) {
+  return {
+    id: u.id,
+    name: u.name,
+    email: u.email,
+    image: u.image,
+    color: u.color,
+    bio: u.bio,
+    theme_name: u.themeName,
+    theme_mode: u.themeMode,
+    particle_effect: u.particleEffect,
+    corona_intensity: u.coronaIntensity,
+  }
+}
+
+/** Character → snake_case fields */
+export function serializeCharacter(c: Character) {
+  return {
+    id: c.id,
+    user_id: c.userId,
+    name: c.name,
+    race: c.race,
+    char_class: c.charClass,
+    subclass: c.subclass,
+    level: c.level,
+    backstory: c.backstory,
+    avatar_url: c.avatarUrl,
+    created_at: c.createdAt,
+    updated_at: c.updatedAt,
   }
 }
