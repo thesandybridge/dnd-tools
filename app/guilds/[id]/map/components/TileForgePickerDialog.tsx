@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Search, ImageOff } from 'lucide-react'
 import { useDebounce } from '@/app/hooks/useDebounce'
-import { fetchTileForgeTilesets, getTileForgeThumbnailUrl, type TileForgeTileset } from '@/lib/tileforge'
+import { fetchTileForgeTilesets, getTileForgeThumbnailUrl, TILEFORGE_URLS, TILEFORGE_COPY, type TileForgeTileset } from '@/lib/tileforge'
 import { GlassPanel } from '@/app/components/ui/GlassPanel'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
@@ -39,13 +39,13 @@ export default function TileForgePickerDialog({ open, onOpenChange, onSelect }: 
         <DialogHeader>
           <DialogTitle className="font-cinzel">Import from TileForge</DialogTitle>
           <a
-            href="https://tileforge.sandybridge.io"
+            href={TILEFORGE_URLS.home}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors w-fit"
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>
-            Powered by TileForge
+            {TILEFORGE_COPY.poweredBy}
           </a>
         </DialogHeader>
 
@@ -84,7 +84,7 @@ export default function TileForgePickerDialog({ open, onOpenChange, onSelect }: 
               <ImageOff className="h-10 w-10 text-muted-foreground" />
               <p className="text-sm text-muted-foreground">No tilesets found</p>
               <a
-                href="https://tileforge.sandybridge.io"
+                href={TILEFORGE_URLS.home}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-sm text-primary hover:underline"

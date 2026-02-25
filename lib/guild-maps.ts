@@ -29,7 +29,7 @@ export async function fetchGuildMap(guildId: UUID, mapId: UUID): Promise<GuildMa
   return response.json()
 }
 
-export async function createGuildMap(guildId: UUID, data: { name: string; pmtilesUrl: string; pmtilesApiKey?: string; imageWidth?: number; imageHeight?: number; maxZoom?: number; visibility?: string }): Promise<GuildMap> {
+export async function createGuildMap(guildId: UUID, data: { name: string; pmtilesUrl: string; pmtilesApiKey?: string; imageWidth?: number; imageHeight?: number; maxZoom?: number; visibility?: string; useTileForgeKey?: boolean }): Promise<GuildMap> {
   const response = await fetch(`/api/guilds/${guildId}/maps`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -39,7 +39,7 @@ export async function createGuildMap(guildId: UUID, data: { name: string; pmtile
   return response.json()
 }
 
-export async function updateGuildMap(guildId: UUID, mapId: UUID, data: { name?: string; pmtilesUrl?: string; pmtilesApiKey?: string; imageWidth?: number | null; imageHeight?: number | null; maxZoom?: number; defaultZoom?: number | null; defaultCenterLat?: number | null; defaultCenterLng?: number | null; visibility?: string }): Promise<GuildMap> {
+export async function updateGuildMap(guildId: UUID, mapId: UUID, data: { name?: string; pmtilesUrl?: string; pmtilesApiKey?: string; imageWidth?: number | null; imageHeight?: number | null; maxZoom?: number; defaultZoom?: number | null; defaultCenterLat?: number | null; defaultCenterLng?: number | null; visibility?: string; useTileForgeKey?: boolean }): Promise<GuildMap> {
   const response = await fetch(`/api/guilds/${guildId}/maps/${mapId}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
