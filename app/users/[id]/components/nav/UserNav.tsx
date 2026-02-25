@@ -5,14 +5,19 @@ import { usePathname } from "next/navigation"
 import { GlassPanel } from "@/app/components/ui/GlassPanel"
 
 const PATH = "/users/"
-const routes = [
+const publicRoutes = [
+  { path: '/', label: 'Profile' },
+  { path: '/guilds', label: 'Guilds' },
+]
+const ownerRoutes = [
   { path: '/', label: 'Profile' },
   { path: '/settings', label: 'Settings' },
   { path: '/guilds', label: 'Guilds' },
 ]
 
-export default function UserNav({ userId }) {
+export default function UserNav({ userId, isOwner }: { userId: string; isOwner: boolean }) {
   const pathname = usePathname()
+  const routes = isOwner ? ownerRoutes : publicRoutes
 
   function isActive(routePath: string) {
     const full = `${PATH}${userId}${routePath === '/' ? '' : routePath}`
