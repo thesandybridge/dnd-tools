@@ -19,6 +19,9 @@ export default function UserComponent() {
         />
         <div>
           <h1 className="font-cinzel text-2xl">{user.name}</h1>
+          {user.bio && (
+            <p className="text-sm text-muted-foreground mt-1">{user.bio}</p>
+          )}
         </div>
       </header>
     </GlassPanel>
