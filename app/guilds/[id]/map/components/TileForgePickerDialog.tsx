@@ -37,7 +37,16 @@ export default function TileForgePickerDialog({ open, onOpenChange, onSelect }: 
         className="max-w-2xl max-h-[80vh] flex flex-col"
       >
         <DialogHeader>
-          <DialogTitle className="font-cinzel">Select Tileset</DialogTitle>
+          <DialogTitle className="font-cinzel">Import from TileForge</DialogTitle>
+          <a
+            href="https://tileforge.sandybridge.io"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors w-fit"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>
+            Powered by TileForge
+          </a>
         </DialogHeader>
 
         <div className="relative">
