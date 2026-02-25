@@ -49,9 +49,14 @@ export default function GuildsTable({ userId, isUserProfile = false }) {
   if (isLoading) return (
     <>
       {Array.from({ length: 3 }).map((_, i) => (
-        <GlassPanel key={i} className="p-5 flex flex-col gap-3">
+        <GlassPanel key={i} className="p-5 h-full flex flex-col gap-3">
           <Skeleton className="h-5 w-3/4" />
-          <Skeleton className="h-4 w-1/2" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-2/3" />
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-3 w-12" />
+            <Skeleton className="h-3 w-24" />
+          </div>
         </GlassPanel>
       ))}
     </>

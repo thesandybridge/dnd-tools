@@ -24,7 +24,7 @@ const PARTICLE_OPTIONS = [
 ] as const
 
 export default function AppearanceSettings() {
-  const { theme, updateSettings, saveSettings, hasUnsavedChanges } = useTheme()
+  const { theme, updateSettings, saveSettings, hasUnsavedChanges, isSaving } = useTheme()
 
   return (
     <div className="flex flex-col gap-6 w-full">
@@ -155,8 +155,8 @@ export default function AppearanceSettings() {
       </div>
 
       {/* Save Button */}
-      <Button onClick={saveSettings} disabled={!hasUnsavedChanges} className="self-end">
-        Save Changes
+      <Button onClick={saveSettings} disabled={!hasUnsavedChanges || isSaving} className="self-end">
+        {isSaving ? 'Saving...' : 'Save Changes'}
       </Button>
     </div>
   )

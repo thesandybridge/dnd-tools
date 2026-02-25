@@ -11,6 +11,17 @@ import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { GlassPanel } from '@/app/components/ui/GlassPanel'
 import { AlertTriangle, Pencil, Trash2, Plus } from 'lucide-react'
 
@@ -137,6 +148,7 @@ export default function GuildSettings({ userId }) {
   const [requestExpiryDays, setRequestExpiryDays] = useState(guildData.request_expiry_days?.toString() || '7')
   const [editingRoleId, setEditingRoleId] = useState<number | null>(null)
   const [isCreatingRole, setIsCreatingRole] = useState(false)
+  const [deleteConfirmName, setDeleteConfirmName] = useState('')
 
   if (!hasPermission(userId, 'manage_guild')) router.push(`/guilds/${guildData.guild_id}`)
 
@@ -257,6 +269,7 @@ export default function GuildSettings({ userId }) {
             </div>
             <Switch
               checked={visibility === 'public'}
+              disabled={visibilityMutation.isPending}
               onCheckedChange={(checked) => {
                 const val = checked ? 'public' : 'private'
                 setVisibility(val)
@@ -292,6 +305,7 @@ export default function GuildSettings({ userId }) {
             </span>
             <Select
               value={defaultRoleId}
+              disabled={defaultRoleMutation.isPending}
               onValueChange={(val) => {
                 setDefaultRoleId(val)
                 defaultRoleMutation.mutate(val)
@@ -438,13 +452,40 @@ export default function GuildSettings({ userId }) {
             </p>
           </div>
           <div>
-            <Button
-              onClick={handleDeleteClick}
-              disabled={isDeleting}
-              variant="destructive"
-            >
-              {isDeleting ? 'Deleting Guild...' : 'Delete Guild'}
-            </Button>
+            <AlertDialog onOpenChange={(open) => { if (!open) setDeleteConfirmName('') }}>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive">Delete Guild</Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Delete {guildData.name}?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. All guild data including members, roles, maps, and markers will be permanently deleted.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm text-muted-foreground">
+                    Type <span className="font-semibold text-foreground">{guildData.name}</span> to confirm
+                  </label>
+                  <Input
+                    value={deleteConfirmName}
+                    onChange={(e) => setDeleteConfirmName(e.target.value)}
+                    placeholder={guildData.name}
+                    className="bg-white/[0.05] border-white/[0.08]"
+                  />
+                </div>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <Button
+                    variant="destructive"
+                    disabled={deleteConfirmName !== guildData.name || isDeleting}
+                    onClick={handleDeleteClick}
+                  >
+                    {isDeleting ? 'Deleting Guild...' : 'Delete Guild'}
+                  </Button>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </div>
       </GlassPanel>

@@ -26,7 +26,15 @@ export function GuildProvider({ guildId, children }) {
   })
 
   if (guildLoading || membersLoading || rolesLoading) return (
-    <div className="flex flex-col gap-6">
+    <div className="w-full flex flex-col gap-6">
+      {/* Nav pill bar */}
+      <div className="w-full rounded-full bg-white/[0.02] border border-white/[0.06] p-1.5">
+        <div className="flex gap-1 justify-center">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-9 w-24 rounded-full" />
+          ))}
+        </div>
+      </div>
       {/* Section header */}
       <Skeleton className="h-7 w-48" />
       {/* Card grid */}
@@ -34,6 +42,7 @@ export function GuildProvider({ guildId, children }) {
         {Array.from({ length: 3 }).map((_, i) => (
           <div key={i} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5 flex flex-col gap-3">
             <Skeleton className="h-5 w-3/4" />
+            <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-1/2" />
           </div>
         ))}

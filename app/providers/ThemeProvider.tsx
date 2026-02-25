@@ -21,6 +21,7 @@ interface ThemeContextValue {
   updateSettings: (partial: Partial<ThemeState>) => void
   saveSettings: () => Promise<void>
   hasUnsavedChanges: boolean
+  isSaving: boolean
 }
 
 const DEFAULTS: ThemeState = {
@@ -43,6 +44,7 @@ const ThemeContext = createContext<ThemeContextValue | undefined>(undefined)
 export default function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<ThemeState>(DEFAULTS)
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
   const initializedRef = useRef(false)
 
   const { data: session } = useSession()
@@ -119,25 +121,30 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
 
   const saveSettings = useCallback(async () => {
     if (!session?.user?.id) return
+    setIsSaving(true)
 
-    await fetch(`/api/users/${session.user.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        color: theme.primaryColor,
-        themeName: theme.themeName,
-        themeMode: theme.themeMode,
-        particleEffect: theme.particleEffect,
-        coronaIntensity: theme.coronaIntensity,
-      }),
-    })
+    try {
+      await fetch(`/api/users/${session.user.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          color: theme.primaryColor,
+          themeName: theme.themeName,
+          themeMode: theme.themeMode,
+          particleEffect: theme.particleEffect,
+          coronaIntensity: theme.coronaIntensity,
+        }),
+      })
 
-    await queryClient.invalidateQueries({ queryKey: ['user', session.user.id] })
-    setHasUnsavedChanges(false)
+      await queryClient.invalidateQueries({ queryKey: ['user', session.user.id] })
+      setHasUnsavedChanges(false)
+    } finally {
+      setIsSaving(false)
+    }
   }, [session?.user?.id, theme, queryClient])
 
   return (
-    <ThemeContext.Provider value={{ theme, updateSettings, saveSettings, hasUnsavedChanges }}>
+    <ThemeContext.Provider value={{ theme, updateSettings, saveSettings, hasUnsavedChanges, isSaving }}>
       {children}
     </ThemeContext.Provider>
   )

@@ -131,13 +131,14 @@ export function MarkerInfoCard({ guildId, mapId, marker, screenPosition, contain
             variant="ghost"
             size="sm"
             className="h-7 text-xs gap-1 cursor-pointer text-destructive hover:text-destructive/80"
+            disabled={removeMarker.isPending}
             onClick={() => {
               removeMarker.mutate(marker.uuid)
               onDismiss()
             }}
           >
             <Trash2 size={12} />
-            Delete
+            {removeMarker.isPending ? 'Deleting...' : 'Delete'}
           </Button>
         </div>
       </GlassPanel>

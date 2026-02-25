@@ -32,6 +32,7 @@ function MapFormFields({
   imageWidth, setImageWidth,
   imageHeight, setImageHeight,
   maxZoom, setMaxZoom,
+  defaultZoom, setDefaultZoom,
   visibility, setVisibility,
 }: {
   name: string; setName: (v: string) => void
@@ -40,6 +41,7 @@ function MapFormFields({
   imageWidth: string; setImageWidth: (v: string) => void
   imageHeight: string; setImageHeight: (v: string) => void
   maxZoom: string; setMaxZoom: (v: string) => void
+  defaultZoom: string; setDefaultZoom: (v: string) => void
   visibility: string; setVisibility: (v: string) => void
 }) {
   return (
@@ -63,7 +65,7 @@ function MapFormFields({
         onChange={(e) => setPmtilesApiKey(e.target.value)}
         className="bg-white/[0.05] border-white/[0.08]"
       />
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <Input
           type="number"
           placeholder="Width (px)"
@@ -83,6 +85,13 @@ function MapFormFields({
           placeholder="Max zoom"
           value={maxZoom}
           onChange={(e) => setMaxZoom(e.target.value)}
+          className="bg-white/[0.05] border-white/[0.08]"
+        />
+        <Input
+          type="number"
+          placeholder="Default zoom"
+          value={defaultZoom}
+          onChange={(e) => setDefaultZoom(e.target.value)}
           className="bg-white/[0.05] border-white/[0.08]"
         />
       </div>
@@ -112,6 +121,7 @@ function EditMapDialog({ map, guildId, open, onOpenChange }: {
   const [imageWidth, setImageWidth] = useState(map.image_width?.toString() ?? "")
   const [imageHeight, setImageHeight] = useState(map.image_height?.toString() ?? "")
   const [maxZoom, setMaxZoom] = useState((map.max_zoom ?? 5).toString())
+  const [defaultZoom, setDefaultZoom] = useState(map.default_zoom?.toString() ?? "")
   const [visibility, setVisibility] = useState(map.visibility || "everyone")
 
   const editMutation = useMutation({
@@ -133,6 +143,7 @@ function EditMapDialog({ map, guildId, open, onOpenChange }: {
       ...(imageWidth && { imageWidth: parseInt(imageWidth) }),
       ...(imageHeight && { imageHeight: parseInt(imageHeight) }),
       ...(maxZoom && { maxZoom: parseInt(maxZoom) }),
+      defaultZoom: defaultZoom ? parseInt(defaultZoom) : null,
       visibility,
     })
   }
@@ -151,6 +162,7 @@ function EditMapDialog({ map, guildId, open, onOpenChange }: {
             imageWidth={imageWidth} setImageWidth={setImageWidth}
             imageHeight={imageHeight} setImageHeight={setImageHeight}
             maxZoom={maxZoom} setMaxZoom={setMaxZoom}
+            defaultZoom={defaultZoom} setDefaultZoom={setDefaultZoom}
             visibility={visibility} setVisibility={setVisibility}
           />
           <div className="flex items-center gap-2 justify-end">
@@ -185,6 +197,7 @@ export default function MapList({ guildId, userId }: { guildId: string; userId: 
   const [imageWidth, setImageWidth] = useState("")
   const [imageHeight, setImageHeight] = useState("")
   const [maxZoom, setMaxZoom] = useState("5")
+  const [defaultZoom, setDefaultZoom] = useState("")
   const [visibility, setVisibility] = useState("everyone")
 
   const [editingMap, setEditingMap] = useState<GuildMap | null>(null)
@@ -205,6 +218,7 @@ export default function MapList({ guildId, userId }: { guildId: string; userId: 
       setImageWidth("")
       setImageHeight("")
       setMaxZoom("5")
+      setDefaultZoom("")
       setVisibility("everyone")
       setShowForm(false)
     },
@@ -234,13 +248,15 @@ export default function MapList({ guildId, userId }: { guildId: string; userId: 
   if (isLoading) {
     return (
       <div className="w-full space-y-4">
-        <Skeleton className="h-6 w-16" />
+        <Skeleton className="h-7 w-16" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 flex items-center gap-2">
-              <Skeleton className="h-4 w-4 rounded shrink-0" />
-              <Skeleton className="h-4 flex-1" />
-            </div>
+            <GlassPanel key={i} className="p-4">
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-4 w-4 rounded shrink-0" />
+                <Skeleton className="h-4 flex-1" />
+              </div>
+            </GlassPanel>
           ))}
         </div>
       </div>
@@ -274,6 +290,7 @@ export default function MapList({ guildId, userId }: { guildId: string; userId: 
               imageWidth={imageWidth} setImageWidth={setImageWidth}
               imageHeight={imageHeight} setImageHeight={setImageHeight}
               maxZoom={maxZoom} setMaxZoom={setMaxZoom}
+              defaultZoom={defaultZoom} setDefaultZoom={setDefaultZoom}
               visibility={visibility} setVisibility={setVisibility}
             />
             <div className="flex items-center gap-2">
@@ -331,7 +348,8 @@ export default function MapList({ guildId, userId }: { guildId: string; userId: 
                         e.stopPropagation()
                         deleteMutation.mutate(map.map_id)
                       }}
-                      className="text-destructive hover:text-destructive/80 transition-colors cursor-pointer"
+                      disabled={deleteMutation.isPending}
+                      className="text-destructive hover:text-destructive/80 transition-colors cursor-pointer disabled:opacity-50"
                     >
                       <Trash2 size={14} />
                     </button>

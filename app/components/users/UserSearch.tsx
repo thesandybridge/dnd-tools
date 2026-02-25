@@ -133,8 +133,8 @@ export default function UserSearch({
           </Popover>
         )}
       </form.Field>
-      <Button variant="outline" type="submit" disabled={!selectedUser}>
-        {submitText}
+      <Button variant="outline" type="submit" disabled={!selectedUser || isAddingMember}>
+        {isAddingMember ? 'Adding...' : submitText}
       </Button>
     </form>
   )
