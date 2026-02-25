@@ -8,6 +8,7 @@ import { fetchCharacters } from "@/lib/characters"
 import { GlassPanel } from "@/app/components/ui/GlassPanel"
 import { Badge } from "@/components/ui/badge"
 import { Shield, Crown, Sword, Plus } from "lucide-react"
+import ActivityFeed from "@/app/components/ActivityFeed"
 
 export default function UserProfile() {
   const user = useUser()
@@ -110,8 +111,8 @@ export default function UserProfile() {
       {/* Recent Activity */}
       <section>
         <h2 className="font-cinzel text-lg font-semibold mb-4">Recent Activity</h2>
-        <GlassPanel variant="subtle" className="p-8 flex items-center justify-center">
-          <p className="text-sm text-muted-foreground">Activity feed coming soon</p>
+        <GlassPanel variant="subtle" className="p-6">
+          <ActivityFeed limit={10} />
         </GlassPanel>
       </section>
     </div>

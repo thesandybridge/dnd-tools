@@ -4,6 +4,7 @@ import { Shield, Wrench, Castle } from "lucide-react"
 import Link from "next/link"
 import { SignInButton } from "./components/SignInButton"
 import QuickConvert from "./components/QuickConvert"
+import ActivityFeed from "./components/ActivityFeed"
 
 const features = [
   {
@@ -106,7 +107,7 @@ function Dashboard({ userName, userId }: { userName: string; userId?: string }) 
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
         <GlassPanel className="md:col-span-3 p-6">
           <h2 className="text-lg font-semibold mb-4">Recent Activity</h2>
-          <p className="text-muted-foreground text-sm">Guild activity will appear here.</p>
+          <ActivityFeed limit={8} />
         </GlassPanel>
         <GlassPanel className="md:col-span-2 p-6">
           <h2 className="text-lg font-semibold font-cinzel mb-4">Quick Convert</h2>

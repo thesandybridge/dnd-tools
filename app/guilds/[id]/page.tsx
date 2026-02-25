@@ -3,7 +3,8 @@
 import Link from "next/link"
 import { useParams } from "next/navigation"
 import { useQuery } from "@tanstack/react-query"
-import { Users, Map } from "lucide-react"
+import { Users, Map, ScrollText } from "lucide-react"
+import ActivityFeed from "@/app/components/ActivityFeed"
 import { useGuild } from "./providers/GuildProvider"
 import { fetchGuildMaps } from "@/lib/guild-maps"
 import { GlassPanel } from "@/app/components/ui/GlassPanel"
@@ -73,6 +74,15 @@ export default function GuildOverview() {
             ))}
           </div>
         )}
+      </section>
+      <section>
+        <div className="flex items-center gap-2 mb-3">
+          <ScrollText size={18} className="text-primary" />
+          <h2 className="font-cinzel text-lg font-semibold">Recent Activity</h2>
+        </div>
+        <GlassPanel variant="subtle" className="p-4">
+          <ActivityFeed guildId={guildId} limit={10} />
+        </GlassPanel>
       </section>
     </div>
   )
