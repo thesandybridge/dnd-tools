@@ -12,9 +12,22 @@ export const GET = auth(async function GET(request, { params }) {
 
   try {
     const { guild_id } = await params
+    const guildId = guild_id as string
+    const userId = session.user.id!
+
+    // Check membership
+    const member = await prisma.guildMember.findUnique({
+      where: { guildId_userId: { guildId, userId } },
+    })
+    if (!member) {
+      const guild = await prisma.guild.findUnique({ where: { guildId }, select: { ownerId: true } })
+      if (!guild || guild.ownerId !== userId) {
+        return Response.json({ error: 'Not a member of this guild' }, { status: 403 })
+      }
+    }
 
     const roles = await prisma.guildRole.findMany({
-      where: { guildId: guild_id as string },
+      where: { guildId },
       orderBy: { position: 'asc' },
     })
 
