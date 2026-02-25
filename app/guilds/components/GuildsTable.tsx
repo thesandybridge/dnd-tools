@@ -85,6 +85,10 @@ export default function GuildsTable({ userId, isUserProfile = false }) {
                 )}
               </div>
 
+              {guild.description && (
+                <p className="text-sm text-muted-foreground line-clamp-2">{guild.description}</p>
+              )}
+
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <span className="text-white/40">Owner:</span>
                 <OwnerChip
