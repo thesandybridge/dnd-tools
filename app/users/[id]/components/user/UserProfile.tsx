@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { useQuery } from "@tanstack/react-query"
+import { useSession } from "next-auth/react"
 import { useUser } from "../../providers/UserProvider"
 import { fetchGuildsByUser } from "@/lib/users"
 import { fetchCharacters } from "@/lib/characters"
@@ -13,10 +14,13 @@ import ActivityFeed from "@/app/components/ActivityFeed"
 
 export default function UserProfile() {
   const user = useUser()
+  const { data: session } = useSession()
+  const isOwner = session?.user?.id === user.id
 
   const { data: characters = [], isLoading: charsLoading } = useQuery({
     queryKey: ['characters'],
     queryFn: fetchCharacters,
+    enabled: isOwner,
   })
 
   const { data: guilds = [], isLoading: guildsLoading } = useQuery({
@@ -27,7 +31,8 @@ export default function UserProfile() {
 
   return (
     <div className="w-full flex flex-col gap-8">
-      {/* Character Roster */}
+      {/* Character Roster - owner only */}
+      {isOwner && (
       <section>
         <h2 className="font-cinzel text-lg font-semibold mb-4">Character Roster</h2>
         {charsLoading ? (
@@ -74,6 +79,7 @@ export default function UserProfile() {
           </div>
         )}
       </section>
+      )}
 
       {/* Guild Memberships */}
       <section>
@@ -130,13 +136,15 @@ export default function UserProfile() {
         )}
       </section>
 
-      {/* Recent Activity */}
+      {/* Recent Activity - owner only */}
+      {isOwner && (
       <section>
         <h2 className="font-cinzel text-lg font-semibold mb-4">Recent Activity</h2>
         <GlassPanel variant="subtle" className="p-6">
           <ActivityFeed limit={10} />
         </GlassPanel>
       </section>
+      )}
     </div>
   )
 }
