@@ -131,6 +131,7 @@ export function serializeUser(u: User) {
     particle_effect: u.particleEffect,
     corona_intensity: u.coronaIntensity,
     timezone: u.timezone,
+    tileforge_api_key: u.tileforgeApiKey,
   }
 }
 

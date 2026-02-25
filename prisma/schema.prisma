@@ -22,6 +22,7 @@ model User {
   particleEffect  String   @default("auto") @map("particle_effect")
   coronaIntensity Float    @default(0.8) @map("corona_intensity")
   timezone        String   @default("UTC")
+  tileforgeApiKey String?  @map("tileforge_api_key")
 
   accounts             Account[]
   sessions             Session[]
