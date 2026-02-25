@@ -1,4 +1,4 @@
-import type { Character, Guild, GuildMap, GuildMember, GuildRole, JoinRequest, Marker, User } from "@/lib/generated/prisma/client"
+import type { Character, Guild, GuildInvite, GuildMap, GuildMember, GuildRole, JoinRequest, Marker, User } from "@/lib/generated/prisma/client"
 
 /** Guild → { id, guild_id, name, owner, description, visibility, default_role_id, request_expiry_days } */
 export function serializeGuild(g: Guild) {
@@ -41,6 +41,26 @@ export function serializeJoinRequest(r: JoinRequest & { user: Pick<User, "id" | 
     reviewed_at: r.reviewedAt,
     expires_at: r.expiresAt,
     created_at: r.createdAt,
+  }
+}
+
+/** GuildInvite → snake_case fields with guild and inviter info */
+export function serializeGuildInvite(
+  i: GuildInvite & {
+    guild: Pick<Guild, "guildId" | "name">
+    invitedBy: Pick<User, "id" | "name">
+  }
+) {
+  return {
+    id: i.id,
+    guild_id: i.guildId,
+    guild: { guild_id: i.guild.guildId, name: i.guild.name },
+    target_user_id: i.targetUserId,
+    invited_by: { id: i.invitedBy.id, name: i.invitedBy.name },
+    message: i.message,
+    status: i.status,
+    expires_at: i.expiresAt,
+    created_at: i.createdAt,
   }
 }
 
