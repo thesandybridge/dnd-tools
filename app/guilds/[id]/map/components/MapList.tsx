@@ -2,10 +2,12 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { useSession } from "next-auth/react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { Map, Plus, Trash2, Loader2, Pencil } from "lucide-react"
 import { Skeleton } from "@/components/ui/skeleton"
 import { fetchGuildMaps, createGuildMap, updateGuildMap, deleteGuildMap, type GuildMap } from "@/lib/guild-maps"
+import { fetchUser } from "@/lib/users"
 import { useGuild } from "../../providers/GuildProvider"
 import { GlassPanel } from "@/app/components/ui/GlassPanel"
 import { Button } from "@/components/ui/button"
@@ -24,6 +26,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import TileForgePickerDialog from "./TileForgePickerDialog"
+import { getTileForgepmtilesUrl, type TileForgeTileset } from "@/lib/tileforge"
 
 function MapFormFields({
   name, setName,
@@ -34,6 +38,7 @@ function MapFormFields({
   maxZoom, setMaxZoom,
   defaultZoom, setDefaultZoom,
   visibility, setVisibility,
+  onImportTileForge,
 }: {
   name: string; setName: (v: string) => void
   pmtilesUrl: string; setPmtilesUrl: (v: string) => void
@@ -43,9 +48,20 @@ function MapFormFields({
   maxZoom: string; setMaxZoom: (v: string) => void
   defaultZoom: string; setDefaultZoom: (v: string) => void
   visibility: string; setVisibility: (v: string) => void
+  onImportTileForge?: () => void
 }) {
   return (
     <>
+      {onImportTileForge && (
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full gap-2"
+          onClick={onImportTileForge}
+        >
+          Import from TileForge
+        </Button>
+      )}
       <Input
         placeholder="Map name"
         value={name}
@@ -108,11 +124,13 @@ function MapFormFields({
   )
 }
 
-function EditMapDialog({ map, guildId, open, onOpenChange }: {
+function EditMapDialog({ map, guildId, open, onOpenChange, hasTileForge, tileforgeApiKey }: {
   map: GuildMap
   guildId: string
   open: boolean
   onOpenChange: (open: boolean) => void
+  hasTileForge?: boolean
+  tileforgeApiKey?: string
 }) {
   const queryClient = useQueryClient()
   const [name, setName] = useState(map.name)
@@ -123,6 +141,16 @@ function EditMapDialog({ map, guildId, open, onOpenChange }: {
   const [maxZoom, setMaxZoom] = useState((map.max_zoom ?? 5).toString())
   const [defaultZoom, setDefaultZoom] = useState(map.default_zoom?.toString() ?? "")
   const [visibility, setVisibility] = useState(map.visibility || "everyone")
+  const [showTfPicker, setShowTfPicker] = useState(false)
+
+  function handleTileForgeSelect(tileset: TileForgeTileset) {
+    setName(tileset.name)
+    setPmtilesUrl(getTileForgepmtilesUrl(tileset.slug))
+    if (tileforgeApiKey) setPmtilesApiKey(tileforgeApiKey)
+    if (tileset.width) setImageWidth(tileset.width.toString())
+    if (tileset.height) setImageHeight(tileset.height.toString())
+    setMaxZoom(tileset.max_zoom.toString())
+  }
 
   const editMutation = useMutation({
     mutationFn: (data: Parameters<typeof updateGuildMap>[2]) =>
@@ -164,6 +192,7 @@ function EditMapDialog({ map, guildId, open, onOpenChange }: {
             maxZoom={maxZoom} setMaxZoom={setMaxZoom}
             defaultZoom={defaultZoom} setDefaultZoom={setDefaultZoom}
             visibility={visibility} setVisibility={setVisibility}
+            onImportTileForge={hasTileForge ? () => setShowTfPicker(true) : undefined}
           />
           <div className="flex items-center gap-2 justify-end">
             <Button
@@ -180,6 +209,13 @@ function EditMapDialog({ map, guildId, open, onOpenChange }: {
             </Button>
           </div>
         </form>
+        {hasTileForge && (
+          <TileForgePickerDialog
+            open={showTfPicker}
+            onOpenChange={setShowTfPicker}
+            onSelect={handleTileForgeSelect}
+          />
+        )}
       </DialogContent>
     </Dialog>
   )
@@ -189,8 +225,18 @@ export default function MapList({ guildId, userId }: { guildId: string; userId: 
   const { hasPermission } = useGuild()
   const canManageMaps = hasPermission(userId, 'manage_maps')
   const queryClient = useQueryClient()
+  const { data: session } = useSession()
+
+  const { data: currentUser } = useQuery({
+    queryKey: ['user', session?.user?.id],
+    queryFn: () => fetchUser(session?.user?.id),
+    enabled: !!session?.user?.id,
+    staleTime: 300000,
+  })
+  const hasTileForge = !!currentUser?.tileforge_api_key
 
   const [showForm, setShowForm] = useState(false)
+  const [showTfPicker, setShowTfPicker] = useState(false)
   const [name, setName] = useState("")
   const [pmtilesUrl, setPmtilesUrl] = useState("")
   const [pmtilesApiKey, setPmtilesApiKey] = useState("")
@@ -201,6 +247,15 @@ export default function MapList({ guildId, userId }: { guildId: string; userId: 
   const [visibility, setVisibility] = useState("everyone")
 
   const [editingMap, setEditingMap] = useState<GuildMap | null>(null)
+
+  function handleTileForgeSelect(tileset: TileForgeTileset) {
+    setName(tileset.name)
+    setPmtilesUrl(getTileForgepmtilesUrl(tileset.slug))
+    if (currentUser?.tileforge_api_key) setPmtilesApiKey(currentUser.tileforge_api_key)
+    if (tileset.width) setImageWidth(tileset.width.toString())
+    if (tileset.height) setImageHeight(tileset.height.toString())
+    setMaxZoom(tileset.max_zoom.toString())
+  }
 
   const { data: maps = [], isLoading } = useQuery({
     queryKey: ["guild-maps", guildId],
@@ -292,6 +347,7 @@ export default function MapList({ guildId, userId }: { guildId: string; userId: 
               maxZoom={maxZoom} setMaxZoom={setMaxZoom}
               defaultZoom={defaultZoom} setDefaultZoom={setDefaultZoom}
               visibility={visibility} setVisibility={setVisibility}
+              onImportTileForge={hasTileForge ? () => setShowTfPicker(true) : undefined}
             />
             <div className="flex items-center gap-2">
               <Button type="submit" size="sm" disabled={createMutation.isPending} className="cursor-pointer">
@@ -361,12 +417,22 @@ export default function MapList({ guildId, userId }: { guildId: string; userId: 
         ))}
       </div>
 
+      {hasTileForge && (
+        <TileForgePickerDialog
+          open={showTfPicker}
+          onOpenChange={setShowTfPicker}
+          onSelect={handleTileForgeSelect}
+        />
+      )}
+
       {editingMap && (
         <EditMapDialog
           map={editingMap}
           guildId={guildId}
           open={!!editingMap}
           onOpenChange={(open) => { if (!open) setEditingMap(null) }}
+          hasTileForge={hasTileForge}
+          tileforgeApiKey={currentUser?.tileforge_api_key}
         />
       )}
     </div>
