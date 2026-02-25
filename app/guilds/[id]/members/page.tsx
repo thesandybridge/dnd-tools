@@ -1,18 +1,11 @@
 import { auth } from "@/auth"
 import { redirect } from "next/navigation"
-import GuildMembers from "../components/GuildMembers";
-import GuildAddMember from "../components/GuildAddMember";
+import MembersContent from "./components/MembersContent"
 
-export default async function Page() {
+export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const session = await auth()
-  if (!session?.user) {
-    redirect('/')
-  }
+  if (!session?.user) redirect('/')
+  const { id } = await params
 
-  return (
-    <div className="flex flex-col gap-6">
-      <GuildAddMember userId={session.user.id} />
-      <GuildMembers userId={session.user.id} />
-    </div>
-  )
+  return <MembersContent guildId={id} userId={session.user.id!} />
 }
