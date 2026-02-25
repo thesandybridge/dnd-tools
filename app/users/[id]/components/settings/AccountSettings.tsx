@@ -2,11 +2,13 @@
 
 import { useState } from "react"
 import { signOut } from "next-auth/react"
+import { useMutation } from "@tanstack/react-query"
 import { useUser } from "../../providers/UserProvider"
-import { deleteUser } from "@/lib/users"
+import { deleteUser, updateUser } from "@/lib/users"
 import { GlassPanel } from "@/app/components/ui/GlassPanel"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
   AlertDialogTrigger } from "@/components/ui/alert-dialog"
@@ -15,6 +17,28 @@ export default function AccountSettings({ userId }: { userId: string }) {
   const user = useUser()
   const [confirmText, setConfirmText] = useState('')
   const [deleting, setDeleting] = useState(false)
+  const [timezone, setTimezone] = useState(user.timezone || 'UTC')
+  const [tzSearch, setTzSearch] = useState('')
+  const [tzOpen, setTzOpen] = useState(false)
+
+  const timezones = typeof Intl !== 'undefined' && Intl.supportedValuesOf
+    ? Intl.supportedValuesOf('timeZone')
+    : ['UTC']
+
+  const filteredTimezones = tzSearch
+    ? timezones.filter(tz => tz.toLowerCase().includes(tzSearch.toLowerCase()))
+    : timezones
+
+  const timezoneMutation = useMutation({
+    mutationFn: (tz: string) => updateUser(userId, { timezone: tz }),
+  })
+
+  const handleTimezoneChange = (tz: string) => {
+    setTimezone(tz)
+    setTzOpen(false)
+    setTzSearch('')
+    timezoneMutation.mutate(tz)
+  }
 
   const handleDelete = async () => {
     setDeleting(true)
@@ -38,6 +62,37 @@ export default function AccountSettings({ userId }: { userId: string }) {
       <div className="flex flex-col gap-1.5">
         <span className="text-sm text-muted-foreground">Connected Account</span>
         <span className="text-sm">Discord</span>
+      </div>
+
+      <div className="flex flex-col gap-1.5">
+        <span className="text-sm text-muted-foreground">Timezone</span>
+        <Popover open={tzOpen} onOpenChange={setTzOpen}>
+          <PopoverTrigger asChild>
+            <Button variant="outline" size="sm" className="w-fit justify-start font-normal">
+              {timezone}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-72 p-2" align="start">
+            <Input
+              placeholder="Search timezones..."
+              value={tzSearch}
+              onChange={(e) => setTzSearch(e.target.value)}
+              className="mb-2"
+            />
+            <div className="max-h-48 overflow-y-auto">
+              {filteredTimezones.map(tz => (
+                <button
+                  key={tz}
+                  onClick={() => handleTimezoneChange(tz)}
+                  className={`w-full text-left text-sm px-2 py-1 rounded hover:bg-accent transition-colors ${tz === timezone ? 'bg-accent font-medium' : ''}`}
+                >
+                  {tz.replace(/_/g, ' ')}
+                </button>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
+        {timezoneMutation.isPending && <span className="text-xs text-muted-foreground">Saving...</span>}
       </div>
 
       <div className="border-t border-destructive/20 pt-4 mt-2">

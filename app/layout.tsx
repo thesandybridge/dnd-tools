@@ -8,6 +8,7 @@ import ThemeProvider from "@/app/providers/ThemeProvider"
 import { GrainOverlay } from "@/app/components/effects/GrainOverlay"
 import { AmbientParticles } from "@/app/components/effects/AmbientParticles"
 import { CursorGlow } from "@/app/components/effects/CursorGlow"
+import { TimezoneSync } from "@/app/components/TimezoneSync"
 import QueryClientProvider from "@/app/providers/QueryClientProvider"
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
@@ -35,12 +36,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AmbientParticles />
         <CursorGlow />
         <SessionProvider>
+          <TimezoneSync />
           <QueryClientProvider>
               <ThemeProvider>
                 <Nav />
-                <div className="flex min-h-dvh">
+                <div className="flex min-h-dvh overflow-x-hidden">
                   <div className="hidden md:block w-16 shrink-0" />
-                  <main className="flex-1 pb-16 md:pb-0">
+                  <main className="flex-1 min-w-0 pb-16 md:pb-0">
                     {children}
                   </main>
                 </div>

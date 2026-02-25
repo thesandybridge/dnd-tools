@@ -40,7 +40,7 @@ export const PATCH = auth(async function PATCH(request, { params }) {
 
     const body = await request.json()
 
-    const allowed = ['name', 'bio', 'color', 'themeName', 'themeMode', 'particleEffect', 'coronaIntensity']
+    const allowed = ['name', 'bio', 'color', 'themeName', 'themeMode', 'particleEffect', 'coronaIntensity', 'timezone']
     const data: Record<string, unknown> = {}
     for (const key of allowed) {
       if (body[key] !== undefined) data[key] = body[key]
