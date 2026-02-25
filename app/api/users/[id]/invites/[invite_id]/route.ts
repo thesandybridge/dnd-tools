@@ -48,7 +48,10 @@ export const PATCH = auth(async function PATCH(request, { params }) {
         }
 
         const guild = await tx.guild.findUnique({ where: { guildId: invite.guildId } })
-        let roleId = guild!.defaultRoleId
+        if (!guild) {
+          return { error: "Guild no longer exists", status: 404 } as const
+        }
+        let roleId = guild.defaultRoleId
 
         if (!roleId) {
           const lowestRole = await tx.guildRole.findFirst({
@@ -92,6 +95,13 @@ export const PATCH = auth(async function PATCH(request, { params }) {
     }
     if (invite.status !== "pending") {
       return Response.json({ error: "Invite is no longer pending" }, { status: 409 })
+    }
+    if (invite.expiresAt < new Date()) {
+      await prisma.guildInvite.update({
+        where: { id: inviteId },
+        data: { status: "expired" },
+      })
+      return Response.json({ error: "Invite has expired" }, { status: 410 })
     }
 
     const updated = await prisma.guildInvite.update({
