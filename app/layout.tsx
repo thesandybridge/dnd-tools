@@ -58,6 +58,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                         <a href="https://github.com/thesandybridge/dnd-tools" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
                           GitHub
                         </a>
+                        <span className="text-white/10">|</span>
+                        <a href="https://tileforge.sandybridge.io" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+                          TileForge
+                        </a>
                       </div>
                     </div>
                   </footer>
