@@ -30,13 +30,13 @@ export default function MembersTab({ userId }: { userId: string }) {
     mutationFn: ({ memberId, roleId }: { memberId: string; roleId: number }) =>
       updateMember(guildData.guild_id, memberId, { roleId }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['members', guildData.guild_id] })
+      queryClient.invalidateQueries({ queryKey: ['guild', 'members', guildData.guild_id] })
     },
   })
 
-  // Roles the actor can assign (must outrank them)
+  // Roles the actor can assign (must outrank them, exclude owner role)
   const assignableRoles = actorRole
-    ? roles.filter(r => !r.is_system && r.position > actorRole.position)
+    ? roles.filter(r => r.position > actorRole.position && r.position !== 0)
     : []
 
   // Group members by role id
