@@ -3,6 +3,7 @@
 import { createContext, useContext, type ReactNode } from "react"
 import { fetchUser } from "@/lib/users"
 import { useQuery } from "@tanstack/react-query"
+import { Skeleton } from "@/components/ui/skeleton"
 
 export interface UserData {
   id: string
@@ -25,7 +26,13 @@ export function UserProvider({ userId, children }: { userId: string; children: R
     queryFn: () => fetchUser(userId)
   })
 
-  if (isLoading) return <div>Loading user data...</div>
+  if (isLoading) return (
+    <div className="flex flex-col gap-3 p-6">
+      <Skeleton className="h-7 w-48" />
+      <Skeleton className="h-4 w-72" />
+      <Skeleton className="h-4 w-56" />
+    </div>
+  )
   if (error) throw new Error(`Error: ${error.message}`)
 
   return (

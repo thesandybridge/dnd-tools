@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query"
 import { useUser } from "../providers/UserProvider"
 import { fetchGuildsByUser } from "@/lib/users"
 import { GlassPanel } from "@/app/components/ui/GlassPanel"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Shield, Crown } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 
@@ -16,7 +17,19 @@ export default function Guilds() {
     queryFn: () => fetchGuildsByUser(user.id),
   })
 
-  if (isLoading) return <p className="text-sm text-muted-foreground">Loading guilds...</p>
+  if (isLoading) return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+      {Array.from({ length: 3 }).map((_, i) => (
+        <div key={i} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 flex items-center gap-3">
+          <Skeleton className="h-5 w-5 rounded-full shrink-0" />
+          <div className="flex-1 flex flex-col gap-2">
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-3 w-1/2" />
+          </div>
+        </div>
+      ))}
+    </div>
+  )
 
   if (guilds.length === 0) {
     return (

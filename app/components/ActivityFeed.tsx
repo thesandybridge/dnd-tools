@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query"
 import { useSession } from "next-auth/react"
 import Link from "next/link"
 import { Shield, Sword, MapPin, Map, Users } from "lucide-react"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface ActivityEvent {
   type: string
@@ -74,7 +75,17 @@ export default function ActivityFeed({ limit = 10, guildId }: ActivityFeedProps)
   })
 
   if (isLoading) {
-    return <p className="text-sm text-muted-foreground">Loading activity...</p>
+    return (
+      <div className="flex flex-col gap-1">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="flex items-center gap-3 px-2 py-2">
+            <Skeleton className="h-4 w-4 rounded-full shrink-0" />
+            <Skeleton className="h-4 flex-1" />
+            <Skeleton className="h-3 w-12 shrink-0" />
+          </div>
+        ))}
+      </div>
+    )
   }
 
   const display = events.slice(0, limit)

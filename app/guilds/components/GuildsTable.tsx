@@ -6,6 +6,7 @@ import { fetchGuilds, deleteGuild } from "@/lib/guilds"
 import { fetchGuildsByUser } from "@/lib/users"
 import OwnerChip from './OwnerChip'
 import { GlassPanel } from '@/app/components/ui/GlassPanel'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Trash2 } from 'lucide-react'
 
 export default function GuildsTable({ userId, isUserProfile = false }) {
@@ -45,7 +46,16 @@ export default function GuildsTable({ userId, isUserProfile = false }) {
     deleteGuildMutate(guildId)
   }
 
-  if (isLoading) return <p className="text-muted-foreground text-center py-8 col-span-full">Loading...</p>
+  if (isLoading) return (
+    <>
+      {Array.from({ length: 3 }).map((_, i) => (
+        <GlassPanel key={i} className="p-5 flex flex-col gap-3">
+          <Skeleton className="h-5 w-3/4" />
+          <Skeleton className="h-4 w-1/2" />
+        </GlassPanel>
+      ))}
+    </>
+  )
   if (error) return <p className="text-destructive text-center py-8 col-span-full">Error: {error.message}</p>
 
   return (

@@ -21,6 +21,7 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command'
+import { Skeleton } from '@/components/ui/skeleton'
 
 interface Props {
   guildData?: Guild
@@ -99,7 +100,14 @@ export default function UserSearch({
               <Command>
                 <CommandList>
                   {isPending || isAddingMember ? (
-                    <CommandEmpty>Loading...</CommandEmpty>
+                    <CommandGroup>
+                      {Array.from({ length: 3 }).map((_, i) => (
+                        <div key={i} className="flex items-center gap-2 px-2 py-1.5">
+                          <Skeleton className="h-6 w-6 rounded-full shrink-0" />
+                          <Skeleton className="h-4 flex-1" />
+                        </div>
+                      ))}
+                    </CommandGroup>
                   ) : results.length === 0 ? (
                     <CommandEmpty>No users found.</CommandEmpty>
                   ) : (

@@ -7,6 +7,7 @@ import { redirect, useRouter } from "next/navigation"
 import { fetchCharacter, updateCharacter, deleteCharacter } from "@/lib/characters"
 import CharacterForm from "../components/CharacterForm"
 import { GlassPanel } from "@/app/components/ui/GlassPanel"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -55,7 +56,21 @@ export default function CharacterDetail({ params }: { params: Promise<{ id: stri
   })
 
   if (status === "loading" || isLoading) {
-    return <p className="text-sm text-muted-foreground p-6">Loading character...</p>
+    return (
+      <div className="flex flex-col gap-6 p-6">
+        <GlassPanel className="p-6 flex flex-col gap-3">
+          <Skeleton className="h-7 w-48" />
+          <Skeleton className="h-4 w-64" />
+          <Skeleton className="h-5 w-20 rounded-full" />
+        </GlassPanel>
+        <GlassPanel variant="subtle" className="p-6 flex flex-col gap-3">
+          <Skeleton className="h-5 w-24" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-3/4" />
+        </GlassPanel>
+      </div>
+    )
   }
 
   if (!character) return <p className="text-sm text-muted-foreground p-6">Character not found</p>

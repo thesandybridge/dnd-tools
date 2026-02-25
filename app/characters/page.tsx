@@ -7,6 +7,7 @@ import { fetchCharacters, createCharacter } from "@/lib/characters"
 import CharacterCard from "./components/CharacterCard"
 import CharacterForm from "./components/CharacterForm"
 import { GlassPanel } from "@/app/components/ui/GlassPanel"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Plus } from "lucide-react"
 import { useState } from "react"
 
@@ -32,7 +33,20 @@ export default function Characters() {
   })
 
   if (status === "loading" || isLoading) {
-    return <p className="text-sm text-muted-foreground p-6">Loading characters...</p>
+    return (
+      <div className="flex flex-col gap-6">
+        <Skeleton className="h-8 w-40" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <GlassPanel key={i} className="p-6 flex flex-col gap-3 min-h-[140px]">
+              <Skeleton className="h-5 w-3/4" />
+              <Skeleton className="h-4 w-1/2" />
+              <Skeleton className="h-5 w-16 rounded-full" />
+            </GlassPanel>
+          ))}
+        </div>
+      </div>
+    )
   }
 
   return (

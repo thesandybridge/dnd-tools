@@ -4,4 +4,9 @@ import type { NextAuthConfig } from "next-auth"
 export default {
   providers: [Discord],
   session: { strategy: "jwt" },
+  cookies: {
+    sessionToken: {
+      name: "dnd-tools.session-token",
+    },
+  },
 } satisfies NextAuthConfig

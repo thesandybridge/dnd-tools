@@ -6,6 +6,7 @@ import { useUser } from "../../providers/UserProvider"
 import { fetchGuildsByUser } from "@/lib/users"
 import { fetchCharacters } from "@/lib/characters"
 import { GlassPanel } from "@/app/components/ui/GlassPanel"
+import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { Shield, Crown, Sword, Plus } from "lucide-react"
 import ActivityFeed from "@/app/components/ActivityFeed"
@@ -30,7 +31,18 @@ export default function UserProfile() {
       <section>
         <h2 className="font-cinzel text-lg font-semibold mb-4">Character Roster</h2>
         {charsLoading ? (
-          <p className="text-sm text-muted-foreground">Loading characters...</p>
+          <div className="flex gap-4 overflow-x-auto pb-2">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="shrink-0 w-48 rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-4 w-4 rounded-full" />
+                  <Skeleton className="h-5 w-10 rounded-full" />
+                </div>
+                <Skeleton className="h-5 w-3/4" />
+                <Skeleton className="h-3 w-1/2" />
+              </div>
+            ))}
+          </div>
         ) : (
           <div className="flex gap-4 overflow-x-auto snap-x pb-2">
             {characters.map((char) => (
@@ -67,7 +79,17 @@ export default function UserProfile() {
       <section>
         <h2 className="font-cinzel text-lg font-semibold mb-4">Guild Memberships</h2>
         {guildsLoading ? (
-          <p className="text-sm text-muted-foreground">Loading guilds...</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 flex items-center gap-3">
+                <Skeleton className="h-5 w-5 rounded-full shrink-0" />
+                <div className="flex-1 flex flex-col gap-2">
+                  <Skeleton className="h-4 w-3/4" />
+                  <Skeleton className="h-3 w-1/2" />
+                </div>
+              </div>
+            ))}
+          </div>
         ) : guilds.length === 0 ? (
           <GlassPanel variant="subtle" className="p-6 text-center">
             <p className="text-sm text-muted-foreground mb-2">No guild memberships yet</p>
