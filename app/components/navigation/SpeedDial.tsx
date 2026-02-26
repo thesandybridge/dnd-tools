@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -18,6 +18,18 @@ import {
 } from "lucide-react"
 import { useWidgets } from "@/app/components/widgets/WidgetProvider"
 import type { WidgetId } from "@/app/components/widgets/widget-registry"
+
+function useIsMobile() {
+  const [mobile, setMobile] = useState(false)
+  useEffect(() => {
+    const mql = window.matchMedia("(max-width: 767px)")
+    setMobile(mql.matches)
+    const handler = (e: MediaQueryListEvent) => setMobile(e.matches)
+    mql.addEventListener("change", handler)
+    return () => mql.removeEventListener("change", handler)
+  }, [])
+  return mobile
+}
 
 type Action = {
   label: string
@@ -56,7 +68,22 @@ function D20Icon({ className }: { className?: string }) {
   )
 }
 
-export function SpeedDial() {
+function MobileSpeedDial() {
+  const { mobileDrawerOpen, setMobileDrawerOpen } = useWidgets()
+
+  return (
+    <div className="speed-dial fixed bottom-20 right-4 z-[1100]">
+      <button
+        className="relative flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors cursor-pointer corona-border corona-pulse"
+        onClick={() => setMobileDrawerOpen(!mobileDrawerOpen)}
+      >
+        <D20Icon className="h-7 w-7" />
+      </button>
+    </div>
+  )
+}
+
+function DesktopSpeedDial() {
   const [open, setOpen] = useState(false)
   const [widgetsOpen, setWidgetsOpen] = useState(false)
   const { data: session } = useSession()
@@ -81,9 +108,6 @@ export function SpeedDial() {
     handleClose()
   }
 
-  // Items to render: top actions + "Widgets" trigger
-  // When widgetsOpen, widget sub-items appear between the Widgets trigger and the items above it
-
   return (
     <>
       <AnimatePresence>
@@ -98,7 +122,7 @@ export function SpeedDial() {
         )}
       </AnimatePresence>
 
-      <div className="speed-dial fixed bottom-20 right-4 md:bottom-6 md:right-6 z-[1100] flex flex-col-reverse items-center gap-2">
+      <div className="speed-dial fixed bottom-6 right-6 z-[1100] flex flex-col-reverse items-center gap-2">
         {/* Main trigger */}
         <motion.button
           className={`relative flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors cursor-pointer corona-border corona-pulse ${open ? "corona-active" : ""}`}
@@ -235,4 +259,9 @@ export function SpeedDial() {
       </div>
     </>
   )
+}
+
+export function SpeedDial() {
+  const isMobile = useIsMobile()
+  return isMobile ? <MobileSpeedDial /> : <DesktopSpeedDial />
 }

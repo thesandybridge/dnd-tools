@@ -21,11 +21,13 @@ type WidgetContextValue = {
   openWidgets: Set<WidgetId>
   cellAssignments: Record<string, number>
   collapsed: boolean
+  mobileDrawerOpen: boolean
   toggleWidget: (id: WidgetId) => void
   closeWidget: (id: WidgetId) => void
   moveToCell: (id: WidgetId, cellIndex: number) => void
   getWidgetInCell: (cellIndex: number) => WidgetId | null
   toggleCollapsed: () => void
+  setMobileDrawerOpen: (open: boolean) => void
 }
 
 const WidgetContext = createContext<WidgetContextValue | null>(null)
@@ -60,6 +62,7 @@ export function WidgetProvider({ children }: { children: ReactNode }) {
     cellAssignments: {},
   }))
   const [collapsed, setCollapsed] = useState(false)
+  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
   const initializedRef = useRef(false)
 
   useEffect(() => {
@@ -137,12 +140,14 @@ export function WidgetProvider({ children }: { children: ReactNode }) {
     openWidgets: state.openWidgets,
     cellAssignments: state.cellAssignments,
     collapsed,
+    mobileDrawerOpen,
     toggleWidget,
     closeWidget,
     moveToCell,
     getWidgetInCell,
     toggleCollapsed,
-  }), [state.openWidgets, state.cellAssignments, collapsed, toggleWidget, closeWidget, moveToCell, getWidgetInCell, toggleCollapsed])
+    setMobileDrawerOpen,
+  }), [state.openWidgets, state.cellAssignments, collapsed, mobileDrawerOpen, toggleWidget, closeWidget, moveToCell, getWidgetInCell, toggleCollapsed])
 
   return (
     <WidgetContext.Provider value={contextValue}>
