@@ -72,40 +72,51 @@ const View = ({
         {/* Divider */}
         <div className="w-12 h-px bg-white/[0.06] mx-auto my-2" />
 
-        {/* Input Group 1: Mount + Type */}
-        <div className="flex flex-col gap-4 pt-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {/* Inputs: Mount + Type + Miles */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 pt-6">
+          <div className="flex flex-col gap-1.5 group">
+            <Label className="text-xs uppercase tracking-wider text-muted-foreground transition-colors duration-200 group-focus-within:text-primary/70">Mount</Label>
+            <Select value={selectedItem} onValueChange={(val) => setSelectedItem(val)}>
+              <SelectTrigger className="bg-white/[0.03] border-white/[0.06] transition-all duration-200 focus:border-primary/40 focus:shadow-[0_0_8px_-3px] focus:shadow-primary/20">
+                <SelectValue placeholder="Select a Mount" />
+              </SelectTrigger>
+              <SelectContent>
+                {itemsData.map((item, index) => (
+                  <SelectItem key={index} value={item.item}>
+                    {item.item} - {convertToDnDCurrency(item.baseCost)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {currentItem?.types && (
             <div className="flex flex-col gap-1.5 group">
-              <Label className="text-xs uppercase tracking-wider text-muted-foreground transition-colors duration-200 group-focus-within:text-primary/70">Mount</Label>
-              <Select value={selectedItem} onValueChange={(val) => setSelectedItem(val)}>
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground transition-colors duration-200 group-focus-within:text-primary/70">Type</Label>
+              <Select value={selectedType} onValueChange={(val) => setSelectedType(val)}>
                 <SelectTrigger className="bg-white/[0.03] border-white/[0.06] transition-all duration-200 focus:border-primary/40 focus:shadow-[0_0_8px_-3px] focus:shadow-primary/20">
-                  <SelectValue placeholder="Select a Mount" />
+                  <SelectValue placeholder="Select Type" />
                 </SelectTrigger>
                 <SelectContent>
-                  {itemsData.map((item, index) => (
-                    <SelectItem key={index} value={item.item}>
-                      {item.item} - {convertToDnDCurrency(item.baseCost)}
-                    </SelectItem>
+                  {currentItem.types.map((type, index) => (
+                    <SelectItem key={index} value={type.type}>{type.type}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
+          )}
 
-            {currentItem?.types && (
-              <div className="flex flex-col gap-1.5 group">
-                <Label className="text-xs uppercase tracking-wider text-muted-foreground transition-colors duration-200 group-focus-within:text-primary/70">Type</Label>
-                <Select value={selectedType} onValueChange={(val) => setSelectedType(val)}>
-                  <SelectTrigger className="bg-white/[0.03] border-white/[0.06] transition-all duration-200 focus:border-primary/40 focus:shadow-[0_0_8px_-3px] focus:shadow-primary/20">
-                    <SelectValue placeholder="Select Type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {currentItem.types.map((type, index) => (
-                      <SelectItem key={index} value={type.type}>{type.type}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
+          <div className="flex flex-col gap-1.5 group">
+            <Label className="text-xs uppercase tracking-wider text-muted-foreground transition-colors duration-200 group-focus-within:text-primary/70">Miles</Label>
+            <Input
+              type="number"
+              value={miles}
+              onChange={(e) => setMiles(parseInt(e.target.value, 10) || 0)}
+              onBlur={handleBlur(miles)}
+              onFocus={handleFocus}
+              onKeyDown={preventNonNumeric}
+              className="bg-white/[0.03] border-white/[0.06] text-right transition-all duration-200 focus:border-primary/40 focus:shadow-[0_0_8px_-3px] focus:shadow-primary/20"
+            />
           </div>
         </div>
 
@@ -113,7 +124,7 @@ const View = ({
         {currentItem?.specials && (
           <>
             <div className="w-12 h-px bg-white/[0.06] mx-auto my-4" />
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-wrap gap-x-6 gap-y-2">
               {currentItem.specials.map((special, index) => (
                 <div key={index} className="flex items-center gap-2">
                   <Checkbox
@@ -132,23 +143,6 @@ const View = ({
             </div>
           </>
         )}
-
-        {/* Divider */}
-        <div className="w-12 h-px bg-white/[0.06] mx-auto my-4" />
-
-        {/* Input Group: Miles */}
-        <div className="flex flex-col gap-1.5 max-w-xs group">
-          <Label className="text-xs uppercase tracking-wider text-muted-foreground transition-colors duration-200 group-focus-within:text-primary/70">Miles</Label>
-          <Input
-            type="number"
-            value={miles}
-            onChange={(e) => setMiles(parseInt(e.target.value, 10) || 0)}
-            onBlur={handleBlur(miles)}
-            onFocus={handleFocus}
-            onKeyDown={preventNonNumeric}
-            className="bg-white/[0.03] border-white/[0.06] text-right transition-all duration-200 focus:border-primary/40 focus:shadow-[0_0_8px_-3px] focus:shadow-primary/20"
-          />
-        </div>
       </GlassPanel>
     </div>
   )

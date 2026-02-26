@@ -55,8 +55,8 @@ const View = ({
         <div className="w-12 h-px bg-white/[0.06] mx-auto my-2" />
 
         {/* Input Group 1: Rarity + Options */}
-        <div className="flex flex-col gap-4 pt-6">
-          <div className="flex flex-col gap-1.5 group">
+        <div className="flex flex-col sm:flex-row sm:items-end gap-4 pt-6">
+          <div className="flex-1 flex flex-col gap-1.5 group">
             <Label className="text-xs uppercase tracking-wider text-muted-foreground transition-colors duration-200 group-focus-within:text-primary/70">Rarity</Label>
             <Select value={rarity} onValueChange={setRarity}>
               <SelectTrigger className="bg-white/[0.03] border-white/[0.06] transition-all duration-200 focus:border-primary/40 focus:shadow-[0_0_8px_-3px] focus:shadow-primary/20">
@@ -72,7 +72,7 @@ const View = ({
             </Select>
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-6 sm:pb-2">
             <div className="flex items-center gap-2">
               <Checkbox
                 id="consumable"
@@ -96,7 +96,7 @@ const View = ({
         <div className="w-12 h-px bg-white/[0.06] mx-auto my-4" />
 
         {/* Input Group 2: Attributes */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {Object.keys(attributes).map((attr) => (
             <div key={attr} className="flex flex-col gap-1.5 group">
               <Label className="text-xs uppercase tracking-wider text-muted-foreground transition-colors duration-200 group-focus-within:text-primary/70">

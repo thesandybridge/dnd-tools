@@ -46,12 +46,9 @@ const View = ({
         <div className="w-12 h-px bg-white/[0.06] mx-auto my-2" />
 
         {/* Service Groups */}
-        <div className="flex flex-col gap-0 pt-6">
-          {servicesData.map((house, houseIndex) => (
-            <div key={house.house}>
-              {houseIndex > 0 && (
-                <div className="w-12 h-px bg-white/[0.06] mx-auto my-4" />
-              )}
+        <div className="flex gap-4 flex-wrap pt-6">
+          {servicesData.map((house) => (
+            <div key={house.house} className="flex-1 basis-[calc(50%-0.5rem)] max-md:basis-full">
               <div className="flex flex-col gap-2">
                 <h3 className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">{house.house}</h3>
                 {house.services.map(service => (

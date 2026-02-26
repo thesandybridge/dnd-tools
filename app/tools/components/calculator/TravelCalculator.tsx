@@ -63,8 +63,8 @@ const View = ({
         {/* Divider */}
         <div className="w-12 h-px bg-white/[0.06] mx-auto my-2" />
 
-        {/* Input Group 1: Transport */}
-        <div className="flex flex-col gap-4 pt-6">
+        {/* Inputs: Transport + Miles + Weight */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 pt-6">
           <div className="flex flex-col gap-1.5 group">
             <Label className="text-xs uppercase tracking-wider text-muted-foreground transition-colors duration-200 group-focus-within:text-primary/70">Transportation</Label>
             <Select
@@ -86,36 +86,33 @@ const View = ({
 
           {selectedTransportData.speed !== "Instant" && (
             <>
-              <div className="w-12 h-px bg-white/[0.06] mx-auto my-2" />
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="flex flex-col gap-1.5 group">
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground transition-colors duration-200 group-focus-within:text-primary/70">Miles</Label>
+                <Input
+                  type="number"
+                  onChange={(e) => setDistance(parseFloat(e.target.value) || 0)}
+                  value={distance}
+                  onFocus={handleFocus}
+                  onBlur={resetDistance}
+                  onKeyDown={preventNonNumeric}
+                  className="bg-white/[0.03] border-white/[0.06] text-right transition-all duration-200 focus:border-primary/40 focus:shadow-[0_0_8px_-3px] focus:shadow-primary/20"
+                />
+              </div>
+
+              {selectedTransportData.cargoRate && (
                 <div className="flex flex-col gap-1.5 group">
-                  <Label className="text-xs uppercase tracking-wider text-muted-foreground transition-colors duration-200 group-focus-within:text-primary/70">Miles</Label>
+                  <Label className="text-xs uppercase tracking-wider text-muted-foreground transition-colors duration-200 group-focus-within:text-primary/70">Weight (lbs)</Label>
                   <Input
                     type="number"
-                    onChange={(e) => setDistance(parseFloat(e.target.value) || 0)}
-                    value={distance}
+                    value={cargoWeight}
+                    onChange={(e) => setCargoWeight(parseFloat(e.target.value) || 0)}
                     onFocus={handleFocus}
-                    onBlur={resetDistance}
+                    onBlur={resetWeight}
                     onKeyDown={preventNonNumeric}
                     className="bg-white/[0.03] border-white/[0.06] text-right transition-all duration-200 focus:border-primary/40 focus:shadow-[0_0_8px_-3px] focus:shadow-primary/20"
                   />
                 </div>
-
-                {selectedTransportData.cargoRate && (
-                  <div className="flex flex-col gap-1.5 group">
-                    <Label className="text-xs uppercase tracking-wider text-muted-foreground transition-colors duration-200 group-focus-within:text-primary/70">Weight (lbs)</Label>
-                    <Input
-                      type="number"
-                      value={cargoWeight}
-                      onChange={(e) => setCargoWeight(parseFloat(e.target.value) || 0)}
-                      onFocus={handleFocus}
-                      onBlur={resetWeight}
-                      onKeyDown={preventNonNumeric}
-                      className="bg-white/[0.03] border-white/[0.06] text-right transition-all duration-200 focus:border-primary/40 focus:shadow-[0_0_8px_-3px] focus:shadow-primary/20"
-                    />
-                  </div>
-                )}
-              </div>
+              )}
             </>
           )}
         </div>
