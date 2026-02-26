@@ -7,8 +7,6 @@ export type WidgetMeta = {
   id: WidgetId
   label: string
   icon: ComponentType<{ className?: string }>
-  defaultWidth: number
-  defaultHeight: number
 }
 
 export const WIDGET_REGISTRY: Record<WidgetId, WidgetMeta> = {
@@ -16,28 +14,20 @@ export const WIDGET_REGISTRY: Record<WidgetId, WidgetMeta> = {
     id: "dice",
     label: "Dice Roller",
     icon: Dice6,
-    defaultWidth: 280,
-    defaultHeight: 280,
   },
   initiative: {
     id: "initiative",
     label: "Initiative",
     icon: Swords,
-    defaultWidth: 280,
-    defaultHeight: 320,
   },
   npc: {
     id: "npc",
     label: "NPC Generator",
     icon: UserRound,
-    defaultWidth: 260,
-    defaultHeight: 280,
   },
   conditions: {
     id: "conditions",
     label: "Conditions",
     icon: BookOpen,
-    defaultWidth: 280,
-    defaultHeight: 360,
   },
 }
