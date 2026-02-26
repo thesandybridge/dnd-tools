@@ -23,6 +23,10 @@ import { GlassPanel } from "@/app/components/ui/GlassPanel"
 import { useWidgets } from "./WidgetProvider"
 import { WidgetShell } from "./WidgetShell"
 import { WIDGET_REGISTRY, type WidgetId } from "./widget-registry"
+import { DiceWidgetContent } from "./widgets/DiceWidget"
+import { InitiativeTrackerContent } from "./widgets/InitiativeTracker"
+import { NPCGeneratorContent } from "./widgets/NPCGenerator"
+import { ConditionReferenceContent } from "./widgets/ConditionReference"
 
 function useIsMobile() {
   const [mobile, setMobile] = useState(false)
@@ -36,15 +40,17 @@ function useIsMobile() {
   return mobile
 }
 
-function WidgetPlaceholder({ id }: { id: WidgetId }) {
-  const meta = WIDGET_REGISTRY[id]
-  const Icon = meta.icon
-  return (
-    <div className="flex flex-col items-center justify-center gap-2 py-6 text-muted-foreground">
-      <Icon className="h-8 w-8 opacity-40" />
-      <span className="text-xs">Coming soon</span>
-    </div>
-  )
+function getWidgetContent(id: WidgetId) {
+  switch (id) {
+    case "dice":
+      return <DiceWidgetContent />
+    case "initiative":
+      return <InitiativeTrackerContent />
+    case "npc":
+      return <NPCGeneratorContent />
+    case "conditions":
+      return <ConditionReferenceContent />
+  }
 }
 
 function rectsIntersect(
@@ -147,7 +153,7 @@ function DesktopWidgetArea() {
           {openIds.map((id) => (
             <div key={id} className="pointer-events-auto">
               <WidgetShell id={id}>
-                <WidgetPlaceholder id={id} />
+                {getWidgetContent(id)}
               </WidgetShell>
             </div>
           ))}
@@ -183,7 +189,7 @@ function MobileWidgetArea() {
           {openIds.map((id) => {
             const meta = WIDGET_REGISTRY[id]
             return (
-              <GlassPanel key={id} variant="strong" corona className="overflow-hidden">
+              <GlassPanel key={id} variant="strong" corona>
                 <div className="flex items-center justify-between px-3 py-2">
                   <span className="font-cinzel text-[11px] tracking-widest text-muted-foreground uppercase">
                     {meta.label}
@@ -196,9 +202,7 @@ function MobileWidgetArea() {
                     <X className="h-3.5 w-3.5" />
                   </button>
                 </div>
-                <div className="px-3 pb-3">
-                  <WidgetPlaceholder id={id} />
-                </div>
+                {getWidgetContent(id)}
               </GlassPanel>
             )
           })}
