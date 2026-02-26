@@ -70,7 +70,7 @@ const MarkerRow = memo(function MarkerRow({
 
   const handleClick = useCallback(() => {
     if (!isEditing && marker.position) {
-      onSelect(marker.uuid, marker.position as { lat: number; lng: number })
+      onSelect(marker.uuid, marker.position as unknown as { lat: number; lng: number })
     }
   }, [isEditing, marker.uuid, marker.position, onSelect])
 
