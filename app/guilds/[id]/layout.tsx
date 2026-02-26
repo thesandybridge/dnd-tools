@@ -66,12 +66,12 @@ export default async function GuildLayout({ params, children }) {
   }
 
   return (
-    <div className="flex justify-center p-4 overflow-x-hidden">
+    <div className="flex justify-center p-4 overflow-x-hidden h-[calc(100dvh-4rem)] md:h-[calc(100dvh-0px)]">
       <div className="max-w-5xl w-full min-w-0 flex flex-col items-center gap-4">
         <GuildProvider guildId={id}>
           <GuildBanner />
           <GuildNav guildId={id} userId={userId} />
-          <div className="w-full min-w-0">
+          <div className="w-full min-w-0 flex-1 min-h-0">
             {children}
           </div>
         </GuildProvider>

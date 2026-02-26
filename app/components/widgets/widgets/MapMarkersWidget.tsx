@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback, memo } from "react"
 import { MapPin, Trash2, Search, Pencil, Check, X } from "lucide-react"
 import { Input } from "@/components/ui/input"
+import { Spinner } from "@/app/components/ui/Spinner"
 import { useMapWidget } from "@/app/guilds/[id]/map/[mapId]/components/MapWidgetContext"
 import useGetMarkers from "@/app/guilds/[id]/map/[mapId]/hooks/useGetMarkers"
 import useRemoveMarkerMutation from "@/app/guilds/[id]/map/[mapId]/hooks/useRemoveMarkerMutation"
@@ -136,9 +137,9 @@ export function MapMarkersContent() {
 
   if (!mapWidget) {
     return (
-      <p className="text-sm text-muted-foreground text-center px-3 py-6">
-        Open a map to see markers
-      </p>
+      <div className="flex items-center justify-center px-3 py-6">
+        <Spinner />
+      </div>
     )
   }
 

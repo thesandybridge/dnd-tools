@@ -9,9 +9,10 @@ interface PmTilesLayerProps {
   pmtilesUrl: string
   tileSize?: number
   maxZoom?: number
+  onLoad?: () => void
 }
 
-export default function PmTilesLayer({ pmtilesUrl, tileSize = 256, maxZoom = 5 }: PmTilesLayerProps) {
+export default function PmTilesLayer({ pmtilesUrl, tileSize = 256, maxZoom = 5, onLoad }: PmTilesLayerProps) {
   const map = useMap()
   const layerRef = useRef<L.GridLayer | null>(null)
   const pmRef = useRef<PMTiles | null>(null)
@@ -59,6 +60,9 @@ export default function PmTilesLayer({ pmtilesUrl, tileSize = 256, maxZoom = 5 }
         bounds: [[-tileSize, 0], [0, tileSize]],
       })
 
+      if (onLoad) {
+        layer.once("load", onLoad)
+      }
       layer.addTo(map)
       layerRef.current = layer
     }

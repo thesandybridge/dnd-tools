@@ -17,12 +17,13 @@ type FloatingToolbarProps = {
   onZoomOut: () => void
   onSaveDefaultView: () => void
   isSavingView: boolean
+  disabled?: boolean
 }
 
 export function FloatingToolbar({
   markerActive, rulerActive,
   onToggleMarker, onToggleRuler,
-  onZoomIn, onZoomOut, onSaveDefaultView, isSavingView,
+  onZoomIn, onZoomOut, onSaveDefaultView, isSavingView, disabled,
 }: FloatingToolbarProps) {
   const { openWidgets, toggleWidget } = useWidgets()
   const markersOpen = openWidgets.has("markers")
@@ -35,24 +36,26 @@ export function FloatingToolbar({
     <TooltipProvider delayDuration={0}>
       <div className="absolute bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 z-[1000]">
         <GlassPanel variant="strong" className="flex items-center gap-1 px-2 py-1.5 rounded-full">
-          <ToolbarButton icon={List} label="Marker List" active={markersOpen} onClick={handleToggleMarkers} />
+          <ToolbarButton icon={List} label="Marker List" active={markersOpen} onClick={handleToggleMarkers} disabled={disabled} />
           <Separator orientation="vertical" className="h-6 mx-1" />
           <ToolbarButton
             icon={markerActive ? MapPin : Map}
             label={markerActive ? "Stop Placing" : "Place Markers"}
             active={markerActive}
             onClick={onToggleMarker}
+            disabled={disabled}
           />
-          <ToolbarButton icon={Ruler} label="Measure Distance" active={rulerActive} onClick={onToggleRuler} />
+          <ToolbarButton icon={Ruler} label="Measure Distance" active={rulerActive} onClick={onToggleRuler} disabled={disabled} />
           <Separator orientation="vertical" className="h-6 mx-1" />
-          <ToolbarButton icon={Plus} label="Zoom In" onClick={onZoomIn} />
-          <ToolbarButton icon={Minus} label="Zoom Out" onClick={onZoomOut} />
+          <ToolbarButton icon={Plus} label="Zoom In" onClick={onZoomIn} disabled={disabled} />
+          <ToolbarButton icon={Minus} label="Zoom Out" onClick={onZoomOut} disabled={disabled} />
           <Separator orientation="vertical" className="h-6 mx-1" />
           <ToolbarButton
             icon={isSavingView ? Loader2 : Crosshair}
             label="Set Default View"
             onClick={onSaveDefaultView}
             spinning={isSavingView}
+            disabled={disabled}
           />
         </GlassPanel>
       </div>
@@ -61,10 +64,11 @@ export function FloatingToolbar({
 }
 
 function ToolbarButton({
-  icon: Icon, label, active, spinning, onClick,
+  icon: Icon, label, active, spinning, onClick, disabled,
 }: {
-  icon: typeof MapPin; label: string; active?: boolean; spinning?: boolean; onClick: () => void
+  icon: typeof MapPin; label: string; active?: boolean; spinning?: boolean; onClick: () => void; disabled?: boolean
 }) {
+  const isDisabled = disabled || spinning
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -77,7 +81,7 @@ function ToolbarButton({
               : "text-muted-foreground hover:text-foreground"
           }`}
           onClick={onClick}
-          disabled={spinning}
+          disabled={isDisabled}
         >
           <Icon className={`h-4 w-4 ${spinning ? "animate-spin" : ""}`} />
         </Button>

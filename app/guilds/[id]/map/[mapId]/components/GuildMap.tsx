@@ -141,6 +141,7 @@ type GuildMapProps = {
   markerActive: boolean
   rulerActive: boolean
   onMarkerScreenPositionChange: (pos: MarkerScreenPosition) => void
+  onTilesLoaded?: () => void
 }
 
 export default function GuildMap({
@@ -150,6 +151,7 @@ export default function GuildMap({
   selectedMarkerUuid, setSelectedMarkerUuid, mapHandleRef,
   markerActive, rulerActive,
   onMarkerScreenPositionChange,
+  onTilesLoaded,
 }: GuildMapProps) {
   const { theme } = useTheme()
 
@@ -263,7 +265,7 @@ export default function GuildMap({
         markers={markers}
         onPositionChange={onMarkerScreenPositionChange}
       />
-      <PmTilesLayer pmtilesUrl={pmtilesUrl} tileSize={tileSize} maxZoom={maxZoom} />
+      <PmTilesLayer pmtilesUrl={pmtilesUrl} tileSize={tileSize} maxZoom={maxZoom} onLoad={onTilesLoaded} />
       {memoizedMarkers}
       {markers && (
         <Polyline

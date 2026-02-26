@@ -10,6 +10,7 @@ import { useWidgets } from "@/app/components/widgets/WidgetProvider"
 import useGetMarkers from "../hooks/useGetMarkers"
 import usePmtilesUrl from "../hooks/usePmtilesUrl"
 import { fetchGuildMap, updateGuildMap } from "@/lib/guild-maps"
+import { Spinner } from "@/app/components/ui/Spinner"
 
 const GuildMap = dynamic(() => import("./GuildMap"), { ssr: false })
 
@@ -30,6 +31,7 @@ export default function GuildMapLoader({ guildId, mapId }: { guildId: string; ma
     return () => unregisterScope("map")
   }, [registerScope, unregisterScope])
 
+  const [tilesLoaded, setTilesLoaded] = useState(false)
   const [selectedMarkerUuid, setSelectedMarkerUuid] = useState<string | null>(null)
   const [markerScreenPos, setMarkerScreenPos] = useState<MarkerScreenPosition>(null)
   const mapHandleRef = useRef<MapHandle | null>(null)
@@ -101,24 +103,32 @@ export default function GuildMapLoader({ guildId, mapId }: { guildId: string; ma
     : { width: 0, height: 0 }
 
   return (
-      <div ref={containerRef} className="relative left-1/2 -translate-x-1/2 w-screen md:w-[calc(100vw-4rem)] h-[calc(100dvh-12rem)] overflow-hidden">
-        <GuildMap
-          guildId={guildId}
-          mapId={mapId}
-          pmtilesUrl={pmtilesUrl}
-          imageWidth={mapData?.image_width ?? null}
-          imageHeight={mapData?.image_height ?? null}
-          maxZoom={mapData?.max_zoom ?? 5}
-          defaultZoom={mapData?.default_zoom ?? null}
-          defaultCenterLat={mapData?.default_center_lat ?? null}
-          defaultCenterLng={mapData?.default_center_lng ?? null}
-          selectedMarkerUuid={selectedMarkerUuid}
-          setSelectedMarkerUuid={setSelectedMarkerUuid}
-          mapHandleRef={mapHandleRef}
-          markerActive={markerActive}
-          rulerActive={rulerActive}
-          onMarkerScreenPositionChange={setMarkerScreenPos}
-        />
+      <div ref={containerRef} className="relative left-1/2 -translate-x-1/2 w-screen md:w-[calc(100vw-4rem)] h-full overflow-hidden">
+        {!tilesLoaded && (
+          <div className="absolute inset-0 z-[999] flex items-center justify-center pointer-events-none bg-background">
+            <Spinner />
+          </div>
+        )}
+        {mapData && (
+          <GuildMap
+            guildId={guildId}
+            mapId={mapId}
+            pmtilesUrl={pmtilesUrl}
+            imageWidth={mapData.image_width ?? null}
+            imageHeight={mapData.image_height ?? null}
+            maxZoom={mapData.max_zoom ?? 5}
+            defaultZoom={mapData.default_zoom ?? null}
+            defaultCenterLat={mapData.default_center_lat ?? null}
+            defaultCenterLng={mapData.default_center_lng ?? null}
+            selectedMarkerUuid={selectedMarkerUuid}
+            setSelectedMarkerUuid={setSelectedMarkerUuid}
+            mapHandleRef={mapHandleRef}
+            markerActive={markerActive}
+            rulerActive={rulerActive}
+            onMarkerScreenPositionChange={setMarkerScreenPos}
+            onTilesLoaded={() => setTilesLoaded(true)}
+          />
+        )}
         {selectedMarker && markerScreenPos && (
           <MarkerInfoCard
             guildId={guildId}
@@ -138,6 +148,7 @@ export default function GuildMapLoader({ guildId, mapId }: { guildId: string; ma
           onZoomOut={handleZoomOut}
           onSaveDefaultView={handleSaveDefaultView}
           isSavingView={saveViewMutation.isPending}
+          disabled={!tilesLoaded}
         />
       </div>
   )
