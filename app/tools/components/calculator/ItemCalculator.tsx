@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from 'react'
+import { motion, AnimatePresence } from "framer-motion"
 import {
   convertToDnDCurrency,
   handleFocus,
@@ -29,16 +30,36 @@ const View = ({
   reset,
 }) => {
   return (
-    <div className="flex flex-col gap-6 w-full">
+    <div className="flex flex-col gap-4 w-full">
       <h2 className="text-2xl font-bold font-cinzel">Item Calculator</h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-        {/* Left: Form (3 cols) */}
-        <GlassPanel className="md:col-span-3 p-6 flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <Label className="text-sm text-muted-foreground">Rarity</Label>
+      <GlassPanel corona className="p-6 flex flex-col gap-0">
+        {/* Result Readout */}
+        <div className="py-8 flex flex-col items-center gap-2">
+          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Estimated Price</h3>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={gp}
+              className="text-3xl sm:text-4xl font-bold font-cinzel text-primary"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+            >
+              {gp > 0 ? convertToDnDCurrency(gp) : "\u2014"}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        {/* Divider */}
+        <div className="w-12 h-px bg-white/[0.06] mx-auto my-2" />
+
+        {/* Input Group 1: Rarity + Options */}
+        <div className="flex flex-col gap-4 pt-6">
+          <div className="flex flex-col gap-1.5 group">
+            <Label className="text-xs uppercase tracking-wider text-muted-foreground transition-colors duration-200 group-focus-within:text-primary/70">Rarity</Label>
             <Select value={rarity} onValueChange={setRarity}>
-              <SelectTrigger className="bg-white/[0.05] border-white/[0.08]">
+              <SelectTrigger className="bg-white/[0.03] border-white/[0.06] transition-all duration-200 focus:border-primary/40 focus:shadow-[0_0_8px_-3px] focus:shadow-primary/20">
                 <SelectValue placeholder="Select Rarity" />
               </SelectTrigger>
               <SelectContent>
@@ -51,14 +72,14 @@ const View = ({
             </Select>
           </div>
 
-          <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
               <Checkbox
                 id="consumable"
                 checked={isConsumable}
                 onCheckedChange={setIsConsumable}
               />
-              <Label htmlFor="consumable">Consumable</Label>
+              <Label htmlFor="consumable" className={isConsumable ? "text-foreground" : "text-muted-foreground"}>Consumable</Label>
             </div>
             <div className="flex items-center gap-2">
               <Checkbox
@@ -66,43 +87,43 @@ const View = ({
                 checked={requiresAttunement}
                 onCheckedChange={setRequiresAttunement}
               />
-              <Label htmlFor="requires-attunement">Requires Attunement</Label>
+              <Label htmlFor="requires-attunement" className={requiresAttunement ? "text-foreground" : "text-muted-foreground"}>Requires Attunement</Label>
             </div>
           </div>
+        </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {Object.keys(attributes).map((attr) => (
-              <div key={attr} className="flex flex-col gap-1.5">
-                <Label className="text-sm text-muted-foreground">{attr.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}</Label>
-                <Input
-                  type="number"
-                  value={attributes[attr]}
-                  onChange={handleAttributeChange(attr)}
-                  onFocus={handleFocus}
-                  onBlur={handleBlur(attr)}
-                  onKeyDown={preventNonNumeric}
-                  placeholder={attr.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}
-                  className="bg-white/[0.05] border-white/[0.08]"
-                />
-              </div>
-            ))}
-          </div>
+        {/* Divider */}
+        <div className="w-12 h-px bg-white/[0.06] mx-auto my-4" />
 
-          {reset && (
-            <Button variant="outline" onClick={resetValues}>
+        {/* Input Group 2: Attributes */}
+        <div className="grid grid-cols-2 gap-3">
+          {Object.keys(attributes).map((attr) => (
+            <div key={attr} className="flex flex-col gap-1.5 group">
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground transition-colors duration-200 group-focus-within:text-primary/70">
+                {attr.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}
+              </Label>
+              <Input
+                type="number"
+                value={attributes[attr]}
+                onChange={handleAttributeChange(attr)}
+                onFocus={handleFocus}
+                onBlur={handleBlur(attr)}
+                onKeyDown={preventNonNumeric}
+                className="bg-white/[0.03] border-white/[0.06] text-right transition-all duration-200 focus:border-primary/40 focus:shadow-[0_0_8px_-3px] focus:shadow-primary/20"
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Reset */}
+        {reset && (
+          <div className="pt-4 flex justify-center">
+            <Button variant="ghost" onClick={resetValues} className="text-xs uppercase tracking-wider text-muted-foreground">
               Reset to Defaults
             </Button>
-          )}
-        </GlassPanel>
-
-        {/* Right: Result (2 cols) */}
-        <GlassPanel corona className="md:col-span-2 p-6 flex flex-col items-center justify-center gap-4">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Estimated Price</h3>
-          <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary whitespace-nowrap">
-            {gp > 0 ? convertToDnDCurrency(gp) : "\u2014"}
           </div>
-        </GlassPanel>
-      </div>
+        )}
+      </GlassPanel>
     </div>
   )
 }
