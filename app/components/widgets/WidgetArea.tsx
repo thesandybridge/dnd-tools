@@ -302,23 +302,17 @@ function DesktopWidgetArea() {
 function MobileWidgetArea() {
   const { openWidgets, closeWidget, toggleWidget, mobileDrawerOpen, setMobileDrawerOpen } = useWidgets()
   const openIds = Array.from(openWidgets)
-  const isOpen = mobileDrawerOpen || openIds.length > 0
   const allWidgetIds = Object.keys(WIDGET_REGISTRY) as WidgetId[]
 
   const handleOpenChange = useCallback(
     (open: boolean) => {
-      if (!open) {
-        setMobileDrawerOpen(false)
-        for (const id of openWidgets) {
-          closeWidget(id)
-        }
-      }
+      setMobileDrawerOpen(open)
     },
-    [openWidgets, closeWidget, setMobileDrawerOpen]
+    [setMobileDrawerOpen]
   )
 
   return (
-    <Drawer open={isOpen} onOpenChange={handleOpenChange}>
+    <Drawer open={mobileDrawerOpen} onOpenChange={handleOpenChange}>
       <DrawerContent className="max-h-[70vh]">
         <DrawerHeader>
           <DrawerTitle className="text-left font-cinzel">Widgets</DrawerTitle>
