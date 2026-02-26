@@ -4,7 +4,7 @@ import { useState, useCallback, useRef, useEffect } from "react"
 import dynamic from "next/dynamic"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { FloatingToolbar } from "./FloatingToolbar"
-import { MapWidgetProvider } from "./MapWidgetContext"
+import { useRegisterMapWidget } from "./MapWidgetContext"
 import { MarkerInfoCard } from "./MarkerInfoCard"
 import { useWidgets } from "@/app/components/widgets/WidgetProvider"
 import useGetMarkers from "../hooks/useGetMarkers"
@@ -90,6 +90,8 @@ export default function GuildMapLoader({ guildId, mapId }: { guildId: string; ma
     if (view) saveViewMutation.mutate(view)
   }, [saveViewMutation])
 
+  useRegisterMapWidget(guildId, mapId, selectedMarkerUuid, handleSelectMarker)
+
   const selectedMarker = selectedMarkerUuid
     ? markers.find(m => m.uuid === selectedMarkerUuid) ?? null
     : null
@@ -99,12 +101,6 @@ export default function GuildMapLoader({ guildId, mapId }: { guildId: string; ma
     : { width: 0, height: 0 }
 
   return (
-    <MapWidgetProvider
-      guildId={guildId}
-      mapId={mapId}
-      selectedMarkerUuid={selectedMarkerUuid}
-      onSelectMarker={handleSelectMarker}
-    >
       <div ref={containerRef} className="relative left-1/2 -translate-x-1/2 w-screen md:w-[calc(100vw-4rem)] h-[calc(100dvh-12rem)] overflow-hidden">
         <GuildMap
           guildId={guildId}
@@ -144,6 +140,5 @@ export default function GuildMapLoader({ guildId, mapId }: { guildId: string; ma
           isSavingView={saveViewMutation.isPending}
         />
       </div>
-    </MapWidgetProvider>
   )
 }

@@ -1,29 +1,49 @@
 "use client"
 
-import { createContext, useContext, type ReactNode } from "react"
+import { createContext, useContext, useCallback, useEffect, useState, type ReactNode } from "react"
 
-type MapWidgetContextValue = {
+type MapWidgetValues = {
   guildId: string
   mapId: string
   selectedMarkerUuid: string | null
   onSelectMarker: (uuid: string, position: { lat: number; lng: number }) => void
 }
 
-const MapWidgetContext = createContext<MapWidgetContextValue | null>(null)
+// Split into two contexts so the registerer (GuildMapLoader) doesn't re-render
+// when values change — it only needs the stable setter.
+const SetterContext = createContext<((v: MapWidgetValues | null) => void) | null>(null)
+const ValuesContext = createContext<MapWidgetValues | null>(null)
 
-export function MapWidgetProvider({
-  children,
-  ...value
-}: MapWidgetContextValue & { children: ReactNode }) {
+export function MapWidgetProvider({ children }: { children: ReactNode }) {
+  const [values, setValues] = useState<MapWidgetValues | null>(null)
+  const setMapContext = useCallback((v: MapWidgetValues | null) => setValues(v), [])
+
   return (
-    <MapWidgetContext.Provider value={value}>
-      {children}
-    </MapWidgetContext.Provider>
+    <SetterContext.Provider value={setMapContext}>
+      <ValuesContext.Provider value={values}>
+        {children}
+      </ValuesContext.Provider>
+    </SetterContext.Provider>
   )
 }
 
-export function useMapWidget(): MapWidgetContextValue {
-  const ctx = useContext(MapWidgetContext)
-  if (!ctx) throw new Error("useMapWidget must be used within a MapWidgetProvider")
-  return ctx
+export function useMapWidget(): MapWidgetValues | null {
+  return useContext(ValuesContext)
+}
+
+export function useRegisterMapWidget(
+  guildId: string,
+  mapId: string,
+  selectedMarkerUuid: string | null,
+  onSelectMarker: (uuid: string, position: { lat: number; lng: number }) => void,
+) {
+  const setMapContext = useContext(SetterContext)
+
+  useEffect(() => {
+    setMapContext?.({ guildId, mapId, selectedMarkerUuid, onSelectMarker })
+  }, [setMapContext, guildId, mapId, selectedMarkerUuid, onSelectMarker])
+
+  useEffect(() => {
+    return () => setMapContext?.(null)
+  }, [setMapContext])
 }

@@ -132,7 +132,30 @@ const MarkerRow = memo(function MarkerRow({
 })
 
 export function MapMarkersContent() {
-  const { guildId, mapId, selectedMarkerUuid, onSelectMarker } = useMapWidget()
+  const mapWidget = useMapWidget()
+
+  if (!mapWidget) {
+    return (
+      <p className="text-sm text-muted-foreground text-center px-3 py-6">
+        Open a map to see markers
+      </p>
+    )
+  }
+
+  return <MapMarkersInner {...mapWidget} />
+}
+
+function MapMarkersInner({
+  guildId,
+  mapId,
+  selectedMarkerUuid,
+  onSelectMarker,
+}: {
+  guildId: string
+  mapId: string
+  selectedMarkerUuid: string | null
+  onSelectMarker: (uuid: string, position: { lat: number; lng: number }) => void
+}) {
   const { data: markers = [] } = useGetMarkers(guildId, mapId)
   const removeMarker = useRemoveMarkerMutation(guildId, mapId)
   const [search, setSearch] = useState("")

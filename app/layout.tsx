@@ -3,6 +3,7 @@ import Nav from "@/app/components/navigation/Nav"
 import { SpeedDial } from "@/app/components/navigation/SpeedDial"
 import { WidgetProvider } from "@/app/components/widgets/WidgetProvider"
 import { WidgetArea } from "@/app/components/widgets/WidgetArea"
+import { MapWidgetProvider } from "@/app/guilds/[id]/map/[mapId]/components/MapWidgetContext"
 import { SessionProvider } from 'next-auth/react'
 import "@/app/globals.css"
 import 'leaflet/dist/leaflet.css'
@@ -43,6 +44,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <QueryClientProvider>
               <ThemeProvider>
                 <WidgetProvider>
+                <MapWidgetProvider>
                   <Nav />
                   <div className="flex flex-col min-h-dvh overflow-x-hidden">
                     <div className="flex flex-1">
@@ -78,6 +80,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   </div>
                   <WidgetArea />
                   <SpeedDial />
+                </MapWidgetProvider>
                 </WidgetProvider>
               </ThemeProvider>
             <ReactQueryDevtools
