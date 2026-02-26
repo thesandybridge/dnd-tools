@@ -50,7 +50,7 @@ export function getTileForgeThumbnailUrl(storagePath: string): string {
 
 export const TILEFORGE_URLS = {
   home: "https://tileforge.sandybridge.io",
-  signup: "https://tileforge.sandybridge.io/signup",
+  signup: "https://tileforge.sandybridge.io/signin",
 } as const
 
 export const TILEFORGE_COPY = {
