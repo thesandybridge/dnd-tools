@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback, useMemo } from "react"
+import { motion, AnimatePresence } from "framer-motion"
 import transportationData from "./travel.json"
 import { convertToDnDCurrency, formatDuration, handleFocus, preventNonNumeric } from "./helper"
 import { useCurrency } from "../../providers/CurrencyContext"
@@ -24,27 +25,50 @@ const View = ({
   totalDays,
 }) => {
   return (
-    <div className="flex flex-col gap-6 w-full">
+    <div className="flex flex-col gap-4 w-full">
       <h2 className="text-2xl font-bold font-cinzel">Transportation Calculator</h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-        {/* Left: Form (3 cols) */}
-        <GlassPanel className="md:col-span-3 p-6 flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <Label className="text-sm text-muted-foreground">Transportation</Label>
+      <GlassPanel corona className="p-6 flex flex-col gap-0">
+        {/* Result Readout */}
+        <div className="py-8 flex flex-col items-center gap-2">
+          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Estimated Cost</h3>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={totalCost}
+              className="text-3xl sm:text-4xl font-bold font-cinzel text-primary"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+            >
+              {totalCost > 0 ? convertToDnDCurrency(totalCost) : "\u2014"}
+            </motion.div>
+          </AnimatePresence>
+          {totalDays && (
+            <div className="flex flex-col items-center gap-1 mt-2">
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Travel Time</h3>
+              <div className="text-lg sm:text-xl font-bold text-primary">{totalDays}</div>
+            </div>
+          )}
+        </div>
+
+        {/* Divider */}
+        <div className="w-12 h-px bg-white/[0.06] mx-auto my-2" />
+
+        {/* Input Group 1: Transport */}
+        <div className="flex flex-col gap-4 pt-6">
+          <div className="flex flex-col gap-1.5 group">
+            <Label className="text-xs uppercase tracking-wider text-muted-foreground transition-colors duration-200 group-focus-within:text-primary/70">Transportation</Label>
             <Select
               value={selectedTransport}
               onValueChange={(val) => setSelectedTransport(val)}
             >
-              <SelectTrigger className="bg-white/[0.05] border-white/[0.08]">
+              <SelectTrigger className="bg-white/[0.03] border-white/[0.06] transition-all duration-200 focus:border-primary/40 focus:shadow-[0_0_8px_-3px] focus:shadow-primary/20">
                 <SelectValue placeholder="Select Transportation" />
               </SelectTrigger>
               <SelectContent>
                 {transportationData.map((option, index) => (
-                  <SelectItem
-                    key={index}
-                    value={option.type}
-                  >
+                  <SelectItem key={index} value={option.type}>
                     {option.type} - {option.fare}
                   </SelectItem>
                 ))}
@@ -54,53 +78,40 @@ const View = ({
 
           {selectedTransportData.speed !== "Instant" && (
             <>
-              <div className="flex flex-col gap-1.5 max-w-xs">
-                <Label className="text-sm text-muted-foreground">Miles</Label>
-                <Input
-                  type="number"
-                  onChange={(e) => setDistance(parseFloat(e.target.value) || 0)}
-                  value={distance}
-                  onFocus={handleFocus}
-                  onBlur={resetDistance}
-                  onKeyDown={preventNonNumeric}
-                  className="bg-white/[0.05] border-white/[0.08]"
-                />
-              </div>
-
-              {selectedTransportData.cargoRate && (
-                <div className="flex flex-col gap-1.5 max-w-xs">
-                  <Label className="text-sm text-muted-foreground">Weight (lbs)</Label>
+              <div className="w-12 h-px bg-white/[0.06] mx-auto my-2" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1.5 group">
+                  <Label className="text-xs uppercase tracking-wider text-muted-foreground transition-colors duration-200 group-focus-within:text-primary/70">Miles</Label>
                   <Input
                     type="number"
-                    value={cargoWeight}
-                    onChange={(e) => setCargoWeight(parseFloat(e.target.value) || 0)}
+                    onChange={(e) => setDistance(parseFloat(e.target.value) || 0)}
+                    value={distance}
                     onFocus={handleFocus}
-                    onBlur={resetWeight}
+                    onBlur={resetDistance}
                     onKeyDown={preventNonNumeric}
-                    className="bg-white/[0.05] border-white/[0.08]"
+                    className="bg-white/[0.03] border-white/[0.06] text-right transition-all duration-200 focus:border-primary/40 focus:shadow-[0_0_8px_-3px] focus:shadow-primary/20"
                   />
                 </div>
-              )}
-            </>
-          )}
-        </GlassPanel>
 
-        {/* Right: Result (2 cols) */}
-        <GlassPanel corona className="md:col-span-2 p-6 flex flex-col items-center justify-center gap-4">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Estimated Cost</h3>
-          <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary whitespace-nowrap">
-            {totalCost > 0 ? convertToDnDCurrency(totalCost) : "\u2014"}
-          </div>
-          {totalDays && (
-            <>
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mt-2">Travel Time</h3>
-              <div className="text-lg sm:text-xl md:text-2xl font-bold text-primary whitespace-nowrap">
-                {totalDays}
+                {selectedTransportData.cargoRate && (
+                  <div className="flex flex-col gap-1.5 group">
+                    <Label className="text-xs uppercase tracking-wider text-muted-foreground transition-colors duration-200 group-focus-within:text-primary/70">Weight (lbs)</Label>
+                    <Input
+                      type="number"
+                      value={cargoWeight}
+                      onChange={(e) => setCargoWeight(parseFloat(e.target.value) || 0)}
+                      onFocus={handleFocus}
+                      onBlur={resetWeight}
+                      onKeyDown={preventNonNumeric}
+                      className="bg-white/[0.03] border-white/[0.06] text-right transition-all duration-200 focus:border-primary/40 focus:shadow-[0_0_8px_-3px] focus:shadow-primary/20"
+                    />
+                  </div>
+                )}
               </div>
             </>
           )}
-        </GlassPanel>
-      </div>
+        </div>
+      </GlassPanel>
     </div>
   )
 }
