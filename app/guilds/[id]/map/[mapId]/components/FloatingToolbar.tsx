@@ -1,18 +1,18 @@
 "use client"
 
+import { useCallback } from "react"
 import { MapPin, Ruler, Plus, Minus, Map, List, Crosshair, Loader2 } from "lucide-react"
 import { GlassPanel } from "@/app/components/ui/GlassPanel"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip"
+import { useWidgets } from "@/app/components/widgets/WidgetProvider"
 
 type FloatingToolbarProps = {
   markerActive: boolean
   rulerActive: boolean
-  panelOpen: boolean
   onToggleMarker: () => void
   onToggleRuler: () => void
-  onTogglePanel: () => void
   onZoomIn: () => void
   onZoomOut: () => void
   onSaveDefaultView: () => void
@@ -20,15 +20,22 @@ type FloatingToolbarProps = {
 }
 
 export function FloatingToolbar({
-  markerActive, rulerActive, panelOpen,
-  onToggleMarker, onToggleRuler, onTogglePanel,
+  markerActive, rulerActive,
+  onToggleMarker, onToggleRuler,
   onZoomIn, onZoomOut, onSaveDefaultView, isSavingView,
 }: FloatingToolbarProps) {
+  const { openWidgets, toggleWidget } = useWidgets()
+  const markersOpen = openWidgets.has("markers")
+
+  const handleToggleMarkers = useCallback(() => {
+    toggleWidget("markers")
+  }, [toggleWidget])
+
   return (
     <TooltipProvider delayDuration={0}>
       <div className="absolute bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 z-[1000]">
         <GlassPanel variant="strong" className="flex items-center gap-1 px-2 py-1.5 rounded-full">
-          <ToolbarButton icon={List} label="Marker List" active={panelOpen} onClick={onTogglePanel} />
+          <ToolbarButton icon={List} label="Marker List" active={markersOpen} onClick={handleToggleMarkers} />
           <Separator orientation="vertical" className="h-6 mx-1" />
           <ToolbarButton
             icon={markerActive ? MapPin : Map}
