@@ -1,17 +1,20 @@
 "use client"
 
-import { useCallback, useEffect, useState, useRef } from "react"
+import { useCallback, useEffect, useState, useRef, useMemo } from "react"
 import {
   DndContext,
+  DragOverlay,
   PointerSensor,
   TouchSensor,
   KeyboardSensor,
   useSensor,
   useSensors,
+  useDroppable,
+  useDraggable,
+  type DragStartEvent,
   type DragEndEvent,
+  type DragOverEvent,
 } from "@dnd-kit/core"
-import { restrictToParentElement } from "@dnd-kit/modifiers"
-import { AnimatePresence } from "framer-motion"
 import { X } from "lucide-react"
 import {
   Drawer,
@@ -53,88 +56,150 @@ function getWidgetContent(id: WidgetId) {
   }
 }
 
-function rectsIntersect(
-  a: { x: number; y: number; w: number; h: number },
-  b: { x: number; y: number; w: number; h: number }
-): boolean {
-  return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y
+function getAdjacentCells(cellIndex: number, cols: number, totalCells: number): Set<number> {
+  const adjacent = new Set<number>()
+  const row = Math.floor(cellIndex / cols)
+  const col = cellIndex % cols
+  if (col > 0) adjacent.add(cellIndex - 1)
+  if (col < cols - 1) adjacent.add(cellIndex + 1)
+  if (row > 0) adjacent.add(cellIndex - cols)
+  if (cellIndex + cols < totalCells) adjacent.add(cellIndex + cols)
+  return adjacent
 }
 
-function nudgeCollidingWidgets(
-  movedId: WidgetId,
-  positions: Record<string, { x: number; y: number }>,
-  openWidgets: Set<WidgetId>
-): Record<string, { x: number; y: number }> {
-  const result = { ...positions }
-  const movedMeta = WIDGET_REGISTRY[movedId]
-  const movedRect = {
-    x: result[movedId].x,
-    y: result[movedId].y,
-    w: movedMeta.defaultWidth,
-    h: movedMeta.defaultHeight,
-  }
+// --- Droppable grid cell ---
 
-  for (const otherId of openWidgets) {
-    if (otherId === movedId) continue
-    const otherPos = result[otherId]
-    if (!otherPos) continue
-    const otherMeta = WIDGET_REGISTRY[otherId]
-    const otherRect = { x: otherPos.x, y: otherPos.y, w: otherMeta.defaultWidth, h: otherMeta.defaultHeight }
+function GridCell({
+  index,
+  isDragging,
+  overCellIndex,
+  cols,
+  totalCells,
+  children,
+}: {
+  index: number
+  isDragging: boolean
+  overCellIndex: number | null
+  cols: number
+  totalCells: number
+  children?: React.ReactNode
+}) {
+  const { setNodeRef } = useDroppable({ id: `cell-${index}` })
 
-    if (rectsIntersect(movedRect, otherRect)) {
-      // Push in direction of least overlap
-      const overlapX = Math.min(movedRect.x + movedRect.w - otherRect.x, otherRect.x + otherRect.w - movedRect.x)
-      const overlapY = Math.min(movedRect.y + movedRect.h - otherRect.y, otherRect.y + otherRect.h - movedRect.y)
+  const isOver = overCellIndex === index
+  const isAdjacent = overCellIndex !== null && getAdjacentCells(overCellIndex, cols, totalCells).has(index)
 
-      if (overlapX < overlapY) {
-        // Push horizontally
-        if (otherRect.x + otherRect.w / 2 > movedRect.x + movedRect.w / 2) {
-          result[otherId] = { ...otherPos, x: movedRect.x + movedRect.w + 8 }
-        } else {
-          result[otherId] = { ...otherPos, x: movedRect.x - otherRect.w - 8 }
-        }
-      } else {
-        // Push vertically
-        if (otherRect.y + otherRect.h / 2 > movedRect.y + movedRect.h / 2) {
-          result[otherId] = { ...otherPos, y: movedRect.y + movedRect.h + 8 }
-        } else {
-          result[otherId] = { ...otherPos, y: movedRect.y - otherRect.h - 8 }
-        }
-      }
-    }
-  }
-
-  return result
+  return (
+    <div
+      ref={setNodeRef}
+      className={[
+        "rounded-xl transition-all duration-200 min-h-[320px]",
+        isDragging ? "border border-dashed border-white/10" : "border border-transparent",
+        isOver ? "bg-[radial-gradient(circle,rgba(var(--corona-rgb),0.15),transparent_70%)]" : "",
+        isAdjacent ? "bg-[radial-gradient(circle,rgba(var(--corona-rgb),0.06),transparent_70%)]" : "",
+      ].filter(Boolean).join(" ")}
+    >
+      {children}
+    </div>
+  )
 }
+
+// --- Draggable widget wrapper ---
+
+function DraggableWidget({ id, activeId }: { id: WidgetId; activeId: WidgetId | null }) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: `widget-${id}`,
+    data: { widgetId: id },
+  })
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={[
+        "h-full",
+        isDragging || activeId === id ? "opacity-30" : "",
+      ].filter(Boolean).join(" ")}
+    >
+      <WidgetShell id={id} dragHandleProps={{ ...listeners, ...attributes }}>
+        {getWidgetContent(id)}
+      </WidgetShell>
+    </div>
+  )
+}
+
+// --- Desktop grid area ---
 
 function DesktopWidgetArea() {
-  const { openWidgets, positions, batchUpdatePositions } = useWidgets()
+  const { openWidgets, cellAssignments, moveToCell } = useWidgets()
   const containerRef = useRef<HTMLDivElement>(null)
+  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 })
+  const [activeId, setActiveId] = useState<WidgetId | null>(null)
+  const [overCellIndex, setOverCellIndex] = useState<number | null>(null)
 
   const pointerSensor = useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
   const touchSensor = useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 5 } })
   const keyboardSensor = useSensor(KeyboardSensor)
   const sensors = useSensors(pointerSensor, touchSensor, keyboardSensor)
 
-  const handleDragEnd = useCallback(
-    (event: DragEndEvent) => {
-      const { active, delta } = event
-      const widgetId = (active.id as string).replace("widget-", "") as WidgetId
-      const currentPos = positions[widgetId]
-      if (!currentPos) return
+  // Track container size with ResizeObserver
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+    const observer = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect
+      setContainerSize({ width, height })
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
 
-      const newPos = {
-        x: currentPos.x + delta.x,
-        y: currentPos.y + delta.y,
-      }
+  const cols = Math.max(1, Math.floor(containerSize.width / 300))
+  const rows = Math.max(1, Math.ceil(containerSize.height / 320))
+  const totalCells = Math.max(cols * rows, openWidgets.size + 2)
 
-      // Nudge colliding widgets and batch all position updates together
-      const allPositions = { ...positions, [widgetId]: newPos }
-      const nudged = nudgeCollidingWidgets(widgetId, allPositions, openWidgets)
-      batchUpdatePositions(nudged)
-    },
-    [positions, openWidgets, batchUpdatePositions]
-  )
+  // Build cell -> widgetId map for open widgets only
+  const cellToWidget = useMemo(() => {
+    const map = new Map<number, WidgetId>()
+    for (const id of openWidgets) {
+      const cell = cellAssignments[id]
+      if (cell !== undefined) map.set(cell, id)
+    }
+    return map
+  }, [openWidgets, cellAssignments])
+
+  const isDragging = activeId !== null
+
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    const widgetId = event.active.data.current?.widgetId as WidgetId | undefined
+    if (widgetId) setActiveId(widgetId)
+  }, [])
+
+  const handleDragOver = useCallback((event: DragOverEvent) => {
+    const overId = event.over?.id as string | undefined
+    if (overId?.startsWith("cell-")) {
+      setOverCellIndex(parseInt(overId.replace("cell-", ""), 10))
+    } else {
+      setOverCellIndex(null)
+    }
+  }, [])
+
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    const widgetId = event.active.data.current?.widgetId as WidgetId | undefined
+    const overId = event.over?.id as string | undefined
+
+    if (widgetId && overId?.startsWith("cell-")) {
+      const targetCell = parseInt(overId.replace("cell-", ""), 10)
+      moveToCell(widgetId, targetCell)
+    }
+
+    setActiveId(null)
+    setOverCellIndex(null)
+  }, [moveToCell])
+
+  const handleDragCancel = useCallback(() => {
+    setActiveId(null)
+    setOverCellIndex(null)
+  }, [])
 
   const openIds = Array.from(openWidgets)
   if (openIds.length === 0) return null
@@ -142,24 +207,60 @@ function DesktopWidgetArea() {
   return (
     <div
       ref={containerRef}
-      className="fixed inset-0 z-[1040] pointer-events-none md:left-16"
+      className="fixed inset-0 z-[1040] md:left-16 pointer-events-none"
     >
       <DndContext
         sensors={sensors}
-        modifiers={[restrictToParentElement]}
+        onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
+        onDragCancel={handleDragCancel}
       >
-        <AnimatePresence>
-          {openIds.map((id) => (
-            <WidgetShell key={id} id={id}>
-              {getWidgetContent(id)}
-            </WidgetShell>
-          ))}
-        </AnimatePresence>
+        <div
+          className="h-full p-4 pointer-events-none"
+          style={{
+            display: "grid",
+            gridTemplateColumns: `repeat(auto-fit, minmax(300px, 1fr))`,
+            gridAutoRows: "minmax(320px, auto)",
+            gap: "12px",
+          }}
+        >
+          {Array.from({ length: totalCells }, (_, i) => {
+            const widgetId = cellToWidget.get(i)
+            return (
+              <GridCell
+                key={i}
+                index={i}
+                isDragging={isDragging}
+                overCellIndex={overCellIndex}
+                cols={cols}
+                totalCells={totalCells}
+              >
+                {widgetId && (
+                  <div className="pointer-events-auto h-full">
+                    <DraggableWidget id={widgetId} activeId={activeId} />
+                  </div>
+                )}
+              </GridCell>
+            )
+          })}
+        </div>
+
+        <DragOverlay dropAnimation={null}>
+          {activeId ? (
+            <div className="pointer-events-none opacity-80 backdrop-blur-sm">
+              <WidgetShell id={activeId}>
+                {getWidgetContent(activeId)}
+              </WidgetShell>
+            </div>
+          ) : null}
+        </DragOverlay>
       </DndContext>
     </div>
   )
 }
+
+// --- Mobile (unchanged) ---
 
 function MobileWidgetArea() {
   const { openWidgets, closeWidget } = useWidgets()
