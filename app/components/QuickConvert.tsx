@@ -40,10 +40,10 @@ export default function QuickConvert() {
           onFocus={handleFocus}
           onBlur={(e) => { if (e.target.value === '') setAmount(0) }}
           onKeyDown={preventNonNumeric}
-          className="flex-1 bg-white/[0.05] border-white/[0.08]"
+          className="flex-1 bg-white/[0.03] border-white/[0.06] text-right transition-all duration-200 focus:border-primary/40 focus:shadow-[0_0_8px_-3px] focus:shadow-primary/20"
         />
         <Select value={selected} onValueChange={setSelected}>
-          <SelectTrigger className="w-24 sm:w-28 shrink-0 bg-white/[0.05] border-white/[0.08]">
+          <SelectTrigger className="w-24 shrink-0 bg-white/[0.03] border-white/[0.06] transition-all duration-200 focus:border-primary/40 focus:shadow-[0_0_8px_-3px] focus:shadow-primary/20">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -53,11 +53,12 @@ export default function QuickConvert() {
           </SelectContent>
         </Select>
       </div>
-      <div className="grid grid-cols-2 gap-2 min-w-0">
+      <div className="w-12 h-px bg-white/[0.06] mx-auto" />
+      <div className="flex flex-col gap-0.5">
         {conversions.map(c => (
-          <div key={c.key} className="flex items-center gap-1.5 rounded-md bg-white/[0.03] border border-white/[0.06] px-2 py-1.5 min-w-0">
-            {c.icon}
-            <span className="text-sm font-medium truncate">{Number(c.converted).toLocaleString()}</span>
+          <div key={c.key} className="flex items-center gap-2 py-1 min-w-0">
+            <span className="[&_svg]:w-4 [&_svg]:h-4">{c.icon}</span>
+            <span className="text-sm font-medium">{Number(c.converted).toLocaleString()}</span>
             <span className="text-xs text-muted-foreground">{c.key}</span>
           </div>
         ))}
