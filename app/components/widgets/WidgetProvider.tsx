@@ -10,39 +10,27 @@ import {
   useMemo,
   type ReactNode,
 } from "react"
-import { WIDGET_REGISTRY, type WidgetId } from "./widget-registry"
-
-type Position = { x: number; y: number }
+import type { WidgetId } from "./widget-registry"
 
 type WidgetState = {
   openWidgets: Set<WidgetId>
-  positions: Record<string, Position>
-  zIndices: Record<string, number>
+  cellAssignments: Record<string, number> // widgetId -> cellIndex
 }
 
 type WidgetContextValue = {
   openWidgets: Set<WidgetId>
-  positions: Record<string, Position>
-  zIndices: Record<string, number>
+  cellAssignments: Record<string, number>
   toggleWidget: (id: WidgetId) => void
   closeWidget: (id: WidgetId) => void
-  updatePosition: (id: WidgetId, pos: Position) => void
-  batchUpdatePositions: (updates: Record<string, Position>) => void
-  bringToFront: (id: WidgetId) => void
+  moveToCell: (id: WidgetId, cellIndex: number) => void
+  getWidgetInCell: (cellIndex: number) => WidgetId | null
 }
 
 const WidgetContext = createContext<WidgetContextValue | null>(null)
 
-const STORAGE_KEY = "ds-widget-positions"
-const WIDGET_IDS = Object.keys(WIDGET_REGISTRY) as WidgetId[]
+const STORAGE_KEY = "ds-widget-cells"
 
-function getDefaultPosition(id: WidgetId): Position {
-  const idx = WIDGET_IDS.indexOf(id)
-  // Stagger in top-right area, offset by 40px each
-  return { x: 80 + idx * 40, y: 80 + idx * 40 }
-}
-
-function loadPositions(): Record<string, Position> {
+function loadCellAssignments(): Record<string, number> {
   if (typeof window === "undefined") return {}
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
@@ -51,28 +39,32 @@ function loadPositions(): Record<string, Position> {
   return {}
 }
 
-function savePositions(positions: Record<string, Position>) {
+function saveCellAssignments(assignments: Record<string, number>) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(positions))
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(assignments))
   } catch {}
+}
+
+function findFirstUnoccupiedCell(assignments: Record<string, number>): number {
+  const used = new Set(Object.values(assignments))
+  let i = 0
+  while (used.has(i)) i++
+  return i
 }
 
 export function WidgetProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<WidgetState>(() => ({
     openWidgets: new Set(),
-    positions: {},
-    zIndices: {},
+    cellAssignments: {},
   }))
-  const zCounterRef = useRef(0)
   const initializedRef = useRef(false)
 
-  // Load persisted positions on mount (client only)
   useEffect(() => {
     if (initializedRef.current) return
     initializedRef.current = true
-    const saved = loadPositions()
+    const saved = loadCellAssignments()
     if (Object.keys(saved).length > 0) {
-      setState(prev => ({ ...prev, positions: { ...prev.positions, ...saved } }))
+      setState(prev => ({ ...prev, cellAssignments: { ...prev.cellAssignments, ...saved } }))
     }
   }, [])
 
@@ -81,20 +73,17 @@ export function WidgetProvider({ children }: { children: ReactNode }) {
       const next = new Set(prev.openWidgets)
       if (next.has(id)) {
         next.delete(id)
+        return { ...prev, openWidgets: next }
       } else {
         next.add(id)
-        // Ensure position exists
-        if (!prev.positions[id]) {
-          const pos = getDefaultPosition(id)
-          const positions = { ...prev.positions, [id]: pos }
-          savePositions(positions)
-          const z = ++zCounterRef.current
-          return { ...prev, openWidgets: next, positions, zIndices: { ...prev.zIndices, [id]: z } }
+        if (prev.cellAssignments[id] === undefined) {
+          const cellIndex = findFirstUnoccupiedCell(prev.cellAssignments)
+          const cellAssignments = { ...prev.cellAssignments, [id]: cellIndex }
+          saveCellAssignments(cellAssignments)
+          return { ...prev, openWidgets: next, cellAssignments }
         }
-        const z = ++zCounterRef.current
-        return { ...prev, openWidgets: next, zIndices: { ...prev.zIndices, [id]: z } }
+        return { ...prev, openWidgets: next }
       }
-      return { ...prev, openWidgets: next }
     })
   }, [])
 
@@ -106,49 +95,40 @@ export function WidgetProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
-  const updatePosition = useCallback((id: WidgetId, pos: Position) => {
+  const moveToCell = useCallback((id: WidgetId, cellIndex: number) => {
     setState(prev => {
-      const positions = { ...prev.positions, [id]: pos }
-      savePositions(positions)
-      return { ...prev, positions }
+      const cellAssignments = { ...prev.cellAssignments }
+      // Find if another widget occupies the target cell — swap
+      const occupant = Object.entries(cellAssignments).find(
+        ([, idx]) => idx === cellIndex
+      )
+      if (occupant) {
+        const [occupantId] = occupant
+        cellAssignments[occupantId] = cellAssignments[id]
+      }
+      cellAssignments[id] = cellIndex
+      saveCellAssignments(cellAssignments)
+      return { ...prev, cellAssignments }
     })
   }, [])
 
-  const batchUpdatePositions = useCallback((updates: Record<string, Position>) => {
-    setState(prev => {
-      const positions = { ...prev.positions, ...updates }
-      savePositions(positions)
-      return { ...prev, positions }
-    })
-  }, [])
-
-  const bringToFront = useCallback((id: WidgetId) => {
-    const z = ++zCounterRef.current
-    setState(prev => ({
-      ...prev,
-      zIndices: { ...prev.zIndices, [id]: z },
-    }))
-  }, [])
-
-  // Derive positions with defaults for open widgets
-  const positions = useMemo(() => {
-    const result: Record<string, Position> = {}
-    for (const id of state.openWidgets) {
-      result[id] = state.positions[id] ?? getDefaultPosition(id)
-    }
-    return result
-  }, [state.openWidgets, state.positions])
+  const getWidgetInCell = useCallback((cellIndex: number): WidgetId | null => {
+    const entry = Object.entries(state.cellAssignments).find(
+      ([, idx]) => idx === cellIndex
+    )
+    if (!entry) return null
+    const widgetId = entry[0] as WidgetId
+    return state.openWidgets.has(widgetId) ? widgetId : null
+  }, [state.cellAssignments, state.openWidgets])
 
   const contextValue = useMemo<WidgetContextValue>(() => ({
     openWidgets: state.openWidgets,
-    positions,
-    zIndices: state.zIndices,
+    cellAssignments: state.cellAssignments,
     toggleWidget,
     closeWidget,
-    updatePosition,
-    batchUpdatePositions,
-    bringToFront,
-  }), [state.openWidgets, positions, state.zIndices, toggleWidget, closeWidget, updatePosition, batchUpdatePositions, bringToFront])
+    moveToCell,
+    getWidgetInCell,
+  }), [state.openWidgets, state.cellAssignments, toggleWidget, closeWidget, moveToCell, getWidgetInCell])
 
   return (
     <WidgetContext.Provider value={contextValue}>
