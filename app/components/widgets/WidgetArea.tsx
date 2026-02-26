@@ -32,6 +32,7 @@ import { InitiativeTrackerContent } from "./widgets/InitiativeTracker"
 import { NPCGeneratorContent } from "./widgets/NPCGenerator"
 import { ConditionReferenceContent } from "./widgets/ConditionReference"
 import QuickConvert from "@/app/components/QuickConvert"
+import { MapMarkersContent } from "./widgets/MapMarkersWidget"
 
 const MARGIN_WIDTH = 280
 const CELL_HEIGHT = 280
@@ -49,6 +50,8 @@ function getWidgetContent(id: WidgetId) {
       return <ConditionReferenceContent />
     case "calculator":
       return <div className="px-3 py-2"><QuickConvert /></div>
+    case "markers":
+      return <MapMarkersContent />
   }
 }
 
@@ -192,7 +195,7 @@ function MarginColumn({
 // --- Desktop widget area ---
 
 function DesktopWidgetArea() {
-  const { openWidgets, cellAssignments, moveToCell, collapsed } = useWidgets()
+  const { openWidgets, cellAssignments, moveToCell, collapsed, setTotalCells, overflowWidgets, swapOverflow } = useWidgets()
   const [dragState, dispatchDrag] = useReducer(dragReducer, initialDragState)
   const [availableHeight, setAvailableHeight] = useState(0)
 
@@ -225,15 +228,20 @@ function DesktopWidgetArea() {
     [cellsPerCol]
   )
 
-  // Build cell -> widgetId map for open widgets only
+  useEffect(() => {
+    setTotalCells(cellsPerCol * 2)
+  }, [cellsPerCol, setTotalCells])
+
+  // Build cell -> widgetId map for open widgets only (excluding overflow)
   const cellToWidget = useMemo(() => {
     const map = new Map<number, WidgetId>()
     for (const id of openWidgets) {
+      if (overflowWidgets.includes(id)) continue
       const cell = cellAssignments[id]
       if (cell !== undefined) map.set(cell, id)
     }
     return map
-  }, [openWidgets, cellAssignments])
+  }, [openWidgets, cellAssignments, overflowWidgets])
 
   const isDragging = dragState.activeId !== null
 
@@ -268,7 +276,7 @@ function DesktopWidgetArea() {
   }, [])
 
   const openIds = Array.from(openWidgets)
-  if (openIds.length === 0 || collapsed) return null
+  if ((openIds.length === 0 && overflowWidgets.length === 0) || collapsed) return null
 
   return (
     <DndContext
@@ -304,7 +312,52 @@ function DesktopWidgetArea() {
           </div>
         ) : null}
       </DragOverlay>
+
+      <OverflowTray
+        overflowWidgets={overflowWidgets}
+        onSwap={swapOverflow}
+        cellsPerCol={cellsPerCol}
+      />
     </DndContext>
+  )
+}
+
+// --- Overflow tray ---
+
+function OverflowTray({
+  overflowWidgets,
+  onSwap,
+  cellsPerCol,
+}: {
+  overflowWidgets: WidgetId[]
+  onSwap: (overflowId: WidgetId, cellIndex: number) => void
+  cellsPerCol: number
+}) {
+  if (overflowWidgets.length === 0) return null
+
+  // Swap with last occupied cell in right column (highest index)
+  const lastRightCell = cellsPerCol * 2 - 1
+
+  return (
+    <div
+      className="fixed bottom-3 right-0 z-30 flex flex-wrap gap-1.5 p-2 pointer-events-auto"
+      style={{ width: MARGIN_WIDTH }}
+    >
+      {overflowWidgets.map((id) => {
+        const meta = WIDGET_REGISTRY[id]
+        const Icon = meta.icon
+        return (
+          <button
+            key={id}
+            onClick={() => onSwap(id, lastRightCell)}
+            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs transition-colors cursor-pointer border bg-white/[0.03] border-white/[0.06] text-muted-foreground hover:bg-primary/20 hover:border-primary/30 hover:text-primary"
+          >
+            <Icon className="h-3.5 w-3.5" />
+            {meta.label}
+          </button>
+        )
+      })}
+    </div>
   )
 }
 
@@ -370,9 +423,11 @@ const MobileWidgetCard = memo(function MobileWidgetCard({
 // --- Mobile ---
 
 function MobileWidgetArea() {
-  const { openWidgets, closeWidget, toggleWidget, mobileDrawerOpen, setMobileDrawerOpen } = useWidgets()
+  const { openWidgets, closeWidget, toggleWidget, mobileDrawerOpen, setMobileDrawerOpen, activeScopes } = useWidgets()
   const openIds = Array.from(openWidgets)
-  const allWidgetIds = Object.keys(WIDGET_REGISTRY) as WidgetId[]
+  const allWidgetIds = (Object.keys(WIDGET_REGISTRY) as WidgetId[]).filter(
+    id => activeScopes.has(WIDGET_REGISTRY[id].scope)
+  )
 
   const handleOpenChange = useCallback(
     (open: boolean) => {
