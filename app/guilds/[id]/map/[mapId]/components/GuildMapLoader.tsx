@@ -1,11 +1,12 @@
 "use client"
 
-import { useState, useCallback, useRef } from "react"
+import { useState, useCallback, useRef, useEffect } from "react"
 import dynamic from "next/dynamic"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { FloatingToolbar } from "./FloatingToolbar"
-import MapSidePanel from "./MapSidePanel"
+import { MapWidgetProvider } from "./MapWidgetContext"
 import { MarkerInfoCard } from "./MarkerInfoCard"
+import { useWidgets } from "@/app/components/widgets/WidgetProvider"
 import useGetMarkers from "../hooks/useGetMarkers"
 import usePmtilesUrl from "../hooks/usePmtilesUrl"
 import { fetchGuildMap, updateGuildMap } from "@/lib/guild-maps"
@@ -22,6 +23,13 @@ export type MapHandle = {
 }
 
 export default function GuildMapLoader({ guildId, mapId }: { guildId: string; mapId: string }) {
+  const { registerScope, unregisterScope } = useWidgets()
+
+  useEffect(() => {
+    registerScope("map")
+    return () => unregisterScope("map")
+  }, [registerScope, unregisterScope])
+
   const [selectedMarkerUuid, setSelectedMarkerUuid] = useState<string | null>(null)
   const [markerScreenPos, setMarkerScreenPos] = useState<MarkerScreenPosition>(null)
   const mapHandleRef = useRef<MapHandle | null>(null)
@@ -37,8 +45,6 @@ export default function GuildMapLoader({ guildId, mapId }: { guildId: string; ma
   const queryClient = useQueryClient()
   const [markerActive, setMarkerActive] = useState(false)
   const [rulerActive, setRulerActive] = useState(false)
-  const [panelOpen, setPanelOpen] = useState(false)
-
   const saveViewMutation = useMutation({
     mutationFn: (view: { zoom: number; center: { lat: number; lng: number } }) =>
       updateGuildMap(guildId, mapId, {
@@ -71,14 +77,6 @@ export default function GuildMapLoader({ guildId, mapId }: { guildId: string; ma
     setRulerActive(prev => !prev)
   }, [])
 
-  const togglePanel = useCallback(() => {
-    setPanelOpen(prev => !prev)
-  }, [])
-
-  const closePanel = useCallback(() => {
-    setPanelOpen(false)
-  }, [])
-
   const handleZoomIn = useCallback(() => {
     mapHandleRef.current?.zoomIn()
   }, [])
@@ -101,54 +99,51 @@ export default function GuildMapLoader({ guildId, mapId }: { guildId: string; ma
     : { width: 0, height: 0 }
 
   return (
-    <div ref={containerRef} className="relative left-1/2 -translate-x-1/2 w-screen md:w-[calc(100vw-4rem)] h-[calc(100dvh-12rem)] overflow-hidden">
-      <GuildMap
-        guildId={guildId}
-        mapId={mapId}
-        pmtilesUrl={pmtilesUrl}
-        imageWidth={mapData?.image_width ?? null}
-        imageHeight={mapData?.image_height ?? null}
-        maxZoom={mapData?.max_zoom ?? 5}
-        defaultZoom={mapData?.default_zoom ?? null}
-        defaultCenterLat={mapData?.default_center_lat ?? null}
-        defaultCenterLng={mapData?.default_center_lng ?? null}
-        selectedMarkerUuid={selectedMarkerUuid}
-        setSelectedMarkerUuid={setSelectedMarkerUuid}
-        mapHandleRef={mapHandleRef}
-        markerActive={markerActive}
-        rulerActive={rulerActive}
-        onMarkerScreenPositionChange={setMarkerScreenPos}
-      />
-      <MapSidePanel
-        guildId={guildId}
-        mapId={mapId}
-        open={panelOpen}
-        onClose={closePanel}
-        selectedMarkerUuid={selectedMarkerUuid}
-        onSelectMarker={handleSelectMarker}
-      />
-      {selectedMarker && markerScreenPos && (
-        <MarkerInfoCard
+    <MapWidgetProvider
+      guildId={guildId}
+      mapId={mapId}
+      selectedMarkerUuid={selectedMarkerUuid}
+      onSelectMarker={handleSelectMarker}
+    >
+      <div ref={containerRef} className="relative left-1/2 -translate-x-1/2 w-screen md:w-[calc(100vw-4rem)] h-[calc(100dvh-12rem)] overflow-hidden">
+        <GuildMap
           guildId={guildId}
           mapId={mapId}
-          marker={selectedMarker}
-          screenPosition={markerScreenPos}
-          containerSize={containerSize}
-          onDismiss={handleDismissInfoCard}
+          pmtilesUrl={pmtilesUrl}
+          imageWidth={mapData?.image_width ?? null}
+          imageHeight={mapData?.image_height ?? null}
+          maxZoom={mapData?.max_zoom ?? 5}
+          defaultZoom={mapData?.default_zoom ?? null}
+          defaultCenterLat={mapData?.default_center_lat ?? null}
+          defaultCenterLng={mapData?.default_center_lng ?? null}
+          selectedMarkerUuid={selectedMarkerUuid}
+          setSelectedMarkerUuid={setSelectedMarkerUuid}
+          mapHandleRef={mapHandleRef}
+          markerActive={markerActive}
+          rulerActive={rulerActive}
+          onMarkerScreenPositionChange={setMarkerScreenPos}
         />
-      )}
-      <FloatingToolbar
-        markerActive={markerActive}
-        rulerActive={rulerActive}
-        panelOpen={panelOpen}
-        onToggleMarker={toggleMarker}
-        onToggleRuler={toggleRuler}
-        onTogglePanel={togglePanel}
-        onZoomIn={handleZoomIn}
-        onZoomOut={handleZoomOut}
-        onSaveDefaultView={handleSaveDefaultView}
-        isSavingView={saveViewMutation.isPending}
-      />
-    </div>
+        {selectedMarker && markerScreenPos && (
+          <MarkerInfoCard
+            guildId={guildId}
+            mapId={mapId}
+            marker={selectedMarker}
+            screenPosition={markerScreenPos}
+            containerSize={containerSize}
+            onDismiss={handleDismissInfoCard}
+          />
+        )}
+        <FloatingToolbar
+          markerActive={markerActive}
+          rulerActive={rulerActive}
+          onToggleMarker={toggleMarker}
+          onToggleRuler={toggleRuler}
+          onZoomIn={handleZoomIn}
+          onZoomOut={handleZoomOut}
+          onSaveDefaultView={handleSaveDefaultView}
+          isSavingView={saveViewMutation.isPending}
+        />
+      </div>
+    </MapWidgetProvider>
   )
 }
