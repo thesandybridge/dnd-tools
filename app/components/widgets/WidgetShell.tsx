@@ -29,6 +29,7 @@ export function WidgetShell({ id, children }: WidgetShellProps) {
     top: pos.y,
     width: meta.defaultWidth,
     zIndex: 1050 + zOrder,
+    pointerEvents: "auto",
     ...(transform ? { transform: `translate(${transform.x}px, ${transform.y}px)` } : {}),
   }
 
@@ -42,7 +43,7 @@ export function WidgetShell({ id, children }: WidgetShellProps) {
       transition={{ type: "spring", stiffness: 400, damping: 25 }}
       onPointerDown={() => bringToFront(id)}
     >
-      <GlassPanel variant="strong" corona className="overflow-hidden">
+      <GlassPanel variant="strong" corona>
         {/* Title bar - drag handle */}
         <div
           className="flex items-center gap-2 px-3 py-2 cursor-grab active:cursor-grabbing select-none"
@@ -67,7 +68,7 @@ export function WidgetShell({ id, children }: WidgetShellProps) {
         </div>
 
         {/* Widget body */}
-        <div className="px-3 pb-3">{children}</div>
+        {children}
       </GlassPanel>
     </motion.div>
   )

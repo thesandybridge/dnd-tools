@@ -151,11 +151,9 @@ function DesktopWidgetArea() {
       >
         <AnimatePresence>
           {openIds.map((id) => (
-            <div key={id} className="pointer-events-auto">
-              <WidgetShell id={id}>
-                {getWidgetContent(id)}
-              </WidgetShell>
-            </div>
+            <WidgetShell key={id} id={id}>
+              {getWidgetContent(id)}
+            </WidgetShell>
           ))}
         </AnimatePresence>
       </DndContext>
