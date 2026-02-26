@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useCallback } from "react"
+import { useState, useReducer, useRef, useCallback } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Dice6, Plus, SkipForward, SkipBack, X } from "lucide-react"
 
@@ -10,29 +10,97 @@ type Combatant = {
   initiative: number
 }
 
+type State = {
+  combatants: Combatant[]
+  currentTurn: number
+  round: number
+}
+
+type Action =
+  | { type: "add"; combatant: Combatant }
+  | { type: "remove"; id: number }
+  | { type: "next" }
+  | { type: "prev" }
+  | { type: "clear" }
+
+function sortByInitiative(list: Combatant[]): Combatant[] {
+  return [...list].sort((a, b) => b.initiative - a.initiative)
+}
+
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case "add":
+      return { ...state, combatants: [...state.combatants, action.combatant] }
+
+    case "remove": {
+      const next = state.combatants.filter((c) => c.id !== action.id)
+      if (next.length === 0) return { combatants: [], currentTurn: 0, round: 1 }
+
+      const sortedPrev = sortByInitiative(state.combatants)
+      const sortedNext = sortByInitiative(next)
+      const currentId = sortedPrev[state.currentTurn]?.id
+
+      let newTurn: number
+      if (currentId === action.id) {
+        newTurn = state.currentTurn >= sortedNext.length ? 0 : state.currentTurn
+      } else {
+        const idx = sortedNext.findIndex((c) => c.id === currentId)
+        newTurn = idx >= 0 ? idx : 0
+      }
+      return { ...state, combatants: next, currentTurn: newTurn }
+    }
+
+    case "next": {
+      const sorted = sortByInitiative(state.combatants)
+      if (sorted.length === 0) return state
+      const next = state.currentTurn + 1
+      if (next >= sorted.length) {
+        return { ...state, currentTurn: 0, round: state.round + 1 }
+      }
+      return { ...state, currentTurn: next }
+    }
+
+    case "prev": {
+      const sorted = sortByInitiative(state.combatants)
+      if (sorted.length === 0) return state
+      const next = state.currentTurn - 1
+      if (next < 0) {
+        return {
+          ...state,
+          currentTurn: sorted.length - 1,
+          round: Math.max(1, state.round - 1),
+        }
+      }
+      return { ...state, currentTurn: next }
+    }
+
+    case "clear":
+      return { combatants: [], currentTurn: 0, round: 1 }
+  }
+}
+
 function rollD20(): number {
   return Math.floor(Math.random() * 20) + 1
 }
 
 export function InitiativeTrackerContent() {
-  const [combatants, setCombatants] = useState<Combatant[]>([])
+  const [state, dispatch] = useReducer(reducer, {
+    combatants: [],
+    currentTurn: 0,
+    round: 1,
+  })
   const [name, setName] = useState("")
   const [initiative, setInitiative] = useState("")
-  const [currentTurn, setCurrentTurn] = useState(0)
-  const [round, setRound] = useState(1)
   const idRef = useRef(0)
   const nameInputRef = useRef<HTMLInputElement>(null)
 
-  const sorted = [...combatants].sort((a, b) => b.initiative - a.initiative)
+  const sorted = sortByInitiative(state.combatants)
 
   const addCombatant = useCallback(
     (init: number) => {
       const trimmed = name.trim()
       if (!trimmed) return
-      setCombatants((prev) => [
-        ...prev,
-        { id: idRef.current++, name: trimmed, initiative: init },
-      ])
+      dispatch({ type: "add", combatant: { id: idRef.current++, name: trimmed, initiative: init } })
       setName("")
       setInitiative("")
       nameInputRef.current?.focus()
@@ -49,64 +117,6 @@ export function InitiativeTrackerContent() {
   const addRandom = useCallback(() => {
     addCombatant(rollD20())
   }, [addCombatant])
-
-  const removeCombatant = useCallback(
-    (id: number) => {
-      setCombatants((prev) => {
-        const next = prev.filter((c) => c.id !== id)
-        if (next.length === 0) {
-          setCurrentTurn(0)
-          setRound(1)
-        } else {
-          // Adjust currentTurn if needed
-          const sortedPrev = [...prev].sort((a, b) => b.initiative - a.initiative)
-          const sortedNext = [...next].sort((a, b) => b.initiative - a.initiative)
-          const currentId = sortedPrev[currentTurn]?.id
-          if (currentId === id) {
-            // Removed the active combatant — stay at same index or wrap
-            setCurrentTurn((t) => (t >= sortedNext.length ? 0 : t))
-          } else {
-            // Find where the current combatant ended up
-            const newIndex = sortedNext.findIndex((c) => c.id === currentId)
-            if (newIndex >= 0) setCurrentTurn(newIndex)
-            else setCurrentTurn(0)
-          }
-        }
-        return next
-      })
-    },
-    [currentTurn]
-  )
-
-  const nextTurn = useCallback(() => {
-    if (sorted.length === 0) return
-    setCurrentTurn((prev) => {
-      const next = prev + 1
-      if (next >= sorted.length) {
-        setRound((r) => r + 1)
-        return 0
-      }
-      return next
-    })
-  }, [sorted.length])
-
-  const prevTurn = useCallback(() => {
-    if (sorted.length === 0) return
-    setCurrentTurn((prev) => {
-      const next = prev - 1
-      if (next < 0) {
-        setRound((r) => Math.max(1, r - 1))
-        return sorted.length - 1
-      }
-      return next
-    })
-  }, [sorted.length])
-
-  const clearAll = useCallback(() => {
-    setCombatants([])
-    setCurrentTurn(0)
-    setRound(1)
-  }, [])
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -126,6 +136,7 @@ export function InitiativeTrackerContent() {
           ref={nameInputRef}
           type="text"
           placeholder="Name"
+          aria-label="Combatant name"
           value={name}
           onChange={(e) => setName(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -134,6 +145,7 @@ export function InitiativeTrackerContent() {
         <input
           type="number"
           placeholder="Init"
+          aria-label="Initiative value"
           value={initiative}
           onChange={(e) => setInitiative(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -170,7 +182,7 @@ export function InitiativeTrackerContent() {
             </motion.p>
           ) : (
             sorted.map((c, i) => {
-              const isActive = i === currentTurn
+              const isActive = i === state.currentTurn
               return (
                 <motion.div
                   key={c.id}
@@ -187,26 +199,20 @@ export function InitiativeTrackerContent() {
                         : "border border-transparent"
                     }`}
                   >
-                    {/* Turn indicator dot */}
                     <div className="w-1.5 flex-shrink-0">
                       {isActive && (
                         <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_6px_rgba(var(--corona-rgb),0.6)]" />
                       )}
                     </div>
-
-                    {/* Name */}
                     <span className="flex-1 min-w-0 text-xs truncate">
                       {c.name}
                     </span>
-
-                    {/* Initiative value */}
                     <span className="font-cinzel font-bold text-xs text-primary/70 w-6 text-right flex-shrink-0">
                       {c.initiative}
                     </span>
-
-                    {/* Remove button */}
                     <button
-                      onClick={() => removeCombatant(c.id)}
+                      onClick={() => dispatch({ type: "remove", id: c.id })}
+                      aria-label={`Remove ${c.name}`}
                       className="h-5 w-5 flex-shrink-0 flex items-center justify-center rounded text-muted-foreground/40 hover:text-foreground hover:bg-white/10 transition-colors cursor-pointer"
                     >
                       <X className="h-3 w-3" />
@@ -223,18 +229,20 @@ export function InitiativeTrackerContent() {
       {sorted.length > 0 && (
         <div className="flex items-center justify-between border-t border-white/[0.06] pt-2">
           <button
-            onClick={prevTurn}
+            onClick={() => dispatch({ type: "prev" })}
+            aria-label="Previous turn"
             className="h-6 w-6 flex items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors cursor-pointer"
           >
             <SkipBack className="h-3.5 w-3.5" />
           </button>
 
           <span className="text-[10px] text-muted-foreground/60 font-cinzel tracking-wider uppercase">
-            Round {round}
+            Round {state.round}
           </span>
 
           <button
-            onClick={nextTurn}
+            onClick={() => dispatch({ type: "next" })}
+            aria-label="Next turn"
             className="h-6 w-6 flex items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors cursor-pointer"
           >
             <SkipForward className="h-3.5 w-3.5" />
@@ -245,7 +253,7 @@ export function InitiativeTrackerContent() {
       {/* Clear all */}
       {sorted.length > 0 && (
         <button
-          onClick={clearAll}
+          onClick={() => dispatch({ type: "clear" })}
           className="text-[10px] text-muted-foreground/40 hover:text-muted-foreground transition-colors cursor-pointer self-center"
         >
           Clear all

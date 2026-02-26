@@ -62,9 +62,10 @@ export function NPCGeneratorContent() {
   const copy = useCallback(() => {
     if (!npc) return
     const text = `${npc.name} — ${npc.race} ${npc.occupation}. ${npc.quirk}.`
-    navigator.clipboard.writeText(text)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 1500)
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 1500)
+    }).catch(() => {})
   }, [npc])
 
   return (

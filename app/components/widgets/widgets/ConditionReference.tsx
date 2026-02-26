@@ -25,6 +25,7 @@ export function ConditionReferenceContent() {
         <input
           type="text"
           placeholder="Search conditions..."
+          aria-label="Search conditions"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="bg-white/5 border border-white/10 rounded-md px-2 py-1.5 pl-7 text-xs w-full text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50"

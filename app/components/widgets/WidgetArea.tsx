@@ -171,12 +171,12 @@ function MobileWidgetArea() {
   const handleOpenChange = useCallback(
     (open: boolean) => {
       if (!open) {
-        for (const id of openIds) {
+        for (const id of openWidgets) {
           closeWidget(id)
         }
       }
     },
-    [openIds, closeWidget]
+    [openWidgets, closeWidget]
   )
 
   return (
