@@ -11,6 +11,7 @@ import {
   Swords,
   UserRound,
   BookOpen,
+  MapPin,
   X,
   Layers,
   Eye,
@@ -18,7 +19,7 @@ import {
 } from "lucide-react"
 import { useIsMobile } from "@/app/hooks/useIsMobile"
 import { useWidgets } from "@/app/components/widgets/WidgetProvider"
-import type { WidgetId } from "@/app/components/widgets/widget-registry"
+import { WIDGET_REGISTRY, type WidgetId } from "@/app/components/widgets/widget-registry"
 
 function useFlameDirection(wrapperRef: React.RefObject<HTMLDivElement | null>) {
   useEffect(() => {
@@ -65,6 +66,7 @@ const widgetActions: WidgetAction[] = [
   { label: "NPC Generator", icon: UserRound, widgetId: "npc" },
   { label: "Conditions", icon: BookOpen, widgetId: "conditions" },
   { label: "Quick Convert", icon: Calculator, widgetId: "calculator" },
+  { label: "Map Markers", icon: MapPin, widgetId: "markers" },
 ]
 
 function D20Icon({ className }: { className?: string }) {
@@ -191,8 +193,13 @@ function DesktopSpeedDial() {
   const [widgetsOpen, setWidgetsOpen] = useState(false)
   const { data: session } = useSession()
   const router = useRouter()
-  const { openWidgets, toggleWidget, collapsed, toggleCollapsed } = useWidgets()
+  const { openWidgets, toggleWidget, collapsed, toggleCollapsed, activeScopes } = useWidgets()
   const hasOpenWidgets = openWidgets.size > 0
+
+  const filteredWidgetActions = useMemo(
+    () => widgetActions.filter(wa => activeScopes.has(WIDGET_REGISTRY[wa.widgetId].scope)),
+    [activeScopes]
+  )
   const wrapperRef = useRef<HTMLDivElement>(null)
   useFlameDirection(wrapperRef)
 
@@ -301,7 +308,7 @@ function DesktopSpeedDial() {
                     animate="open"
                     exit="closed"
                   >
-                    {widgetActions.map((wa, i) => (
+                    {filteredWidgetActions.map((wa, i) => (
                       <WidgetActionButton
                         key={wa.widgetId}
                         action={wa}
@@ -317,7 +324,7 @@ function DesktopSpeedDial() {
                         closed: { opacity: 0, y: 10, scale: 0.3 },
                         open: { opacity: 1, y: 0, scale: 1 },
                       }}
-                      transition={{ delay: widgetActions.length * 0.03, type: "spring", stiffness: 300, damping: 24 }}
+                      transition={{ delay: filteredWidgetActions.length * 0.03, type: "spring", stiffness: 300, damping: 24 }}
                     >
                       <button
                         onClick={toggleCollapsed}
