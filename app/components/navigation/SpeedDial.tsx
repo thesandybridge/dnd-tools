@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -29,6 +29,28 @@ function useIsMobile() {
     return () => mql.removeEventListener("change", handler)
   }, [])
   return mobile
+}
+
+function useFlameDirection(wrapperRef: React.RefObject<HTMLDivElement | null>) {
+  useEffect(() => {
+    const wrapper = wrapperRef.current
+    if (!wrapper) return
+
+    function handleMouseMove(e: MouseEvent) {
+      if (!wrapper) return
+      const rect = wrapper.getBoundingClientRect()
+      const cx = rect.left + rect.width / 2
+      const dx = e.clientX - cx
+      const maxLean = 15
+      const range = 400
+      const raw = (dx / range) * maxLean
+      const clamped = Math.max(-maxLean, Math.min(maxLean, raw))
+      wrapper.style.setProperty("--flame-lean", `${clamped}deg`)
+    }
+
+    window.addEventListener("mousemove", handleMouseMove, { passive: true })
+    return () => window.removeEventListener("mousemove", handleMouseMove)
+  }, [wrapperRef])
 }
 
 type Action = {
@@ -66,17 +88,33 @@ function D20Icon({ className }: { className?: string }) {
   )
 }
 
+function Flame() {
+  return (
+    <div
+      className="pointer-events-none absolute left-1/2 bottom-[45%] flame-container"
+      aria-hidden="true"
+    >
+      <div className="flame-layer flame-outer" />
+      <div className="flame-layer flame-mid" />
+      <div className="flame-layer flame-core" />
+    </div>
+  )
+}
+
 function MobileSpeedDial() {
   const { mobileDrawerOpen, setMobileDrawerOpen } = useWidgets()
 
   return (
     <div className="speed-dial fixed bottom-20 right-4 z-[1100]">
-      <button
-        className="relative flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors cursor-pointer corona-border corona-pulse"
-        onClick={() => setMobileDrawerOpen(!mobileDrawerOpen)}
-      >
-        <D20Icon className="h-7 w-7" />
-      </button>
+      <div className="relative">
+        <Flame />
+        <button
+          className="relative flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors cursor-pointer corona-border corona-pulse"
+          onClick={() => setMobileDrawerOpen(!mobileDrawerOpen)}
+        >
+          <D20Icon className="h-7 w-7" />
+        </button>
+      </div>
     </div>
   )
 }
@@ -88,6 +126,8 @@ function DesktopSpeedDial() {
   const router = useRouter()
   const { openWidgets, toggleWidget, collapsed, toggleCollapsed } = useWidgets()
   const hasOpenWidgets = openWidgets.size > 0
+  const wrapperRef = useRef<HTMLDivElement>(null)
+  useFlameDirection(wrapperRef)
 
   const visibleTopActions = topActions.filter(a => !a.auth || session?.user)
 
@@ -121,15 +161,17 @@ function DesktopSpeedDial() {
       </AnimatePresence>
 
       <div className="speed-dial fixed bottom-6 right-6 z-[1100] flex flex-col-reverse items-center gap-2">
-        {/* Main trigger */}
-        <motion.button
-          className={`relative flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors cursor-pointer corona-border corona-pulse ${open ? "corona-active" : ""}`}
-          onClick={() => { if (open) handleClose(); else setOpen(true) }}
-          animate={{ rotate: open ? 135 : 0 }}
-          transition={{ type: "spring", stiffness: 300, damping: 20 }}
-        >
-          {open ? <X className="h-6 w-6" /> : <D20Icon className="h-7 w-7" />}
-        </motion.button>
+        <div ref={wrapperRef} className="relative">
+          <Flame />
+          <motion.button
+            className={`relative flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors cursor-pointer corona-border corona-pulse ${open ? "corona-active" : ""}`}
+            onClick={() => { if (open) handleClose(); else setOpen(true) }}
+            animate={{ rotate: open ? 135 : 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+          >
+            {open ? <X className="h-6 w-6" /> : <D20Icon className="h-7 w-7" />}
+          </motion.button>
+        </div>
 
         <AnimatePresence>
           {open && (
