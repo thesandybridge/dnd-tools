@@ -31,106 +31,125 @@ const View = ({
   handleFeatureChange,
   miles,
 }) => {
+  const currentItem = itemsData.find(item => item.item === selectedItem)
+
   return (
-    <div className="flex flex-col gap-6 w-full">
+    <div className="flex flex-col gap-4 w-full">
       <h2 className="text-2xl font-bold font-cinzel">Mount Calculator</h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-        {/* Left: Form (3 cols) */}
-        <GlassPanel className="md:col-span-3 p-6 flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="mount-select" className="text-sm text-muted-foreground">Mount</Label>
-            <Select value={selectedItem} onValueChange={(val) => setSelectedItem(val)}>
-              <SelectTrigger id="mount-select" className="bg-white/[0.05] border-white/[0.08]">
-                <SelectValue placeholder="Select a Mount" />
-              </SelectTrigger>
-              <SelectContent>
-                {itemsData.map((item, index) => (
-                  <SelectItem
-                    key={index}
-                    value={item.item}
-                  >
-                    {item.item} - {convertToDnDCurrency(item.baseCost)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+      <GlassPanel corona className="p-6 flex flex-col gap-0">
+        {/* Result Readout */}
+        <div className="py-8 flex flex-col items-center gap-2">
+          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Estimated Cost</h3>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={totalCost}
+              className="text-3xl sm:text-4xl font-bold font-cinzel text-primary"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+            >
+              {totalCost > 0 ? convertToDnDCurrency(totalCost) : "\u2014"}
+            </motion.div>
+          </AnimatePresence>
+          <AnimatePresence>
+            {totalDays && (
+              <motion.div
+                className="flex flex-col items-center gap-1 mt-2"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+              >
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Travel Time</h3>
+                <div className="text-lg sm:text-xl font-bold text-primary">{totalDays}</div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
 
-          {selectedItem && itemsData.find(item => item.item === selectedItem)?.types && (
-            <div className="flex flex-col gap-1.5">
-              <Label htmlFor="type-select" className="text-sm text-muted-foreground">Type</Label>
-              <Select value={selectedType} onValueChange={(val) => setSelectedType(val)}>
-                <SelectTrigger id="type-select" className="bg-white/[0.05] border-white/[0.08]">
-                  <SelectValue placeholder="Select Type" />
+        {/* Divider */}
+        <div className="w-12 h-px bg-white/[0.06] mx-auto my-2" />
+
+        {/* Input Group 1: Mount + Type */}
+        <div className="flex flex-col gap-4 pt-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1.5 group">
+              <Label className="text-xs uppercase tracking-wider text-muted-foreground transition-colors duration-200 group-focus-within:text-primary/70">Mount</Label>
+              <Select value={selectedItem} onValueChange={(val) => setSelectedItem(val)}>
+                <SelectTrigger className="bg-white/[0.03] border-white/[0.06] transition-all duration-200 focus:border-primary/40 focus:shadow-[0_0_8px_-3px] focus:shadow-primary/20">
+                  <SelectValue placeholder="Select a Mount" />
                 </SelectTrigger>
                 <SelectContent>
-                  {itemsData.find(item => item.item === selectedItem).types.map((type, index) => (
-                    <SelectItem
-                      key={index}
-                      value={type.type}
-                    >
-                      {type.type}
+                  {itemsData.map((item, index) => (
+                    <SelectItem key={index} value={item.item}>
+                      {item.item} - {convertToDnDCurrency(item.baseCost)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
-          )}
 
-          {itemsData.find(item => item.item === selectedItem)?.specials && (
+            {currentItem?.types && (
+              <div className="flex flex-col gap-1.5 group">
+                <Label className="text-xs uppercase tracking-wider text-muted-foreground transition-colors duration-200 group-focus-within:text-primary/70">Type</Label>
+                <Select value={selectedType} onValueChange={(val) => setSelectedType(val)}>
+                  <SelectTrigger className="bg-white/[0.03] border-white/[0.06] transition-all duration-200 focus:border-primary/40 focus:shadow-[0_0_8px_-3px] focus:shadow-primary/20">
+                    <SelectValue placeholder="Select Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {currentItem.types.map((type, index) => (
+                      <SelectItem key={index} value={type.type}>{type.type}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Specials (conditional) */}
+        {currentItem?.specials && (
+          <>
+            <div className="w-12 h-px bg-white/[0.06] mx-auto my-4" />
             <div className="flex flex-col gap-2">
-              {itemsData.find(item => item.item === selectedItem).specials.map((special, index) => (
+              {currentItem.specials.map((special, index) => (
                 <div key={index} className="flex items-center gap-2">
                   <Checkbox
                     id={`special-${index}`}
                     checked={selectedFeatures.includes(special.feature)}
                     onCheckedChange={(checked) => handleFeatureChange(special.feature, !!checked)}
                   />
-                  <Label htmlFor={`special-${index}`}>
+                  <Label
+                    htmlFor={`special-${index}`}
+                    className={selectedFeatures.includes(special.feature) ? "text-foreground" : "text-muted-foreground"}
+                  >
                     {special.feature} (+{special.additionalCost} gp)
                   </Label>
                 </div>
               ))}
             </div>
-          )}
+          </>
+        )}
 
-          <div className="flex flex-col gap-1.5 max-w-xs">
-            <Label htmlFor="miles-input" className="text-sm text-muted-foreground">Miles</Label>
-            <Input
-              id="miles-input"
-              type="number"
-              value={miles}
-              onChange={(e) => setMiles(parseInt(e.target.value, 10) || 0)}
-              onBlur={handleBlur(miles)}
-              onFocus={handleFocus}
-              onKeyDown={preventNonNumeric}
-              className="bg-white/[0.05] border-white/[0.08]"
-            />
-          </div>
-        </GlassPanel>
+        {/* Divider */}
+        <div className="w-12 h-px bg-white/[0.06] mx-auto my-4" />
 
-        {/* Right: Result (2 cols) */}
-        <GlassPanel corona className="md:col-span-2 p-6 flex flex-col items-center justify-center gap-4">
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Estimated Cost</h3>
-          <div className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary whitespace-nowrap">
-            {totalCost > 0 ? convertToDnDCurrency(totalCost) : "\u2014"}
-          </div>
-          <AnimatePresence>
-            {totalDays && (
-              <motion.div
-                className="text-center"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-              >
-                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mt-2">Travel Time</h3>
-                <div className="text-lg sm:text-xl md:text-2xl font-bold text-primary whitespace-nowrap">{totalDays}</div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </GlassPanel>
-      </div>
+        {/* Input Group: Miles */}
+        <div className="flex flex-col gap-1.5 max-w-xs group">
+          <Label className="text-xs uppercase tracking-wider text-muted-foreground transition-colors duration-200 group-focus-within:text-primary/70">Miles</Label>
+          <Input
+            type="number"
+            value={miles}
+            onChange={(e) => setMiles(parseInt(e.target.value, 10) || 0)}
+            onBlur={handleBlur(miles)}
+            onFocus={handleFocus}
+            onKeyDown={preventNonNumeric}
+            className="bg-white/[0.03] border-white/[0.06] text-right transition-all duration-200 focus:border-primary/40 focus:shadow-[0_0_8px_-3px] focus:shadow-primary/20"
+          />
+        </div>
+      </GlassPanel>
     </div>
   )
 }
