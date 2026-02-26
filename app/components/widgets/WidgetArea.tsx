@@ -300,9 +300,10 @@ function DesktopWidgetArea() {
 // --- Mobile (unchanged) ---
 
 function MobileWidgetArea() {
-  const { openWidgets, closeWidget } = useWidgets()
+  const { openWidgets, closeWidget, toggleWidget } = useWidgets()
   const openIds = Array.from(openWidgets)
   const isOpen = openIds.length > 0
+  const allWidgetIds = Object.keys(WIDGET_REGISTRY) as WidgetId[]
 
   const handleOpenChange = useCallback(
     (open: boolean) => {
@@ -322,6 +323,30 @@ function MobileWidgetArea() {
           <DrawerTitle className="text-left font-cinzel">Widgets</DrawerTitle>
         </DrawerHeader>
         <div className="flex flex-col gap-3 px-4 pb-6 overflow-y-auto">
+          {/* Widget toggles */}
+          <div className="flex gap-2 flex-wrap">
+            {allWidgetIds.map((id) => {
+              const meta = WIDGET_REGISTRY[id]
+              const Icon = meta.icon
+              const isActive = openWidgets.has(id)
+              return (
+                <button
+                  key={id}
+                  onClick={() => toggleWidget(id)}
+                  className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs transition-colors cursor-pointer border ${
+                    isActive
+                      ? "bg-primary/20 border-primary/30 text-primary"
+                      : "bg-white/[0.03] border-white/[0.06] text-muted-foreground"
+                  }`}
+                >
+                  <Icon className="h-3.5 w-3.5" />
+                  {meta.label}
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Open widgets */}
           {openIds.map((id) => {
             const meta = WIDGET_REGISTRY[id]
             return (
