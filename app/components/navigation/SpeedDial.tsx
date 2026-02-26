@@ -59,11 +59,9 @@ const widgetActions: WidgetAction[] = [
 function D20Icon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5" />
-      <polyline points="12 2 12 22" />
-      <polyline points="2 8.5 22 8.5" />
-      <polyline points="2 15.5 12 8.5 22 15.5" />
-      <polyline points="2 8.5 12 15.5 22 8.5" />
+      <polygon points="12,3 20.5,9.2 17.3,19.3 6.7,19.3 3.5,9.2" />
+      <line x1="12" y1="3" x2="6.7" y2="19.3" />
+      <line x1="12" y1="3" x2="17.3" y2="19.3" />
     </svg>
   )
 }
