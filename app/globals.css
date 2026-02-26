@@ -494,6 +494,16 @@
 }
 
 /* ===================================================================
+   SpeedDial: hide when any drawer is open (vaul focus-traps the page)
+   =================================================================== */
+
+body:has([data-vaul-overlay]) .speed-dial {
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+/* ===================================================================
    Form element resets
    =================================================================== */
 

@@ -97,7 +97,7 @@ export function SpeedDial() {
         )}
       </AnimatePresence>
 
-      <div className="fixed bottom-20 right-4 md:bottom-6 md:right-6 z-[1100] flex flex-col-reverse items-center gap-2">
+      <div className="speed-dial fixed bottom-20 right-4 md:bottom-6 md:right-6 z-[1100] flex flex-col-reverse items-center gap-2">
         {/* Main trigger */}
         <motion.button
           className={`relative flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors cursor-pointer corona-border corona-pulse ${open ? "corona-active" : ""}`}
