@@ -78,6 +78,7 @@ export function SpeedDial() {
 
   function handleWidgetAction(widgetId: WidgetId) {
     toggleWidget(widgetId)
+    handleClose()
   }
 
   // Items to render: top actions + "Widgets" trigger
