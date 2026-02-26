@@ -11,17 +11,8 @@ import Electrum from "./currency_svgs/Electrum"
 import { useCurrency } from "../../providers/CurrencyContext"
 import { handleFocus, preventNonNumeric, convertToLabel } from "./helper"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { GlassPanel } from "@/app/components/ui/GlassPanel"
-
-const currencyIcons = {
-  CP: <Copper />,
-  SP: <Silver />,
-  EP: <Electrum />,
-  GP: <Gold />,
-  PP: <Platinum />,
-}
 
 function convertCurrency(type, amount) {
   const rates = {
@@ -59,10 +50,9 @@ const View = ({
   handleBlur,
 }) => {
   return (
-    <GlassPanel className="p-6">
-      <h2 className="text-center mb-4 font-cinzel font-semibold text-lg">Currency Converter</h2>
-      <div className="flex gap-3 items-end">
-        <div className="flex-1">
+    <GlassPanel variant="subtle" className="p-3">
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex items-center gap-2">
           <Input
             type="number"
             value={currency}
@@ -70,17 +60,14 @@ const View = ({
             onBlur={handleBlur}
             onFocus={handleFocus}
             onKeyDown={preventNonNumeric}
-            className="bg-white/[0.05] border-white/[0.08]"
+            className="w-24 bg-white/[0.03] border-white/[0.06] text-right transition-all duration-200 focus:border-primary/40 focus:shadow-[0_0_8px_-3px] focus:shadow-primary/20"
           />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="currency-select" className="text-sm text-muted-foreground">Currency</Label>
           <Select
             value={selectedCurrency}
             onValueChange={handleCurrencyTypeChange}
           >
-            <SelectTrigger id="currency-select" className="bg-white/[0.05] border-white/[0.08]">
-              <SelectValue placeholder="Select Currency" />
+            <SelectTrigger className="w-24 bg-white/[0.03] border-white/[0.06] transition-all duration-200 focus:border-primary/40 focus:shadow-[0_0_8px_-3px] focus:shadow-primary/20">
+              <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="CP">Copper</SelectItem>
@@ -91,47 +78,27 @@ const View = ({
             </SelectContent>
           </Select>
         </div>
-      </div>
-      <div className="grid grid-cols-3 md:grid-cols-5 gap-2 mt-4">
-        <GlassPanel
-          variant="subtle"
-          corona
-          className="flex relative gap-1.5 p-2 items-center cursor-pointer min-w-0"
-          onClick={() => handleCopy(String(currency), -1)}
-          title={convertToLabel(selectedCurrency)}
-        >
-          {currencyIcons[selectedCurrency]}
-          <div className="flex gap-1 items-center min-w-0">
-            <span className="font-medium truncate">{Number(currency).toLocaleString()}</span>
-            <span className="text-muted-foreground text-sm shrink-0">{selectedCurrency}</span>
-          </div>
-          {copiedIndex === -1 && (
-            <ClipboardCheck
-              className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 text-primary"
-            />
-          )}
-        </GlassPanel>
-        {conversionResult.map((result, index) => (
-          <GlassPanel
-            key={index}
-            variant="subtle"
-            coronaHover
-            className="flex relative gap-1.5 p-2 items-center cursor-pointer min-w-0"
-            onClick={() => handleCopy(result.amount, index)}
-            title={convertToLabel(result.currency)}
-          >
-            {result.icon}
-            <div className="flex gap-1 items-center min-w-0">
-              <span className="font-medium truncate">{parseInt(result.amount).toLocaleString()}</span>
-              <span className="text-muted-foreground text-sm shrink-0">{result.currency}</span>
-            </div>
-            {copiedIndex === index && (
-              <ClipboardCheck
-                className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 text-primary"
-              />
-            )}
-          </GlassPanel>
-        ))}
+        <div className="flex items-center gap-3 flex-wrap">
+          {conversionResult.map((result, index) => (
+            <button
+              key={index}
+              onClick={() => handleCopy(result.amount, index)}
+              className="flex items-center gap-1.5 text-sm hover:text-primary transition-colors"
+              title={convertToLabel(result.currency)}
+            >
+              {copiedIndex === index ? (
+                <ClipboardCheck className="w-4 h-4 text-primary" />
+              ) : (
+                <span className="[&_svg]:w-4 [&_svg]:h-4">{result.icon}</span>
+              )}
+              <span className="font-medium">{Number(result.amount).toLocaleString()}</span>
+              <span className="text-muted-foreground text-xs">{result.currency}</span>
+              {index < conversionResult.length - 1 && (
+                <span className="text-muted-foreground/30 ml-1">&middot;</span>
+              )}
+            </button>
+          ))}
+        </div>
       </div>
     </GlassPanel>
   )
