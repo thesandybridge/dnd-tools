@@ -66,46 +66,49 @@ export function DiceWidgetContent() {
   const latest = history[0]
 
   return (
-    <div className="relative">
-      {/* Wireframe die floating above the widget shell */}
-      <div className="absolute -top-[140px] left-1/2 -translate-x-1/2 pointer-events-none">
-        <WireframeDie dieType={dieType} spinning={rolling} color={theme.primaryColor} />
-      </div>
-
+    <div>
       {/* Roll area - tap to roll */}
       <button
         onClick={roll}
         disabled={rolling}
-        className="w-full flex flex-col items-center py-3 cursor-pointer group disabled:cursor-wait"
+        className="w-full flex items-center justify-center py-4 cursor-pointer group disabled:cursor-wait relative"
       >
-        <div className="h-16 flex items-center justify-center">
-          <AnimatePresence mode="wait">
-            {rolling ? (
-              <motion.span
-                key="rolling"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 0.3 }}
-                exit={{ opacity: 0 }}
-                className="font-cinzel text-3xl text-muted-foreground"
-              >
-                &middot;&middot;&middot;
-              </motion.span>
-            ) : latest ? (
-              <motion.span
-                key={latest.id}
-                initial={{ opacity: 0, scale: 0.3 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ type: "spring", stiffness: 300, damping: 15 }}
-                className="font-cinzel text-5xl font-bold text-primary drop-shadow-[0_0_12px_rgba(var(--corona-rgb),0.4)]"
-              >
-                {latest.result}
-              </motion.span>
-            ) : null}
-          </AnimatePresence>
+        {/* Stacked layers: die behind, number in front */}
+        <div className="grid place-items-center [&>*]:[grid-area:1/1] h-[120px] w-full">
+          <div className="h-[120px] w-[120px] pointer-events-none opacity-40 flex items-center justify-center overflow-visible">
+            <div className="shrink-0">
+              <WireframeDie dieType={dieType} spinning={rolling} color={theme.primaryColor} />
+            </div>
+          </div>
+          <div className="relative z-10 flex flex-col items-center">
+            <AnimatePresence mode="wait">
+              {rolling ? (
+                <motion.span
+                  key="rolling"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 0.3 }}
+                  exit={{ opacity: 0 }}
+                  className="font-cinzel text-2xl text-muted-foreground"
+                >
+                  &middot;&middot;&middot;
+                </motion.span>
+              ) : latest ? (
+                <motion.span
+                  key={latest.id}
+                  initial={{ opacity: 0, scale: 0.3 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 15 }}
+                  className="font-cinzel text-4xl font-bold text-primary drop-shadow-[0_0_12px_rgba(var(--corona-rgb),0.4)]"
+                >
+                  {latest.result}
+                </motion.span>
+              ) : null}
+            </AnimatePresence>
+            <span className="text-[11px] text-muted-foreground group-hover:text-foreground/60 transition-colors mt-1">
+              {rolling ? "Rolling..." : "Tap to roll"}
+            </span>
+          </div>
         </div>
-        <span className="text-[11px] text-muted-foreground group-hover:text-foreground/60 transition-colors">
-          {rolling ? "Rolling..." : "Tap to roll"}
-        </span>
       </button>
 
       {/* Die type selector */}

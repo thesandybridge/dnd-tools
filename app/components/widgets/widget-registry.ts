@@ -1,7 +1,7 @@
-import { Dice6, Swords, UserRound, BookOpen } from "lucide-react"
+import { Dice6, Swords, UserRound, BookOpen, Calculator } from "lucide-react"
 import type { ComponentType } from "react"
 
-export type WidgetId = "dice" | "initiative" | "npc" | "conditions"
+export type WidgetId = "dice" | "initiative" | "npc" | "conditions" | "calculator"
 
 export type WidgetMeta = {
   id: WidgetId
@@ -29,5 +29,10 @@ export const WIDGET_REGISTRY: Record<WidgetId, WidgetMeta> = {
     id: "conditions",
     label: "Conditions",
     icon: BookOpen,
+  },
+  calculator: {
+    id: "calculator",
+    label: "Quick Convert",
+    icon: Calculator,
   },
 }

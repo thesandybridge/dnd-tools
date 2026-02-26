@@ -20,10 +20,12 @@ type WidgetState = {
 type WidgetContextValue = {
   openWidgets: Set<WidgetId>
   cellAssignments: Record<string, number>
+  collapsed: boolean
   toggleWidget: (id: WidgetId) => void
   closeWidget: (id: WidgetId) => void
   moveToCell: (id: WidgetId, cellIndex: number) => void
   getWidgetInCell: (cellIndex: number) => WidgetId | null
+  toggleCollapsed: () => void
 }
 
 const WidgetContext = createContext<WidgetContextValue | null>(null)
@@ -57,6 +59,7 @@ export function WidgetProvider({ children }: { children: ReactNode }) {
     openWidgets: new Set(),
     cellAssignments: {},
   }))
+  const [collapsed, setCollapsed] = useState(false)
   const initializedRef = useRef(false)
 
   useEffect(() => {
@@ -76,13 +79,18 @@ export function WidgetProvider({ children }: { children: ReactNode }) {
         return { ...prev, openWidgets: next }
       } else {
         next.add(id)
-        if (prev.cellAssignments[id] === undefined) {
-          const cellIndex = findFirstUnoccupiedCell(prev.cellAssignments)
-          const cellAssignments = { ...prev.cellAssignments, [id]: cellIndex }
-          saveCellAssignments(cellAssignments)
-          return { ...prev, openWidgets: next, cellAssignments }
+        // Always assign to first unoccupied cell (among currently open widgets)
+        // This avoids stale saved assignments pointing to cells that no longer exist
+        const activeCells: Record<string, number> = {}
+        for (const wid of next) {
+          if (wid !== id && prev.cellAssignments[wid] !== undefined) {
+            activeCells[wid] = prev.cellAssignments[wid]
+          }
         }
-        return { ...prev, openWidgets: next }
+        const cellIndex = findFirstUnoccupiedCell(activeCells)
+        const cellAssignments = { ...prev.cellAssignments, [id]: cellIndex }
+        saveCellAssignments(cellAssignments)
+        return { ...prev, openWidgets: next, cellAssignments }
       }
     })
   }, [])
@@ -112,6 +120,10 @@ export function WidgetProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
+  const toggleCollapsed = useCallback(() => {
+    setCollapsed(prev => !prev)
+  }, [])
+
   const getWidgetInCell = useCallback((cellIndex: number): WidgetId | null => {
     const entry = Object.entries(state.cellAssignments).find(
       ([, idx]) => idx === cellIndex
@@ -124,11 +136,13 @@ export function WidgetProvider({ children }: { children: ReactNode }) {
   const contextValue = useMemo<WidgetContextValue>(() => ({
     openWidgets: state.openWidgets,
     cellAssignments: state.cellAssignments,
+    collapsed,
     toggleWidget,
     closeWidget,
     moveToCell,
     getWidgetInCell,
-  }), [state.openWidgets, state.cellAssignments, toggleWidget, closeWidget, moveToCell, getWidgetInCell])
+    toggleCollapsed,
+  }), [state.openWidgets, state.cellAssignments, collapsed, toggleWidget, closeWidget, moveToCell, getWidgetInCell, toggleCollapsed])
 
   return (
     <WidgetContext.Provider value={contextValue}>
