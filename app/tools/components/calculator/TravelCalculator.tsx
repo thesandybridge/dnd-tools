@@ -44,12 +44,20 @@ const View = ({
               {totalCost > 0 ? convertToDnDCurrency(totalCost) : "\u2014"}
             </motion.div>
           </AnimatePresence>
-          {totalDays && (
-            <div className="flex flex-col items-center gap-1 mt-2">
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Travel Time</h3>
-              <div className="text-lg sm:text-xl font-bold text-primary">{totalDays}</div>
-            </div>
-          )}
+          <AnimatePresence>
+            {totalDays && (
+              <motion.div
+                className="flex flex-col items-center gap-1 mt-2"
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+              >
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">Travel Time</h3>
+                <div className="text-lg sm:text-xl font-bold text-primary">{totalDays}</div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         {/* Divider */}

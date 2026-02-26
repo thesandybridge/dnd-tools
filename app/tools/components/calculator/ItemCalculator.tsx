@@ -96,7 +96,7 @@ const View = ({
         <div className="w-12 h-px bg-white/[0.06] mx-auto my-4" />
 
         {/* Input Group 2: Attributes */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {Object.keys(attributes).map((attr) => (
             <div key={attr} className="flex flex-col gap-1.5 group">
               <Label className="text-xs uppercase tracking-wider text-muted-foreground transition-colors duration-200 group-focus-within:text-primary/70">
