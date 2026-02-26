@@ -10,13 +10,17 @@ import {
   useMemo,
   type ReactNode,
 } from "react"
-import type { WidgetId } from "./widget-registry"
+import type { WidgetId, WidgetScope } from "./widget-registry"
+import { WIDGET_REGISTRY } from "./widget-registry"
 
 type WidgetState = {
   openWidgets: Set<WidgetId>
   cellAssignments: Record<string, number>
   collapsed: boolean
   mobileDrawerOpen: boolean
+  activeScopes: Set<WidgetScope>
+  overflowWidgets: WidgetId[]
+  totalCells: number
 }
 
 type WidgetAction =
@@ -26,18 +30,29 @@ type WidgetAction =
   | { type: "TOGGLE_COLLAPSED" }
   | { type: "SET_MOBILE_DRAWER"; open: boolean }
   | { type: "INIT_ASSIGNMENTS"; assignments: Record<string, number> }
+  | { type: "REGISTER_SCOPE"; scope: WidgetScope }
+  | { type: "UNREGISTER_SCOPE"; scope: WidgetScope }
+  | { type: "SET_TOTAL_CELLS"; count: number }
+  | { type: "SWAP_OVERFLOW"; overflowId: WidgetId; cellIndex: number }
 
 type WidgetContextValue = {
   openWidgets: Set<WidgetId>
   cellAssignments: Record<string, number>
   collapsed: boolean
   mobileDrawerOpen: boolean
+  activeScopes: Set<WidgetScope>
+  overflowWidgets: WidgetId[]
+  totalCells: number
   toggleWidget: (id: WidgetId) => void
   closeWidget: (id: WidgetId) => void
   moveToCell: (id: WidgetId, cellIndex: number) => void
   getWidgetInCell: (cellIndex: number) => WidgetId | null
   toggleCollapsed: () => void
   setMobileDrawerOpen: (open: boolean) => void
+  registerScope: (scope: WidgetScope) => void
+  unregisterScope: (scope: WidgetScope) => void
+  setTotalCells: (count: number) => void
+  swapOverflow: (overflowId: WidgetId, cellIndex: number) => void
 }
 
 const WidgetContext = createContext<WidgetContextValue | null>(null)
@@ -71,17 +86,42 @@ function widgetReducer(state: WidgetState, action: WidgetAction): WidgetState {
     case "TOGGLE_WIDGET": {
       const next = new Set(state.openWidgets)
       if (next.has(action.id)) {
+        // Closing a widget
         next.delete(action.id)
-        return { ...state, openWidgets: next }
+        const wasOverflow = state.overflowWidgets.includes(action.id)
+        const newOverflow = wasOverflow
+          ? state.overflowWidgets.filter(id => id !== action.id)
+          : state.overflowWidgets
+        const newState = { ...state, openWidgets: next, overflowWidgets: newOverflow }
+        // If we freed a cell and there are overflow widgets, promote the oldest
+        if (!wasOverflow && newOverflow.length > 0) {
+          const [promoteId, ...restOverflow] = newOverflow
+          const activeCells: Record<string, number> = {}
+          for (const wid of next) {
+            if (wid !== promoteId && newState.cellAssignments[wid] !== undefined && !newOverflow.includes(wid)) {
+              activeCells[wid] = newState.cellAssignments[wid]
+            }
+          }
+          const cellIndex = findFirstUnoccupiedCell(activeCells)
+          const cellAssignments = { ...newState.cellAssignments, [promoteId]: cellIndex }
+          saveCellAssignments(cellAssignments)
+          return { ...newState, cellAssignments, overflowWidgets: restOverflow }
+        }
+        return newState
       } else {
+        // Opening a widget
         next.add(action.id)
         const activeCells: Record<string, number> = {}
         for (const wid of next) {
-          if (wid !== action.id && state.cellAssignments[wid] !== undefined) {
+          if (wid !== action.id && state.cellAssignments[wid] !== undefined && !state.overflowWidgets.includes(wid)) {
             activeCells[wid] = state.cellAssignments[wid]
           }
         }
         const cellIndex = findFirstUnoccupiedCell(activeCells)
+        // Check if we exceeded totalCells
+        if (state.totalCells > 0 && cellIndex >= state.totalCells) {
+          return { ...state, openWidgets: next, overflowWidgets: [...state.overflowWidgets, action.id] }
+        }
         const cellAssignments = { ...state.cellAssignments, [action.id]: cellIndex }
         saveCellAssignments(cellAssignments)
         return { ...state, openWidgets: next, cellAssignments }
@@ -90,7 +130,8 @@ function widgetReducer(state: WidgetState, action: WidgetAction): WidgetState {
     case "CLOSE_WIDGET": {
       const next = new Set(state.openWidgets)
       next.delete(action.id)
-      return { ...state, openWidgets: next }
+      const newOverflow = state.overflowWidgets.filter(id => id !== action.id)
+      return { ...state, openWidgets: next, overflowWidgets: newOverflow }
     }
     case "MOVE_TO_CELL": {
       const cellAssignments = { ...state.cellAssignments }
@@ -111,6 +152,41 @@ function widgetReducer(state: WidgetState, action: WidgetAction): WidgetState {
       return { ...state, mobileDrawerOpen: action.open }
     case "INIT_ASSIGNMENTS":
       return { ...state, cellAssignments: { ...state.cellAssignments, ...action.assignments } }
+    case "REGISTER_SCOPE": {
+      const scopes = new Set(state.activeScopes)
+      scopes.add(action.scope)
+      return { ...state, activeScopes: scopes }
+    }
+    case "UNREGISTER_SCOPE": {
+      const scopes = new Set(state.activeScopes)
+      scopes.delete(action.scope)
+      // Auto-close widgets with this scope
+      const next = new Set(state.openWidgets)
+      const newOverflow = [...state.overflowWidgets]
+      for (const wid of state.openWidgets) {
+        if (WIDGET_REGISTRY[wid]?.scope === action.scope) {
+          next.delete(wid)
+          const overflowIdx = newOverflow.indexOf(wid)
+          if (overflowIdx !== -1) newOverflow.splice(overflowIdx, 1)
+        }
+      }
+      return { ...state, activeScopes: scopes, openWidgets: next, overflowWidgets: newOverflow }
+    }
+    case "SET_TOTAL_CELLS":
+      return { ...state, totalCells: action.count }
+    case "SWAP_OVERFLOW": {
+      // Swap an overflow widget into a specific cell, displacing occupant to overflow
+      const occupant = Object.entries(state.cellAssignments).find(
+        ([id, idx]) => idx === action.cellIndex && state.openWidgets.has(id as WidgetId) && !state.overflowWidgets.includes(id as WidgetId)
+      )
+      const newOverflow = state.overflowWidgets.filter(id => id !== action.overflowId)
+      if (occupant) {
+        newOverflow.push(occupant[0] as WidgetId)
+      }
+      const cellAssignments = { ...state.cellAssignments, [action.overflowId]: action.cellIndex }
+      saveCellAssignments(cellAssignments)
+      return { ...state, cellAssignments, overflowWidgets: newOverflow }
+    }
   }
 }
 
@@ -120,6 +196,9 @@ export function WidgetProvider({ children }: { children: ReactNode }) {
     cellAssignments: {},
     collapsed: false,
     mobileDrawerOpen: false,
+    activeScopes: new Set<WidgetScope>(["global"]),
+    overflowWidgets: [],
+    totalCells: 0,
   })
   const initializedRef = useRef(false)
 
@@ -152,27 +231,52 @@ export function WidgetProvider({ children }: { children: ReactNode }) {
     dispatch({ type: "SET_MOBILE_DRAWER", open })
   }, [])
 
+  const registerScope = useCallback((scope: WidgetScope) => {
+    dispatch({ type: "REGISTER_SCOPE", scope })
+  }, [])
+
+  const unregisterScope = useCallback((scope: WidgetScope) => {
+    dispatch({ type: "UNREGISTER_SCOPE", scope })
+  }, [])
+
+  const setTotalCells = useCallback((count: number) => {
+    dispatch({ type: "SET_TOTAL_CELLS", count })
+  }, [])
+
+  const swapOverflow = useCallback((overflowId: WidgetId, cellIndex: number) => {
+    dispatch({ type: "SWAP_OVERFLOW", overflowId, cellIndex })
+  }, [])
+
   const getWidgetInCell = useCallback((cellIndex: number): WidgetId | null => {
     const entry = Object.entries(state.cellAssignments).find(
       ([, idx]) => idx === cellIndex
     )
     if (!entry) return null
     const widgetId = entry[0] as WidgetId
-    return state.openWidgets.has(widgetId) ? widgetId : null
-  }, [state.cellAssignments, state.openWidgets])
+    if (!state.openWidgets.has(widgetId)) return null
+    if (state.overflowWidgets.includes(widgetId)) return null
+    return widgetId
+  }, [state.cellAssignments, state.openWidgets, state.overflowWidgets])
 
   const contextValue = useMemo<WidgetContextValue>(() => ({
     openWidgets: state.openWidgets,
     cellAssignments: state.cellAssignments,
     collapsed: state.collapsed,
     mobileDrawerOpen: state.mobileDrawerOpen,
+    activeScopes: state.activeScopes,
+    overflowWidgets: state.overflowWidgets,
+    totalCells: state.totalCells,
     toggleWidget,
     closeWidget,
     moveToCell,
     getWidgetInCell,
     toggleCollapsed,
     setMobileDrawerOpen,
-  }), [state.openWidgets, state.cellAssignments, state.collapsed, state.mobileDrawerOpen, toggleWidget, closeWidget, moveToCell, getWidgetInCell, toggleCollapsed, setMobileDrawerOpen])
+    registerScope,
+    unregisterScope,
+    setTotalCells,
+    swapOverflow,
+  }), [state.openWidgets, state.cellAssignments, state.collapsed, state.mobileDrawerOpen, state.activeScopes, state.overflowWidgets, state.totalCells, toggleWidget, closeWidget, moveToCell, getWidgetInCell, toggleCollapsed, setMobileDrawerOpen, registerScope, unregisterScope, setTotalCells, swapOverflow])
 
   return (
     <WidgetContext.Provider value={contextValue}>
