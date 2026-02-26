@@ -15,6 +15,70 @@ interface Particle {
   phase: number
   life: number
   maxLife: number
+  rotation: number
+}
+
+type Rgb = [number, number, number]
+
+function drawEmber(ctx: CanvasRenderingContext2D, p: Particle, alpha: number, rgb: Rgb) {
+  ctx.beginPath()
+  ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
+  ctx.fillStyle = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${alpha})`
+  ctx.fill()
+  ctx.beginPath()
+  ctx.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2)
+  ctx.fillStyle = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${alpha * 0.15})`
+  ctx.fill()
+}
+
+function drawWisp(ctx: CanvasRenderingContext2D, p: Particle, alpha: number, rgb: Rgb) {
+  ctx.save()
+  ctx.translate(p.x, p.y)
+  ctx.rotate(p.rotation + p.life * 0.005)
+  ctx.beginPath()
+  ctx.ellipse(0, 0, p.size * 2, p.size * 0.5, 0, 0, Math.PI * 2)
+  ctx.fillStyle = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${alpha * 0.6})`
+  ctx.fill()
+  ctx.restore()
+}
+
+function drawFlame(ctx: CanvasRenderingContext2D, p: Particle, alpha: number, rgb: Rgb) {
+  ctx.save()
+  ctx.translate(p.x, p.y)
+  const flicker = Math.sin(p.life * 0.015) * 0.3
+  ctx.scale(1 + flicker, 1 - flicker * 0.5)
+  ctx.beginPath()
+  ctx.moveTo(0, -p.size * 1.5)
+  ctx.quadraticCurveTo(p.size, 0, 0, p.size)
+  ctx.quadraticCurveTo(-p.size, 0, 0, -p.size * 1.5)
+  ctx.fillStyle = `rgba(${rgb[0]}, ${Math.min(rgb[1] + 30, 255)}, ${rgb[2]}, ${alpha})`
+  ctx.fill()
+  ctx.restore()
+}
+
+function drawSparkle(ctx: CanvasRenderingContext2D, p: Particle, alpha: number, rgb: Rgb) {
+  ctx.save()
+  ctx.translate(p.x, p.y)
+  ctx.rotate(p.rotation + p.life * 0.008)
+  const s = p.size
+  ctx.beginPath()
+  for (let i = 0; i < 4; i++) {
+    const angle = (i / 4) * Math.PI * 2
+    ctx.moveTo(0, 0)
+    ctx.lineTo(Math.cos(angle) * s * 2, Math.sin(angle) * s * 2)
+  }
+  ctx.strokeStyle = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${alpha})`
+  ctx.lineWidth = 1
+  ctx.stroke()
+  ctx.beginPath()
+  ctx.arc(0, 0, s * 0.4, 0, Math.PI * 2)
+  ctx.fillStyle = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${alpha})`
+  ctx.fill()
+  ctx.restore()
+}
+
+const DRAWERS: Record<string, typeof drawEmber> = {
+  ember: drawEmber, wisp: drawWisp, flame: drawFlame, sparkle: drawSparkle,
 }
 
 function getCoronaRgb(): [number, number, number] {
@@ -42,14 +106,15 @@ export function AmbientParticles() {
     let coronaIntensity = parseFloat(
       getComputedStyle(document.documentElement).getPropertyValue("--corona-intensity")
     ) || 0.8
+    let particleType = document.documentElement.getAttribute("data-particle") || "ember"
 
     const observer = new MutationObserver(() => {
       rgb = getCoronaRgb()
       coronaIntensity = parseFloat(
         getComputedStyle(document.documentElement).getPropertyValue("--corona-intensity")
       ) || 0.8
-      const particle = document.documentElement.getAttribute("data-particle")
-      if (particle === "off") { particles = []; return }
+      particleType = document.documentElement.getAttribute("data-particle") || "ember"
+      if (particleType === "off") { particles = []; return }
     })
     observer.observe(document.documentElement, {
       attributes: true,
@@ -74,6 +139,7 @@ export function AmbientParticles() {
         phase: Math.random() * Math.PI * 2,
         life: 0,
         maxLife: PARTICLE_LIFETIME[0] + Math.random() * (PARTICLE_LIFETIME[1] - PARTICLE_LIFETIME[0]),
+        rotation: Math.random() * Math.PI * 2,
       }
     }
 
@@ -84,12 +150,13 @@ export function AmbientParticles() {
       lastTime = now
       ctx!.clearRect(0, 0, canvas!.width, canvas!.height)
 
-      const particle = document.documentElement.getAttribute("data-particle")
-      if (particle !== "off") {
+      if (particleType !== "off") {
         while (particles.length < MAX_PARTICLES) {
           particles.push(spawnParticle())
         }
       }
+
+      const draw = DRAWERS[particleType] || drawEmber
 
       particles = particles.filter((p) => {
         p.life += dt
@@ -104,15 +171,7 @@ export function AmbientParticles() {
         const pulse = 0.5 + 0.5 * Math.sin(p.phase + p.life * 0.002)
         p.opacity = fadeIn * fadeOut * pulse * 0.35 * coronaIntensity
 
-        ctx!.beginPath()
-        ctx!.arc(p.x, p.y, p.size, 0, Math.PI * 2)
-        ctx!.fillStyle = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${p.opacity})`
-        ctx!.fill()
-
-        ctx!.beginPath()
-        ctx!.arc(p.x, p.y, p.size * 3, 0, Math.PI * 2)
-        ctx!.fillStyle = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${p.opacity * 0.15})`
-        ctx!.fill()
+        draw(ctx!, p, p.opacity, rgb)
 
         return true
       })

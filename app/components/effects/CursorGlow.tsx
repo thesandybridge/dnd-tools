@@ -157,7 +157,8 @@ export function CursorGlow() {
       glow.style.left = e.clientX + "px"
       glow.style.top = e.clientY + "px"
 
-      const target = e.target as HTMLElement
+      const target = e.target as Element
+      if (!target?.closest) { isHoveringRef.current = false; updateHoverState(); return }
       const hoverable = target.closest("a, button, [role='button'], input, select, textarea, [data-tilt], label")
       isHoveringRef.current = !!hoverable
       updateHoverState()

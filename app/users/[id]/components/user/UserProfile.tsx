@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { Shield, Crown, Sword, Plus } from "lucide-react"
 import ActivityFeed from "@/app/components/ActivityFeed"
+import PendingInvites from "../settings/PendingInvites"
 
 export default function UserProfile() {
   const user = useUser()
@@ -80,6 +81,9 @@ export default function UserProfile() {
         )}
       </section>
       )}
+
+      {/* Pending Guild Invites - owner only */}
+      {isOwner && <PendingInvites userId={user.id} />}
 
       {/* Guild Memberships */}
       <section>

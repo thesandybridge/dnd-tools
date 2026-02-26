@@ -3,18 +3,9 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
-import dynamic from "next/dynamic"
 import { motion, AnimatePresence } from "framer-motion"
 import { Shield, Dice6, Calculator, X } from "lucide-react"
-
-const DiceRoller = dynamic(() => import("@/app/components/dice/DiceRoller"), {
-  ssr: false,
-  loading: () => (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80">
-      <div className="text-white font-cinzel text-lg animate-pulse">Loading dice...</div>
-    </div>
-  ),
-})
+import DiceWidget from "@/app/components/dice/DiceWidget"
 
 type Action = {
   label: string
@@ -116,7 +107,9 @@ export function SpeedDial() {
         </AnimatePresence>
       </div>
 
-      {diceOpen && <DiceRoller onClose={() => setDiceOpen(false)} />}
+      <AnimatePresence>
+        {diceOpen && <DiceWidget onClose={() => setDiceOpen(false)} />}
+      </AnimatePresence>
     </>
   )
 }
