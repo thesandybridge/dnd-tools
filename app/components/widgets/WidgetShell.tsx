@@ -59,6 +59,7 @@ export function WidgetShell({ id, children }: WidgetShellProps) {
               closeWidget(id)
             }}
             onPointerDown={(e) => e.stopPropagation()}
+            aria-label={`Close ${meta.label}`}
             className="h-6 w-6 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors cursor-pointer"
           >
             <X className="h-3.5 w-3.5" />

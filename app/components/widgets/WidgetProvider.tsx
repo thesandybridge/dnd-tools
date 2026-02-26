@@ -7,6 +7,7 @@ import {
   useCallback,
   useEffect,
   useRef,
+  useMemo,
   type ReactNode,
 } from "react"
 import { WIDGET_REGISTRY, type WidgetId } from "./widget-registry"
@@ -26,6 +27,7 @@ type WidgetContextValue = {
   toggleWidget: (id: WidgetId) => void
   closeWidget: (id: WidgetId) => void
   updatePosition: (id: WidgetId, pos: Position) => void
+  batchUpdatePositions: (updates: Record<string, Position>) => void
   bringToFront: (id: WidgetId) => void
 }
 
@@ -74,11 +76,6 @@ export function WidgetProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const getPosition = useCallback(
-    (id: WidgetId): Position => state.positions[id] ?? getDefaultPosition(id),
-    [state.positions]
-  )
-
   const toggleWidget = useCallback((id: WidgetId) => {
     setState(prev => {
       const next = new Set(prev.openWidgets)
@@ -117,6 +114,14 @@ export function WidgetProvider({ children }: { children: ReactNode }) {
     })
   }, [])
 
+  const batchUpdatePositions = useCallback((updates: Record<string, Position>) => {
+    setState(prev => {
+      const positions = { ...prev.positions, ...updates }
+      savePositions(positions)
+      return { ...prev, positions }
+    })
+  }, [])
+
   const bringToFront = useCallback((id: WidgetId) => {
     const z = ++zCounterRef.current
     setState(prev => ({
@@ -125,24 +130,28 @@ export function WidgetProvider({ children }: { children: ReactNode }) {
     }))
   }, [])
 
-  // Build a stable positions record that includes defaults for open widgets
-  const positions: Record<string, Position> = {}
-  for (const id of state.openWidgets) {
-    positions[id] = getPosition(id)
-  }
+  // Derive positions with defaults for open widgets
+  const positions = useMemo(() => {
+    const result: Record<string, Position> = {}
+    for (const id of state.openWidgets) {
+      result[id] = state.positions[id] ?? getDefaultPosition(id)
+    }
+    return result
+  }, [state.openWidgets, state.positions])
+
+  const contextValue = useMemo<WidgetContextValue>(() => ({
+    openWidgets: state.openWidgets,
+    positions,
+    zIndices: state.zIndices,
+    toggleWidget,
+    closeWidget,
+    updatePosition,
+    batchUpdatePositions,
+    bringToFront,
+  }), [state.openWidgets, positions, state.zIndices, toggleWidget, closeWidget, updatePosition, batchUpdatePositions, bringToFront])
 
   return (
-    <WidgetContext.Provider
-      value={{
-        openWidgets: state.openWidgets,
-        positions,
-        zIndices: state.zIndices,
-        toggleWidget,
-        closeWidget,
-        updatePosition,
-        bringToFront,
-      }}
-    >
+    <WidgetContext.Provider value={contextValue}>
       {children}
     </WidgetContext.Provider>
   )

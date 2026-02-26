@@ -102,7 +102,7 @@ function nudgeCollidingWidgets(
 }
 
 function DesktopWidgetArea() {
-  const { openWidgets, positions, updatePosition } = useWidgets()
+  const { openWidgets, positions, batchUpdatePositions } = useWidgets()
   const containerRef = useRef<HTMLDivElement>(null)
 
   const pointerSensor = useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
@@ -117,30 +117,17 @@ function DesktopWidgetArea() {
       const currentPos = positions[widgetId]
       if (!currentPos) return
 
-      let newX = currentPos.x + delta.x
-      let newY = currentPos.y + delta.y
-
-      // Clamp to container bounds
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect()
-        const meta = WIDGET_REGISTRY[widgetId]
-        newX = Math.max(0, Math.min(newX, rect.width - meta.defaultWidth))
-        newY = Math.max(0, Math.min(newY, rect.height - meta.defaultHeight))
+      const newPos = {
+        x: currentPos.x + delta.x,
+        y: currentPos.y + delta.y,
       }
 
-      // Apply position
-      updatePosition(widgetId, { x: newX, y: newY })
-
-      // Nudge colliding widgets
-      const allPositions = { ...positions, [widgetId]: { x: newX, y: newY } }
+      // Nudge colliding widgets and batch all position updates together
+      const allPositions = { ...positions, [widgetId]: newPos }
       const nudged = nudgeCollidingWidgets(widgetId, allPositions, openWidgets)
-      for (const id of openWidgets) {
-        if (id !== widgetId && nudged[id]) {
-          updatePosition(id as WidgetId, nudged[id])
-        }
-      }
+      batchUpdatePositions(nudged)
     },
-    [positions, openWidgets, updatePosition]
+    [positions, openWidgets, batchUpdatePositions]
   )
 
   const openIds = Array.from(openWidgets)
@@ -203,6 +190,7 @@ function MobileWidgetArea() {
                   </span>
                   <button
                     onClick={() => closeWidget(id)}
+                    aria-label={`Close ${meta.label}`}
                     className="h-6 w-6 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors cursor-pointer"
                   >
                     <X className="h-3.5 w-3.5" />
