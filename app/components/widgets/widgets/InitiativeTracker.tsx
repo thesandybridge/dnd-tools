@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useReducer, useRef, useCallback } from "react"
+import { useState, useReducer, useRef, useCallback, memo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Dice6, Plus, SkipForward, SkipBack, X } from "lucide-react"
 
@@ -83,6 +83,54 @@ function rollD20(): number {
   return Math.floor(Math.random() * 20) + 1
 }
 
+const CombatantRow = memo(function CombatantRow({
+  combatant,
+  isActive,
+  onRemove,
+}: {
+  combatant: Combatant
+  isActive: boolean
+  onRemove: (id: number) => void
+}) {
+  const handleRemove = useCallback(() => onRemove(combatant.id), [onRemove, combatant.id])
+  return (
+    <motion.div
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: "auto" }}
+      exit={{ opacity: 0, height: 0 }}
+      transition={{ duration: 0.15 }}
+      className="overflow-hidden"
+    >
+      <div
+        className={`flex items-center gap-1.5 px-2 py-1 rounded-md transition-colors ${
+          isActive
+            ? "bg-primary/15 text-primary border border-primary/20"
+            : "border border-transparent"
+        }`}
+      >
+        <div className="w-1.5 flex-shrink-0">
+          {isActive && (
+            <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_6px_rgba(var(--corona-rgb),0.6)]" />
+          )}
+        </div>
+        <span className="flex-1 min-w-0 text-xs truncate">
+          {combatant.name}
+        </span>
+        <span className="font-cinzel font-bold text-xs text-primary/70 w-6 text-right flex-shrink-0">
+          {combatant.initiative}
+        </span>
+        <button
+          onClick={handleRemove}
+          aria-label={`Remove ${combatant.name}`}
+          className="h-5 w-5 flex-shrink-0 flex items-center justify-center rounded text-muted-foreground/40 hover:text-foreground hover:bg-white/10 transition-colors cursor-pointer"
+        >
+          <X className="h-3 w-3" />
+        </button>
+      </div>
+    </motion.div>
+  )
+})
+
 export function InitiativeTrackerContent() {
   const [state, dispatch] = useReducer(reducer, {
     combatants: [],
@@ -98,14 +146,14 @@ export function InitiativeTrackerContent() {
 
   const addCombatant = useCallback(
     (init: number) => {
-      const trimmed = name.trim()
+      const trimmed = nameInputRef.current?.value.trim()
       if (!trimmed) return
       dispatch({ type: "add", combatant: { id: idRef.current++, name: trimmed, initiative: init } })
       setName("")
       setInitiative("")
       nameInputRef.current?.focus()
     },
-    [name]
+    []
   )
 
   const addManual = useCallback(() => {
@@ -128,6 +176,22 @@ export function InitiativeTrackerContent() {
     [addManual]
   )
 
+  const handleNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setName(e.target.value)
+  }, [])
+
+  const handleInitiativeChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setInitiative(e.target.value)
+  }, [])
+
+  const handleRemove = useCallback((id: number) => {
+    dispatch({ type: "remove", id })
+  }, [])
+
+  const handlePrev = useCallback(() => dispatch({ type: "prev" }), [])
+  const handleNext = useCallback(() => dispatch({ type: "next" }), [])
+  const handleClear = useCallback(() => dispatch({ type: "clear" }), [])
+
   return (
     <div className="px-3 pb-3 flex flex-col gap-2">
       {/* Add combatant form */}
@@ -138,7 +202,7 @@ export function InitiativeTrackerContent() {
           placeholder="Name"
           aria-label="Combatant name"
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={handleNameChange}
           onKeyDown={handleKeyDown}
           className="flex-1 min-w-0 bg-white/5 border border-white/10 rounded-md px-2 py-1.5 text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50"
         />
@@ -147,7 +211,7 @@ export function InitiativeTrackerContent() {
           placeholder="Init"
           aria-label="Initiative value"
           value={initiative}
-          onChange={(e) => setInitiative(e.target.value)}
+          onChange={handleInitiativeChange}
           onKeyDown={handleKeyDown}
           className="w-14 bg-white/5 border border-white/10 rounded-md px-2 py-1.5 text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
         />
@@ -181,46 +245,14 @@ export function InitiativeTrackerContent() {
               Add combatants to begin
             </motion.p>
           ) : (
-            sorted.map((c, i) => {
-              const isActive = i === state.currentTurn
-              return (
-                <motion.div
-                  key={c.id}
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.15 }}
-                  className="overflow-hidden"
-                >
-                  <div
-                    className={`flex items-center gap-1.5 px-2 py-1 rounded-md transition-colors ${
-                      isActive
-                        ? "bg-primary/15 text-primary border border-primary/20"
-                        : "border border-transparent"
-                    }`}
-                  >
-                    <div className="w-1.5 flex-shrink-0">
-                      {isActive && (
-                        <div className="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_6px_rgba(var(--corona-rgb),0.6)]" />
-                      )}
-                    </div>
-                    <span className="flex-1 min-w-0 text-xs truncate">
-                      {c.name}
-                    </span>
-                    <span className="font-cinzel font-bold text-xs text-primary/70 w-6 text-right flex-shrink-0">
-                      {c.initiative}
-                    </span>
-                    <button
-                      onClick={() => dispatch({ type: "remove", id: c.id })}
-                      aria-label={`Remove ${c.name}`}
-                      className="h-5 w-5 flex-shrink-0 flex items-center justify-center rounded text-muted-foreground/40 hover:text-foreground hover:bg-white/10 transition-colors cursor-pointer"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
-                </motion.div>
-              )
-            })
+            sorted.map((c, i) => (
+              <CombatantRow
+                key={c.id}
+                combatant={c}
+                isActive={i === state.currentTurn}
+                onRemove={handleRemove}
+              />
+            ))
           )}
         </AnimatePresence>
       </div>
@@ -229,7 +261,7 @@ export function InitiativeTrackerContent() {
       {sorted.length > 0 && (
         <div className="flex items-center justify-between border-t border-white/[0.06] pt-2">
           <button
-            onClick={() => dispatch({ type: "prev" })}
+            onClick={handlePrev}
             aria-label="Previous turn"
             className="h-6 w-6 flex items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors cursor-pointer"
           >
@@ -241,7 +273,7 @@ export function InitiativeTrackerContent() {
           </span>
 
           <button
-            onClick={() => dispatch({ type: "next" })}
+            onClick={handleNext}
             aria-label="Next turn"
             className="h-6 w-6 flex items-center justify-center rounded text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors cursor-pointer"
           >
@@ -253,7 +285,7 @@ export function InitiativeTrackerContent() {
       {/* Clear all */}
       {sorted.length > 0 && (
         <button
-          onClick={() => dispatch({ type: "clear" })}
+          onClick={handleClear}
           className="text-[10px] text-muted-foreground/40 hover:text-muted-foreground transition-colors cursor-pointer self-center"
         >
           Clear all

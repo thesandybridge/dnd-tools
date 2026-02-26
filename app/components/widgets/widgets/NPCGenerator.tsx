@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useRef, useEffect, memo } from "react"
 import { Sparkles, RefreshCw, Copy } from "lucide-react"
 import { RACES, FIRST_NAMES, OCCUPATIONS, QUIRKS, pickRandom } from "./npc-tables"
 
@@ -32,9 +32,42 @@ const FIELD_LABELS: Record<Field, string> = {
 
 const FIELDS: Field[] = ["race", "name", "occupation", "quirk"]
 
+const NPCFieldButton = memo(function NPCFieldButton({
+  field,
+  value,
+  onReroll,
+}: {
+  field: Field
+  value: string
+  onReroll: (field: Field) => void
+}) {
+  const handleClick = useCallback(() => onReroll(field), [onReroll, field])
+  return (
+    <button
+      onClick={handleClick}
+      className="group flex items-center justify-between w-full text-left py-2 border-b border-white/[0.06] last:border-0 cursor-pointer"
+    >
+      <div className="min-w-0">
+        <div className="text-[10px] text-muted-foreground uppercase tracking-wider">
+          {FIELD_LABELS[field]}
+        </div>
+        <div className="text-sm text-foreground truncate">{value}</div>
+      </div>
+      <RefreshCw className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2" />
+    </button>
+  )
+})
+
 export function NPCGeneratorContent() {
   const [npc, setNpc] = useState<NPC | null>(null)
   const [copied, setCopied] = useState(false)
+  const copiedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    return () => {
+      if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current)
+    }
+  }, [])
 
   const generate = useCallback(() => {
     setNpc(generateNPC())
@@ -64,7 +97,8 @@ export function NPCGeneratorContent() {
     const text = `${npc.name} — ${npc.race} ${npc.occupation}. ${npc.quirk}.`
     navigator.clipboard.writeText(text).then(() => {
       setCopied(true)
-      setTimeout(() => setCopied(false), 1500)
+      if (copiedTimerRef.current) clearTimeout(copiedTimerRef.current)
+      copiedTimerRef.current = setTimeout(() => setCopied(false), 1500)
     }).catch(() => {})
   }, [npc])
 
@@ -80,19 +114,12 @@ export function NPCGeneratorContent() {
       {npc ? (
         <div className="mt-3">
           {FIELDS.map(field => (
-            <button
+            <NPCFieldButton
               key={field}
-              onClick={() => reroll(field)}
-              className="group flex items-center justify-between w-full text-left py-2 border-b border-white/[0.06] last:border-0 cursor-pointer"
-            >
-              <div className="min-w-0">
-                <div className="text-[10px] text-muted-foreground uppercase tracking-wider">
-                  {FIELD_LABELS[field]}
-                </div>
-                <div className="text-sm text-foreground truncate">{npc[field]}</div>
-              </div>
-              <RefreshCw className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ml-2" />
-            </button>
+              field={field}
+              value={npc[field]}
+              onReroll={reroll}
+            />
           ))}
 
           <button

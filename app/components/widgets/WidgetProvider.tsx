@@ -3,7 +3,7 @@
 import {
   createContext,
   useContext,
-  useState,
+  useReducer,
   useCallback,
   useEffect,
   useRef,
@@ -14,8 +14,18 @@ import type { WidgetId } from "./widget-registry"
 
 type WidgetState = {
   openWidgets: Set<WidgetId>
-  cellAssignments: Record<string, number> // widgetId -> cellIndex
+  cellAssignments: Record<string, number>
+  collapsed: boolean
+  mobileDrawerOpen: boolean
 }
+
+type WidgetAction =
+  | { type: "TOGGLE_WIDGET"; id: WidgetId }
+  | { type: "CLOSE_WIDGET"; id: WidgetId }
+  | { type: "MOVE_TO_CELL"; id: WidgetId; cellIndex: number }
+  | { type: "TOGGLE_COLLAPSED" }
+  | { type: "SET_MOBILE_DRAWER"; open: boolean }
+  | { type: "INIT_ASSIGNMENTS"; assignments: Record<string, number> }
 
 type WidgetContextValue = {
   openWidgets: Set<WidgetId>
@@ -56,13 +66,61 @@ function findFirstUnoccupiedCell(assignments: Record<string, number>): number {
   return i
 }
 
+function widgetReducer(state: WidgetState, action: WidgetAction): WidgetState {
+  switch (action.type) {
+    case "TOGGLE_WIDGET": {
+      const next = new Set(state.openWidgets)
+      if (next.has(action.id)) {
+        next.delete(action.id)
+        return { ...state, openWidgets: next }
+      } else {
+        next.add(action.id)
+        const activeCells: Record<string, number> = {}
+        for (const wid of next) {
+          if (wid !== action.id && state.cellAssignments[wid] !== undefined) {
+            activeCells[wid] = state.cellAssignments[wid]
+          }
+        }
+        const cellIndex = findFirstUnoccupiedCell(activeCells)
+        const cellAssignments = { ...state.cellAssignments, [action.id]: cellIndex }
+        saveCellAssignments(cellAssignments)
+        return { ...state, openWidgets: next, cellAssignments }
+      }
+    }
+    case "CLOSE_WIDGET": {
+      const next = new Set(state.openWidgets)
+      next.delete(action.id)
+      return { ...state, openWidgets: next }
+    }
+    case "MOVE_TO_CELL": {
+      const cellAssignments = { ...state.cellAssignments }
+      const occupant = Object.entries(cellAssignments).find(
+        ([, idx]) => idx === action.cellIndex
+      )
+      if (occupant) {
+        const [occupantId] = occupant
+        cellAssignments[occupantId] = cellAssignments[action.id]
+      }
+      cellAssignments[action.id] = action.cellIndex
+      saveCellAssignments(cellAssignments)
+      return { ...state, cellAssignments }
+    }
+    case "TOGGLE_COLLAPSED":
+      return { ...state, collapsed: !state.collapsed }
+    case "SET_MOBILE_DRAWER":
+      return { ...state, mobileDrawerOpen: action.open }
+    case "INIT_ASSIGNMENTS":
+      return { ...state, cellAssignments: { ...state.cellAssignments, ...action.assignments } }
+  }
+}
+
 export function WidgetProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<WidgetState>(() => ({
-    openWidgets: new Set(),
+  const [state, dispatch] = useReducer(widgetReducer, {
+    openWidgets: new Set<WidgetId>(),
     cellAssignments: {},
-  }))
-  const [collapsed, setCollapsed] = useState(false)
-  const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false)
+    collapsed: false,
+    mobileDrawerOpen: false,
+  })
   const initializedRef = useRef(false)
 
   useEffect(() => {
@@ -70,61 +128,28 @@ export function WidgetProvider({ children }: { children: ReactNode }) {
     initializedRef.current = true
     const saved = loadCellAssignments()
     if (Object.keys(saved).length > 0) {
-      setState(prev => ({ ...prev, cellAssignments: { ...prev.cellAssignments, ...saved } }))
+      dispatch({ type: "INIT_ASSIGNMENTS", assignments: saved })
     }
   }, [])
 
   const toggleWidget = useCallback((id: WidgetId) => {
-    setState(prev => {
-      const next = new Set(prev.openWidgets)
-      if (next.has(id)) {
-        next.delete(id)
-        return { ...prev, openWidgets: next }
-      } else {
-        next.add(id)
-        // Always assign to first unoccupied cell (among currently open widgets)
-        // This avoids stale saved assignments pointing to cells that no longer exist
-        const activeCells: Record<string, number> = {}
-        for (const wid of next) {
-          if (wid !== id && prev.cellAssignments[wid] !== undefined) {
-            activeCells[wid] = prev.cellAssignments[wid]
-          }
-        }
-        const cellIndex = findFirstUnoccupiedCell(activeCells)
-        const cellAssignments = { ...prev.cellAssignments, [id]: cellIndex }
-        saveCellAssignments(cellAssignments)
-        return { ...prev, openWidgets: next, cellAssignments }
-      }
-    })
+    dispatch({ type: "TOGGLE_WIDGET", id })
   }, [])
 
   const closeWidget = useCallback((id: WidgetId) => {
-    setState(prev => {
-      const next = new Set(prev.openWidgets)
-      next.delete(id)
-      return { ...prev, openWidgets: next }
-    })
+    dispatch({ type: "CLOSE_WIDGET", id })
   }, [])
 
   const moveToCell = useCallback((id: WidgetId, cellIndex: number) => {
-    setState(prev => {
-      const cellAssignments = { ...prev.cellAssignments }
-      // Find if another widget occupies the target cell — swap
-      const occupant = Object.entries(cellAssignments).find(
-        ([, idx]) => idx === cellIndex
-      )
-      if (occupant) {
-        const [occupantId] = occupant
-        cellAssignments[occupantId] = cellAssignments[id]
-      }
-      cellAssignments[id] = cellIndex
-      saveCellAssignments(cellAssignments)
-      return { ...prev, cellAssignments }
-    })
+    dispatch({ type: "MOVE_TO_CELL", id, cellIndex })
   }, [])
 
   const toggleCollapsed = useCallback(() => {
-    setCollapsed(prev => !prev)
+    dispatch({ type: "TOGGLE_COLLAPSED" })
+  }, [])
+
+  const setMobileDrawerOpen = useCallback((open: boolean) => {
+    dispatch({ type: "SET_MOBILE_DRAWER", open })
   }, [])
 
   const getWidgetInCell = useCallback((cellIndex: number): WidgetId | null => {
@@ -139,15 +164,15 @@ export function WidgetProvider({ children }: { children: ReactNode }) {
   const contextValue = useMemo<WidgetContextValue>(() => ({
     openWidgets: state.openWidgets,
     cellAssignments: state.cellAssignments,
-    collapsed,
-    mobileDrawerOpen,
+    collapsed: state.collapsed,
+    mobileDrawerOpen: state.mobileDrawerOpen,
     toggleWidget,
     closeWidget,
     moveToCell,
     getWidgetInCell,
     toggleCollapsed,
     setMobileDrawerOpen,
-  }), [state.openWidgets, state.cellAssignments, collapsed, mobileDrawerOpen, toggleWidget, closeWidget, moveToCell, getWidgetInCell, toggleCollapsed])
+  }), [state.openWidgets, state.cellAssignments, state.collapsed, state.mobileDrawerOpen, toggleWidget, closeWidget, moveToCell, getWidgetInCell, toggleCollapsed, setMobileDrawerOpen])
 
   return (
     <WidgetContext.Provider value={contextValue}>

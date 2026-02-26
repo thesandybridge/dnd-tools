@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback, useMemo, memo } from "react"
 import { useRouter } from "next/navigation"
 import { useSession } from "next-auth/react"
 import { motion, AnimatePresence } from "framer-motion"
@@ -16,20 +16,9 @@ import {
   Eye,
   EyeOff,
 } from "lucide-react"
+import { useIsMobile } from "@/app/hooks/useIsMobile"
 import { useWidgets } from "@/app/components/widgets/WidgetProvider"
 import type { WidgetId } from "@/app/components/widgets/widget-registry"
-
-function useIsMobile() {
-  const [mobile, setMobile] = useState(false)
-  useEffect(() => {
-    const mql = window.matchMedia("(max-width: 767px)")
-    setMobile(mql.matches)
-    const handler = (e: MediaQueryListEvent) => setMobile(e.matches)
-    mql.addEventListener("change", handler)
-    return () => mql.removeEventListener("change", handler)
-  }, [])
-  return mobile
-}
 
 function useFlameDirection(wrapperRef: React.RefObject<HTMLDivElement | null>) {
   useEffect(() => {
@@ -101,8 +90,86 @@ function Flame() {
   )
 }
 
+const WidgetActionButton = memo(function WidgetActionButton({
+  action,
+  index,
+  isActive,
+  onAction,
+}: {
+  action: WidgetAction
+  index: number
+  isActive: boolean
+  onAction: (widgetId: WidgetId) => void
+}) {
+  const handleClick = useCallback(() => {
+    onAction(action.widgetId)
+  }, [onAction, action.widgetId])
+
+  return (
+    <motion.div
+      variants={{
+        closed: { opacity: 0, y: 10, scale: 0.3 },
+        open: { opacity: 1, y: 0, scale: 1 },
+      }}
+      transition={{ delay: index * 0.03, type: "spring", stiffness: 300, damping: 24 }}
+    >
+      <button
+        onClick={handleClick}
+        className={`group relative flex h-10 w-10 items-center justify-center rounded-full border shadow-md transition-all cursor-pointer ${
+          isActive
+            ? "bg-primary/20 border-primary/30 text-primary"
+            : "bg-card border-border text-foreground hover:bg-primary hover:text-primary-foreground hover:shadow-[0_0_8px_-2px_rgba(var(--corona-rgb),0.3)]"
+        }`}
+      >
+        <action.icon className="h-4 w-4" />
+        <span className="absolute right-full mr-3 whitespace-nowrap rounded-md bg-popover px-2.5 py-1 text-xs text-popover-foreground shadow-md border border-border opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+          {action.label}
+        </span>
+      </button>
+    </motion.div>
+  )
+})
+
+const TopActionButton = memo(function TopActionButton({
+  action,
+  index,
+  onAction,
+}: {
+  action: Action
+  index: number
+  onAction: (action: Action) => void
+}) {
+  const handleClick = useCallback(() => {
+    onAction(action)
+  }, [onAction, action])
+
+  return (
+    <motion.div
+      variants={{
+        closed: { opacity: 0, y: 20, scale: 0.3 },
+        open: { opacity: 1, y: 0, scale: 1 },
+      }}
+      transition={{ delay: (index + 1) * 0.05, type: "spring", stiffness: 300, damping: 24 }}
+    >
+      <button
+        onClick={handleClick}
+        className="group relative flex h-11 w-11 items-center justify-center rounded-full bg-card border border-border text-foreground shadow-lg hover:bg-primary hover:text-primary-foreground hover:shadow-[0_0_8px_-2px_rgba(var(--corona-rgb),0.3)] transition-all cursor-pointer"
+      >
+        <action.icon className="h-5 w-5" />
+        <span className="absolute right-full mr-3 whitespace-nowrap rounded-md bg-popover px-2.5 py-1 text-xs text-popover-foreground shadow-md border border-border opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+          {action.label}
+        </span>
+      </button>
+    </motion.div>
+  )
+})
+
 function MobileSpeedDial() {
   const { mobileDrawerOpen, setMobileDrawerOpen } = useWidgets()
+
+  const handleToggleDrawer = useCallback(() => {
+    setMobileDrawerOpen(!mobileDrawerOpen)
+  }, [mobileDrawerOpen, setMobileDrawerOpen])
 
   return (
     <div className="speed-dial fixed bottom-20 right-4 z-[1100]">
@@ -110,7 +177,7 @@ function MobileSpeedDial() {
         <Flame />
         <button
           className="relative flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors cursor-pointer corona-border corona-pulse"
-          onClick={() => setMobileDrawerOpen(!mobileDrawerOpen)}
+          onClick={handleToggleDrawer}
         >
           <D20Icon className="h-7 w-7" />
         </button>
@@ -129,22 +196,40 @@ function DesktopSpeedDial() {
   const wrapperRef = useRef<HTMLDivElement>(null)
   useFlameDirection(wrapperRef)
 
-  const visibleTopActions = topActions.filter(a => !a.auth || session?.user)
+  const visibleTopActions = useMemo(
+    () => topActions.filter(a => !a.auth || session?.user),
+    [session?.user]
+  )
 
-  function handleClose() {
+  const handleClose = useCallback(() => {
     setOpen(false)
     setWidgetsOpen(false)
-  }
+  }, [])
 
-  function handleTopAction(action: Action) {
-    handleClose()
+  const handleToggle = useCallback(() => {
+    if (open) {
+      setOpen(false)
+      setWidgetsOpen(false)
+    } else {
+      setOpen(true)
+    }
+  }, [open])
+
+  const handleWidgetsToggle = useCallback(() => {
+    setWidgetsOpen(prev => !prev)
+  }, [])
+
+  const handleTopAction = useCallback((action: Action) => {
+    setOpen(false)
+    setWidgetsOpen(false)
     if (action.href) router.push(action.href)
-  }
+  }, [router])
 
-  function handleWidgetAction(widgetId: WidgetId) {
+  const handleWidgetAction = useCallback((widgetId: WidgetId) => {
     toggleWidget(widgetId)
-    handleClose()
-  }
+    setOpen(false)
+    setWidgetsOpen(false)
+  }, [toggleWidget])
 
   return (
     <>
@@ -165,7 +250,7 @@ function DesktopSpeedDial() {
           <Flame />
           <motion.button
             className={`relative flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors cursor-pointer corona-border corona-pulse ${open ? "corona-active" : ""}`}
-            onClick={() => { if (open) handleClose(); else setOpen(true) }}
+            onClick={handleToggle}
             animate={{ rotate: open ? 135 : 0 }}
             transition={{ type: "spring", stiffness: 300, damping: 20 }}
           >
@@ -190,7 +275,7 @@ function DesktopSpeedDial() {
                 transition={{ delay: 0, type: "spring", stiffness: 300, damping: 24 }}
               >
                 <button
-                  onClick={() => setWidgetsOpen(!widgetsOpen)}
+                  onClick={handleWidgetsToggle}
                   className={`group relative flex h-11 w-11 items-center justify-center rounded-full border shadow-lg transition-all cursor-pointer ${
                     widgetsOpen
                       ? "bg-primary text-primary-foreground border-primary"
@@ -216,33 +301,15 @@ function DesktopSpeedDial() {
                     animate="open"
                     exit="closed"
                   >
-                    {widgetActions.map((wa, i) => {
-                      const isActive = openWidgets.has(wa.widgetId)
-                      return (
-                        <motion.div
-                          key={wa.widgetId}
-                          variants={{
-                            closed: { opacity: 0, y: 10, scale: 0.3 },
-                            open: { opacity: 1, y: 0, scale: 1 },
-                          }}
-                          transition={{ delay: i * 0.03, type: "spring", stiffness: 300, damping: 24 }}
-                        >
-                          <button
-                            onClick={() => handleWidgetAction(wa.widgetId)}
-                            className={`group relative flex h-10 w-10 items-center justify-center rounded-full border shadow-md transition-all cursor-pointer ${
-                              isActive
-                                ? "bg-primary/20 border-primary/30 text-primary"
-                                : "bg-card border-border text-foreground hover:bg-primary hover:text-primary-foreground hover:shadow-[0_0_8px_-2px_rgba(var(--corona-rgb),0.3)]"
-                            }`}
-                          >
-                            <wa.icon className="h-4 w-4" />
-                            <span className="absolute right-full mr-3 whitespace-nowrap rounded-md bg-popover px-2.5 py-1 text-xs text-popover-foreground shadow-md border border-border opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                              {wa.label}
-                            </span>
-                          </button>
-                        </motion.div>
-                      )
-                    })}
+                    {widgetActions.map((wa, i) => (
+                      <WidgetActionButton
+                        key={wa.widgetId}
+                        action={wa}
+                        index={i}
+                        isActive={openWidgets.has(wa.widgetId)}
+                        onAction={handleWidgetAction}
+                      />
+                    ))}
 
                     {/* Collapse/expand toggle */}
                     <motion.div
@@ -274,24 +341,12 @@ function DesktopSpeedDial() {
 
               {/* Top-level actions */}
               {visibleTopActions.map((action, i) => (
-                <motion.div
+                <TopActionButton
                   key={action.label}
-                  variants={{
-                    closed: { opacity: 0, y: 20, scale: 0.3 },
-                    open: { opacity: 1, y: 0, scale: 1 },
-                  }}
-                  transition={{ delay: (i + 1) * 0.05, type: "spring", stiffness: 300, damping: 24 }}
-                >
-                  <button
-                    onClick={() => handleTopAction(action)}
-                    className="group relative flex h-11 w-11 items-center justify-center rounded-full bg-card border border-border text-foreground shadow-lg hover:bg-primary hover:text-primary-foreground hover:shadow-[0_0_8px_-2px_rgba(var(--corona-rgb),0.3)] transition-all cursor-pointer"
-                  >
-                    <action.icon className="h-5 w-5" />
-                    <span className="absolute right-full mr-3 whitespace-nowrap rounded-md bg-popover px-2.5 py-1 text-xs text-popover-foreground shadow-md border border-border opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                      {action.label}
-                    </span>
-                  </button>
-                </motion.div>
+                  action={action}
+                  index={i}
+                  onAction={handleTopAction}
+                />
               ))}
             </motion.div>
           )}

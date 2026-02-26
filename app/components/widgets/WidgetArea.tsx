@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useState, useMemo } from "react"
+import { useCallback, useEffect, useReducer, useState, useMemo, memo } from "react"
 import {
   DndContext,
   DragOverlay,
@@ -23,6 +23,7 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer"
 import { GlassPanel } from "@/app/components/ui/GlassPanel"
+import { useIsMobile } from "@/app/hooks/useIsMobile"
 import { useWidgets } from "./WidgetProvider"
 import { WidgetShell } from "./WidgetShell"
 import { WIDGET_REGISTRY, type WidgetId } from "./widget-registry"
@@ -36,18 +37,6 @@ const MARGIN_WIDTH = 280
 const CELL_HEIGHT = 280
 const GAP = 12
 
-function useIsMobile() {
-  const [mobile, setMobile] = useState(false)
-  useEffect(() => {
-    const mql = window.matchMedia("(max-width: 767px)")
-    setMobile(mql.matches)
-    const handler = (e: MediaQueryListEvent) => setMobile(e.matches)
-    mql.addEventListener("change", handler)
-    return () => mql.removeEventListener("change", handler)
-  }, [])
-  return mobile
-}
-
 function getWidgetContent(id: WidgetId) {
   switch (id) {
     case "dice":
@@ -60,6 +49,31 @@ function getWidgetContent(id: WidgetId) {
       return <ConditionReferenceContent />
     case "calculator":
       return <div className="px-3 py-2"><QuickConvert /></div>
+  }
+}
+
+// --- Drag state reducer for DesktopWidgetArea ---
+
+type DragState = {
+  activeId: WidgetId | null
+  overCellIndex: number | null
+}
+
+type DragAction =
+  | { type: "START"; id: WidgetId }
+  | { type: "OVER"; cellIndex: number | null }
+  | { type: "RESET" }
+
+const initialDragState: DragState = { activeId: null, overCellIndex: null }
+
+function dragReducer(state: DragState, action: DragAction): DragState {
+  switch (action.type) {
+    case "START":
+      return { ...state, activeId: action.id }
+    case "OVER":
+      return { ...state, overCellIndex: action.cellIndex }
+    case "RESET":
+      return initialDragState
   }
 }
 
@@ -179,8 +193,7 @@ function MarginColumn({
 
 function DesktopWidgetArea() {
   const { openWidgets, cellAssignments, moveToCell, collapsed } = useWidgets()
-  const [activeId, setActiveId] = useState<WidgetId | null>(null)
-  const [overCellIndex, setOverCellIndex] = useState<number | null>(null)
+  const [dragState, dispatchDrag] = useReducer(dragReducer, initialDragState)
   const [availableHeight, setAvailableHeight] = useState(0)
 
   const pointerSensor = useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
@@ -222,19 +235,19 @@ function DesktopWidgetArea() {
     return map
   }, [openWidgets, cellAssignments])
 
-  const isDragging = activeId !== null
+  const isDragging = dragState.activeId !== null
 
   const handleDragStart = useCallback((event: DragStartEvent) => {
     const widgetId = event.active.data.current?.widgetId as WidgetId | undefined
-    if (widgetId) setActiveId(widgetId)
+    if (widgetId) dispatchDrag({ type: "START", id: widgetId })
   }, [])
 
   const handleDragOver = useCallback((event: DragOverEvent) => {
     const overId = event.over?.id as string | undefined
     if (overId?.startsWith("cell-")) {
-      setOverCellIndex(parseInt(overId.replace("cell-", ""), 10))
+      dispatchDrag({ type: "OVER", cellIndex: parseInt(overId.replace("cell-", ""), 10) })
     } else {
-      setOverCellIndex(null)
+      dispatchDrag({ type: "OVER", cellIndex: null })
     }
   }, [])
 
@@ -247,13 +260,11 @@ function DesktopWidgetArea() {
       moveToCell(widgetId, targetCell)
     }
 
-    setActiveId(null)
-    setOverCellIndex(null)
+    dispatchDrag({ type: "RESET" })
   }, [moveToCell])
 
   const handleDragCancel = useCallback(() => {
-    setActiveId(null)
-    setOverCellIndex(null)
+    dispatchDrag({ type: "RESET" })
   }, [])
 
   const openIds = Array.from(openWidgets)
@@ -272,23 +283,23 @@ function DesktopWidgetArea() {
         cellIndices={leftIndices}
         cellToWidget={cellToWidget}
         isDragging={isDragging}
-        overCellIndex={overCellIndex}
-        activeId={activeId}
+        overCellIndex={dragState.overCellIndex}
+        activeId={dragState.activeId}
       />
       <MarginColumn
         side="right"
         cellIndices={rightIndices}
         cellToWidget={cellToWidget}
         isDragging={isDragging}
-        overCellIndex={overCellIndex}
-        activeId={activeId}
+        overCellIndex={dragState.overCellIndex}
+        activeId={dragState.activeId}
       />
 
       <DragOverlay dropAnimation={null}>
-        {activeId ? (
+        {dragState.activeId ? (
           <div className="pointer-events-none opacity-80 backdrop-blur-sm" style={{ width: MARGIN_WIDTH - 24 }}>
-            <WidgetShell id={activeId}>
-              {getWidgetContent(activeId)}
+            <WidgetShell id={dragState.activeId}>
+              {getWidgetContent(dragState.activeId)}
             </WidgetShell>
           </div>
         ) : null}
@@ -297,7 +308,66 @@ function DesktopWidgetArea() {
   )
 }
 
-// --- Mobile (unchanged) ---
+// --- Memoized mobile sub-components ---
+
+const WidgetTogglePill = memo(function WidgetTogglePill({
+  id,
+  isActive,
+  onToggle,
+}: {
+  id: WidgetId
+  isActive: boolean
+  onToggle: (id: WidgetId) => void
+}) {
+  const meta = WIDGET_REGISTRY[id]
+  const Icon = meta.icon
+  const handleClick = useCallback(() => onToggle(id), [onToggle, id])
+
+  return (
+    <button
+      onClick={handleClick}
+      className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs transition-colors cursor-pointer border ${
+        isActive
+          ? "bg-primary/20 border-primary/30 text-primary"
+          : "bg-white/[0.03] border-white/[0.06] text-muted-foreground"
+      }`}
+    >
+      <Icon className="h-3.5 w-3.5" />
+      {meta.label}
+    </button>
+  )
+})
+
+const MobileWidgetCard = memo(function MobileWidgetCard({
+  id,
+  onClose,
+}: {
+  id: WidgetId
+  onClose: (id: WidgetId) => void
+}) {
+  const meta = WIDGET_REGISTRY[id]
+  const handleClose = useCallback(() => onClose(id), [onClose, id])
+
+  return (
+    <GlassPanel variant="strong" corona>
+      <div className="flex items-center justify-between px-3 py-2">
+        <span className="font-cinzel text-[11px] tracking-widest text-muted-foreground uppercase">
+          {meta.label}
+        </span>
+        <button
+          onClick={handleClose}
+          aria-label={`Close ${meta.label}`}
+          className="h-6 w-6 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors cursor-pointer"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      </div>
+      {getWidgetContent(id)}
+    </GlassPanel>
+  )
+})
+
+// --- Mobile ---
 
 function MobileWidgetArea() {
   const { openWidgets, closeWidget, toggleWidget, mobileDrawerOpen, setMobileDrawerOpen } = useWidgets()
@@ -320,48 +390,20 @@ function MobileWidgetArea() {
         <div className="flex flex-col gap-3 px-4 pb-6 overflow-y-auto">
           {/* Widget toggles */}
           <div className="flex gap-2 flex-wrap">
-            {allWidgetIds.map((id) => {
-              const meta = WIDGET_REGISTRY[id]
-              const Icon = meta.icon
-              const isActive = openWidgets.has(id)
-              return (
-                <button
-                  key={id}
-                  onClick={() => toggleWidget(id)}
-                  className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs transition-colors cursor-pointer border ${
-                    isActive
-                      ? "bg-primary/20 border-primary/30 text-primary"
-                      : "bg-white/[0.03] border-white/[0.06] text-muted-foreground"
-                  }`}
-                >
-                  <Icon className="h-3.5 w-3.5" />
-                  {meta.label}
-                </button>
-              )
-            })}
+            {allWidgetIds.map((id) => (
+              <WidgetTogglePill
+                key={id}
+                id={id}
+                isActive={openWidgets.has(id)}
+                onToggle={toggleWidget}
+              />
+            ))}
           </div>
 
           {/* Open widgets */}
-          {openIds.map((id) => {
-            const meta = WIDGET_REGISTRY[id]
-            return (
-              <GlassPanel key={id} variant="strong" corona>
-                <div className="flex items-center justify-between px-3 py-2">
-                  <span className="font-cinzel text-[11px] tracking-widest text-muted-foreground uppercase">
-                    {meta.label}
-                  </span>
-                  <button
-                    onClick={() => closeWidget(id)}
-                    aria-label={`Close ${meta.label}`}
-                    className="h-6 w-6 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors cursor-pointer"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                </div>
-                {getWidgetContent(id)}
-              </GlassPanel>
-            )
-          })}
+          {openIds.map((id) => (
+            <MobileWidgetCard key={id} id={id} onClose={closeWidget} />
+          ))}
         </div>
       </DrawerContent>
     </Drawer>

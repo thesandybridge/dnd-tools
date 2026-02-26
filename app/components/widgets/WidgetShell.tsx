@@ -1,10 +1,12 @@
 "use client"
 
-import { type ReactNode } from "react"
+import { type ReactNode, useCallback } from "react"
 import { GripHorizontal, X } from "lucide-react"
 import { GlassPanel } from "@/app/components/ui/GlassPanel"
 import { useWidgets } from "./WidgetProvider"
 import { WIDGET_REGISTRY, type WidgetId } from "./widget-registry"
+
+const stopPointerPropagation = (e: React.PointerEvent) => e.stopPropagation()
 
 interface WidgetShellProps {
   id: WidgetId
@@ -15,6 +17,11 @@ interface WidgetShellProps {
 export function WidgetShell({ id, children, dragHandleProps }: WidgetShellProps) {
   const { closeWidget } = useWidgets()
   const meta = WIDGET_REGISTRY[id]
+
+  const handleClose = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation()
+    closeWidget(id)
+  }, [closeWidget, id])
 
   return (
     <GlassPanel variant="strong" corona className="h-full flex flex-col">
@@ -28,11 +35,8 @@ export function WidgetShell({ id, children, dragHandleProps }: WidgetShellProps)
           {meta.label}
         </span>
         <button
-          onClick={(e) => {
-            e.stopPropagation()
-            closeWidget(id)
-          }}
-          onPointerDown={(e) => e.stopPropagation()}
+          onClick={handleClose}
+          onPointerDown={stopPointerPropagation}
           aria-label={`Close ${meta.label}`}
           className="h-6 w-6 flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground hover:bg-white/10 transition-colors cursor-pointer"
         >

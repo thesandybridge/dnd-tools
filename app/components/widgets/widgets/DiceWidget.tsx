@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useRef, useEffect } from "react"
+import { useReducer, useCallback, useRef, useEffect, memo } from "react"
 import dynamic from "next/dynamic"
 import { motion, AnimatePresence } from "framer-motion"
 import { useTheme } from "@/app/providers/ThemeProvider"
@@ -13,6 +13,35 @@ type RollEntry = {
   dieType: DieType
   result: number
   timestamp: number
+}
+
+type DiceState = {
+  dieType: DieType
+  history: RollEntry[]
+  rolling: boolean
+}
+
+type DiceAction =
+  | { type: "SET_DIE"; die: DieType }
+  | { type: "ROLL_START" }
+  | { type: "ROLL_END"; entry: RollEntry }
+  | { type: "CLEAR_HISTORY" }
+
+function diceReducer(state: DiceState, action: DiceAction): DiceState {
+  switch (action.type) {
+    case "SET_DIE":
+      return { ...state, dieType: action.die }
+    case "ROLL_START":
+      return { ...state, rolling: true }
+    case "ROLL_END":
+      return {
+        ...state,
+        rolling: false,
+        history: [action.entry, ...state.history].slice(0, 20),
+      }
+    case "CLEAR_HISTORY":
+      return { ...state, history: [] }
+  }
 }
 
 function rollDie(type: DieType): number {
@@ -29,31 +58,63 @@ function timeAgo(ts: number): string {
 
 const DIE_TYPES = Object.keys(DICE_CONFIG) as DieType[]
 
+const DieSelectorButton = memo(function DieSelectorButton({
+  type,
+  isActive,
+  disabled,
+  onSelect,
+}: {
+  type: DieType
+  isActive: boolean
+  disabled: boolean
+  onSelect: (type: DieType) => void
+}) {
+  const handleClick = useCallback(() => onSelect(type), [onSelect, type])
+  return (
+    <button
+      onClick={handleClick}
+      disabled={disabled}
+      className={`
+        px-2 py-1 rounded-full font-cinzel text-[11px] font-bold transition-all cursor-pointer
+        ${isActive
+          ? "bg-primary/20 text-primary border border-primary/30"
+          : "text-muted-foreground border border-transparent hover:text-foreground hover:border-white/10"
+        }
+      `}
+    >
+      {DICE_CONFIG[type].label}
+    </button>
+  )
+})
+
 export function DiceWidgetContent() {
-  const [dieType, setDieType] = useState<DieType>("d20")
-  const [history, setHistory] = useState<RollEntry[]>([])
-  const [rolling, setRolling] = useState(false)
+  const [state, dispatch] = useReducer(diceReducer, {
+    dieType: "d20",
+    history: [],
+    rolling: false,
+  })
   const idRef = useRef(0)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const { theme } = useTheme()
 
+  const { dieType, history, rolling } = state
+
   const doRoll = useCallback((type: DieType) => {
-    setRolling(true)
+    dispatch({ type: "ROLL_START" })
     if (timerRef.current) clearTimeout(timerRef.current)
     timerRef.current = setTimeout(() => {
       const result = rollDie(type)
-      setHistory(prev => [
-        { id: idRef.current++, dieType: type, result, timestamp: Date.now() },
-        ...prev,
-      ].slice(0, 20))
-      setRolling(false)
+      dispatch({
+        type: "ROLL_END",
+        entry: { id: idRef.current++, dieType: type, result, timestamp: Date.now() },
+      })
     }, 350)
   }, [])
 
   const roll = useCallback(() => doRoll(dieType), [dieType, doRoll])
 
   const switchDie = useCallback((type: DieType) => {
-    setDieType(type)
+    dispatch({ type: "SET_DIE", die: type })
     doRoll(type)
   }, [doRoll])
 
@@ -114,20 +175,13 @@ export function DiceWidgetContent() {
       {/* Die type selector */}
       <div className="flex gap-1 justify-center px-3 pb-3">
         {DIE_TYPES.map(type => (
-          <button
+          <DieSelectorButton
             key={type}
-            onClick={() => switchDie(type)}
+            type={type}
+            isActive={type === dieType}
             disabled={rolling}
-            className={`
-              px-2 py-1 rounded-full font-cinzel text-[11px] font-bold transition-all cursor-pointer
-              ${type === dieType
-                ? "bg-primary/20 text-primary border border-primary/30"
-                : "text-muted-foreground border border-transparent hover:text-foreground hover:border-white/10"
-              }
-            `}
-          >
-            {DICE_CONFIG[type].label}
-          </button>
+            onSelect={switchDie}
+          />
         ))}
       </div>
 

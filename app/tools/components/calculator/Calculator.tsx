@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useReducer, useEffect, useCallback, useMemo, useRef } from "react"
 import { ClipboardCheck } from "lucide-react"
 
 import Gold from "./currency_svgs/Gold"
@@ -14,29 +14,42 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { GlassPanel } from "@/app/components/ui/GlassPanel"
 
-function convertCurrency(type, amount) {
-  const rates = {
-    CP: { price: 1, icon: <Copper /> },
-    SP: { price: 10, icon: <Silver /> },
-    EP: { price: 50, icon: <Electrum /> },
-    GP: { price: 100, icon: <Gold /> },
-    PP: { price: 1000, icon: <Platinum /> }
+const CURRENCY_RATES = {
+  CP: { price: 1, icon: <Copper /> },
+  SP: { price: 10, icon: <Silver /> },
+  EP: { price: 50, icon: <Electrum /> },
+  GP: { price: 100, icon: <Gold /> },
+  PP: { price: 1000, icon: <Platinum /> },
+}
+
+function computeConversions(type: string, amount: number) {
+  return Object.entries(CURRENCY_RATES)
+    .filter(([key]) => key !== type)
+    .map(([key, value]) => ({
+      amount: ((CURRENCY_RATES[type].price / value.price) * amount).toFixed(2),
+      currency: key,
+      icon: value.icon,
+    }))
+}
+
+type State = {
+  selectedCurrency: string
+  copiedIndex: number | null
+}
+
+type Action =
+  | { type: "SET_CURRENCY_TYPE"; payload: string }
+  | { type: "SET_COPIED"; payload: number | null }
+
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case "SET_CURRENCY_TYPE":
+      return { ...state, selectedCurrency: action.payload }
+    case "SET_COPIED":
+      return { ...state, copiedIndex: action.payload }
+    default:
+      return state
   }
-
-  const conversionResults = []
-
-  Object.entries(rates).forEach(([key, value]) => {
-    if (key !== type) {
-      const conversionAmount = ((rates[type].price / value.price) * amount).toFixed(2)
-      conversionResults.push({
-        amount: conversionAmount,
-        currency: key,
-        icon: value.icon
-      })
-    }
-  })
-
-  return conversionResults
 }
 
 const View = ({
@@ -106,61 +119,66 @@ const View = ({
 
 const Calculator = () => {
   const { currency, setCurrency } = useCurrency()
-  const [selectedCurrency, setSelectedCurrency] = useState('GP')
-  const [conversionResult, setConversionResult] = useState([])
-  const [copiedIndex, setCopiedIndex] = useState(null)
+  const [state, dispatch] = useReducer(reducer, {
+    selectedCurrency: "GP",
+    copiedIndex: null,
+  })
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const handleCopy = (amount, index) => {
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current)
+    }
+  }, [])
+
+  const conversionResult = useMemo(
+    () => computeConversions(state.selectedCurrency, currency),
+    [state.selectedCurrency, currency]
+  )
+
+  const handleCopy = useCallback((amount: string, index: number) => {
     navigator.clipboard.writeText(amount)
       .then(() => {
-        setCopiedIndex(index)
-        setTimeout(() => setCopiedIndex(null), 2000)
+        dispatch({ type: "SET_COPIED", payload: index })
+        if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current)
+        copyTimeoutRef.current = setTimeout(() => {
+          dispatch({ type: "SET_COPIED", payload: null })
+          copyTimeoutRef.current = null
+        }, 2000)
       })
       .catch((err) => {
         console.error("Failed to copy: ", err)
       })
-  }
+  }, [])
 
-  const handleBlur = (e) => {
+  const handleBlur = useCallback((e) => {
     if (e.target.value === '') {
       setCurrency(0)
       e.target.value = '0'
     }
-  }
+  }, [setCurrency])
 
-  const handleCurrencyChange = (e) => {
+  const handleCurrencyChange = useCallback((e) => {
     const newAmount = parseFloat(e.target.value) || 0
     setCurrency(newAmount)
-  }
+  }, [setCurrency])
 
-  const handleCurrencyTypeChange = (newType) => {
-    setSelectedCurrency(newType)
-  }
+  const handleCurrencyTypeChange = useCallback((newType: string) => {
+    dispatch({ type: "SET_CURRENCY_TYPE", payload: newType })
+  }, [])
 
-  const updateConversionResult = (type, amount) => {
-    setConversionResult(convertCurrency(type, amount))
-  }
-
-  useEffect(() => {
-    updateConversionResult(selectedCurrency, currency)
-  }, [currency, selectedCurrency])
-
-  const calculatorProps = {
+  const calculatorProps = useMemo(() => ({
     conversionResult,
     currency,
     handleCurrencyChange,
     handleCurrencyTypeChange,
-    selectedCurrency,
-    copiedIndex,
+    selectedCurrency: state.selectedCurrency,
+    copiedIndex: state.copiedIndex,
     handleCopy,
     handleBlur,
-  }
+  }), [conversionResult, currency, handleCurrencyChange, handleCurrencyTypeChange, state.selectedCurrency, state.copiedIndex, handleCopy, handleBlur])
 
-  return (
-    <View
-      {...calculatorProps}
-    />
-  )
+  return <View {...calculatorProps} />
 }
 
 export default Calculator

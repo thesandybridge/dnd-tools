@@ -1,6 +1,6 @@
 "use client"
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState, useEffect } from "react"
+import { useReducer, useEffect, useCallback, useMemo } from "react"
 import servicesData from './services.json'
 import { convertToDnDCurrency, preventNonNumeric } from "./helper"
 import { useCurrency } from '../../providers/CurrencyContext'
@@ -9,16 +9,126 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
+function findServiceDetails(houseName: string, serviceName: string) {
+  return servicesData.find(house => house.house === houseName)
+    ?.services.flatMap(service => Object.entries(service))
+    .find(([name]) => name === serviceName)?.[1]
+}
+
+function computeTotalCost(
+  serviceSelections: Record<string, boolean>,
+  unitInputs: Record<string, number>,
+  markupPrices: Record<string, number>,
+  additionalServicesSelected: Record<string, boolean>
+): number {
+  let cost = 0
+
+  Object.keys(serviceSelections).forEach(key => {
+    const [houseName, serviceName] = key.split('|')
+    const service = findServiceDetails(houseName, serviceName)
+    if (!service) return
+
+    if (service.type === 'currency' && unitInputs[key]) {
+      if (service.additionalCostPerUnit) {
+        cost += service.price + (unitInputs[key] || 0) * service.additionalCostPerUnit
+      } else {
+        cost += service.price * (unitInputs[key] || 0)
+      }
+    } else if (service.type === 'markup') {
+      cost += (markupPrices[key] || 0) * service.price
+    } else {
+      cost += service.price
+    }
+  })
+
+  Object.keys(additionalServicesSelected).forEach(key => {
+    if (additionalServicesSelected[key]) {
+      const [houseName, serviceName, , additionalServiceName] = key.split('|')
+      const service = findServiceDetails(houseName, serviceName)
+      const additionalService = service?.additionalServices
+        ?.find(s => Object.keys(s)[0] === additionalServiceName)?.[additionalServiceName]
+      if (additionalService) {
+        cost += additionalService.price
+      }
+    }
+  })
+
+  return cost
+}
+
+type State = {
+  serviceSelections: Record<string, boolean>
+  unitInputs: Record<string, number>
+  markupPrices: Record<string, number>
+  additionalServicesSelected: Record<string, boolean>
+}
+
+type Action =
+  | { type: "TOGGLE_MAIN_ON"; key: string; isMarkup: boolean }
+  | { type: "TOGGLE_MAIN_OFF"; key: string; isMarkup: boolean }
+  | { type: "TOGGLE_ADDITIONAL"; key: string }
+  | { type: "SET_UNIT_INPUT"; key: string; value: number }
+  | { type: "SET_MARKUP_PRICE"; key: string; value: number }
+
+function reducer(state: State, action: Action): State {
+  switch (action.type) {
+    case "TOGGLE_MAIN_ON":
+      return {
+        ...state,
+        serviceSelections: { ...state.serviceSelections, [action.key]: true },
+        markupPrices: action.isMarkup
+          ? { ...state.markupPrices, [action.key]: 0 }
+          : state.markupPrices,
+      }
+    case "TOGGLE_MAIN_OFF": {
+      const updatedSelections = { ...state.serviceSelections }
+      delete updatedSelections[action.key]
+      const updatedMarkup = { ...state.markupPrices }
+      if (action.isMarkup) delete updatedMarkup[action.key]
+      const updatedAdditional = { ...state.additionalServicesSelected }
+      Object.keys(updatedAdditional)
+        .filter(addKey => addKey.startsWith(action.key))
+        .forEach(addKey => delete updatedAdditional[addKey])
+      return {
+        ...state,
+        serviceSelections: updatedSelections,
+        markupPrices: updatedMarkup,
+        additionalServicesSelected: updatedAdditional,
+      }
+    }
+    case "TOGGLE_ADDITIONAL":
+      return {
+        ...state,
+        additionalServicesSelected: {
+          ...state.additionalServicesSelected,
+          [action.key]: !state.additionalServicesSelected[action.key],
+        },
+      }
+    case "SET_UNIT_INPUT":
+      return {
+        ...state,
+        unitInputs: { ...state.unitInputs, [action.key]: action.value },
+      }
+    case "SET_MARKUP_PRICE":
+      return {
+        ...state,
+        markupPrices: { ...state.markupPrices, [action.key]: action.value },
+      }
+    default:
+      return state
+  }
+}
+
 const View = ({
   totalCost,
-  toggleMainService,
-  toggleAdditionalService,
-  setUnitInputs,
+  onToggleMain,
+  onToggleAdditional,
+  onUnitInputChange,
   unitInputs,
   additionalServicesSelected,
   serviceSelections,
   markupPrices,
-  setMarkupPrices,
+  onMarkupChange,
 }) => {
   return (
     <div className="flex flex-col gap-4 w-full">
@@ -62,7 +172,7 @@ const View = ({
                             <Checkbox
                               id={mainCheckboxId}
                               checked={!!serviceSelections[serviceKey]}
-                              onCheckedChange={() => toggleMainService(house.house, serviceName, serviceDetails.type === 'markup')}
+                              onCheckedChange={() => onToggleMain(house.house, serviceName, serviceDetails.type === 'markup')}
                             />
                             <Label
                               htmlFor={mainCheckboxId}
@@ -81,7 +191,7 @@ const View = ({
                                   <Input
                                     type="number"
                                     value={unitInputs[serviceKey] || ''}
-                                    onChange={(e) => setUnitInputs({ ...unitInputs, [serviceKey]: parseFloat(e.target.value) })}
+                                    onChange={(e) => onUnitInputChange(serviceKey, parseFloat(e.target.value))}
                                     onKeyDown={preventNonNumeric}
                                     className="bg-white/[0.03] border-white/[0.06] text-right transition-all duration-200 focus:border-primary/40 focus:shadow-[0_0_8px_-3px] focus:shadow-primary/20"
                                   />
@@ -95,7 +205,7 @@ const View = ({
                                   <Input
                                     type="number"
                                     value={markupPrices[serviceKey] || ''}
-                                    onChange={(e) => setMarkupPrices({ ...markupPrices, [serviceKey]: parseFloat(e.target.value) })}
+                                    onChange={(e) => onMarkupChange(serviceKey, parseFloat(e.target.value))}
                                     onKeyDown={preventNonNumeric}
                                     className="bg-white/[0.03] border-white/[0.06] text-right transition-all duration-200 focus:border-primary/40 focus:shadow-[0_0_8px_-3px] focus:shadow-primary/20"
                                   />
@@ -111,7 +221,7 @@ const View = ({
                                       <Checkbox
                                         id={additionalCheckboxId}
                                         checked={!!additionalServicesSelected[additionalServiceKey]}
-                                        onCheckedChange={() => toggleAdditionalService(house.house, serviceName, additionalServiceName)}
+                                        onCheckedChange={() => onToggleAdditional(house.house, serviceName, additionalServiceName)}
                                       />
                                       <Label
                                         htmlFor={additionalCheckboxId}
@@ -140,101 +250,57 @@ const View = ({
 }
 
 export default function ServicesCalculator() {
-  const [serviceSelections, setServiceSelections] = useState({})
-  const [unitInputs, setUnitInputs] = useState({})
-  const [markupPrices, setMarkupPrices] = useState({})
-  const [additionalServicesSelected, setAdditionalServicesSelected] = useState({})
-  const [totalCost, setTotalCost] = useState(0)
+  const [state, dispatch] = useReducer(reducer, {
+    serviceSelections: {},
+    unitInputs: {},
+    markupPrices: {},
+    additionalServicesSelected: {},
+  })
 
   const { setCurrency } = useCurrency()
+
+  const totalCost = useMemo(
+    () => computeTotalCost(state.serviceSelections, state.unitInputs, state.markupPrices, state.additionalServicesSelected),
+    [state.serviceSelections, state.unitInputs, state.markupPrices, state.additionalServicesSelected]
+  )
 
   useEffect(() => {
     setCurrency(totalCost)
   }, [setCurrency, totalCost])
 
-  const toggleMainService = (houseName, serviceName, isMarkup = false) => {
+  const onToggleMain = useCallback((houseName: string, serviceName: string, isMarkup: boolean) => {
     const key = `${houseName}|${serviceName}`
-    if (serviceSelections[key]) {
-      // Deselecting service
-      const updatedServices = { ...serviceSelections }
-      delete updatedServices[key]
-      setServiceSelections(updatedServices)
-      isMarkup && delete markupPrices[key]
-      // Also, deselect all related additional services
-      const updatedAdditional = { ...additionalServicesSelected }
-      Object.keys(updatedAdditional)
-        .filter(addKey => addKey.startsWith(key))
-        .forEach(addKey => delete updatedAdditional[addKey])
-      setAdditionalServicesSelected(updatedAdditional)
+    if (state.serviceSelections[key]) {
+      dispatch({ type: "TOGGLE_MAIN_OFF", key, isMarkup })
     } else {
-      // Selecting service
-      setServiceSelections({ ...serviceSelections, [key]: true })
-      isMarkup && setMarkupPrices({ ...markupPrices, [key]: 0 })
+      dispatch({ type: "TOGGLE_MAIN_ON", key, isMarkup })
     }
-  }
+  }, [state.serviceSelections])
 
-  const toggleAdditionalService = (houseName, serviceName, additionalServiceName) => {
+  const onToggleAdditional = useCallback((houseName: string, serviceName: string, additionalServiceName: string) => {
     const key = `${houseName}|${serviceName}|additional|${additionalServiceName}`
-    setAdditionalServicesSelected(prev => ({
-      ...prev,
-      [key]: !prev[key]
-    }))
-  }
+    dispatch({ type: "TOGGLE_ADDITIONAL", key })
+  }, [])
 
-  useEffect(() => {
-    const calculateCost = () => {
-      let cost = 0
-      Object.keys(serviceSelections).forEach(key => {
-        const [houseName, serviceName] = key.split('|')
-        const service = servicesData.find(house => house.house === houseName)
-          .services.flatMap(service => Object.entries(service))
-          .find(([name]) => name === serviceName)[1]
+  const onUnitInputChange = useCallback((key: string, value: number) => {
+    dispatch({ type: "SET_UNIT_INPUT", key, value })
+  }, [])
 
-        if (service.type === 'currency' && unitInputs[key]) {
-          if (service.additionalCostPerUnit) {
-            cost += service.price + (unitInputs[key] || 0) * (service.additionalCostPerUnit)
-          } else {
-            cost += service.price * (unitInputs[key] || 0)
-          }
-        } else if (service.type === 'markup') {
-          cost += (markupPrices[key] || 0) * service.price
-        } else {
-          cost += service.price
-        }
-      })
+  const onMarkupChange = useCallback((key: string, value: number) => {
+    dispatch({ type: "SET_MARKUP_PRICE", key, value })
+  }, [])
 
-      Object.keys(additionalServicesSelected).forEach(key => {
-        if (additionalServicesSelected[key]) {
-          const [houseName, serviceName, , additionalServiceName] = key.split('|')
-          const service = servicesData.find(house => house.house === houseName)
-            .services.flatMap(s => Object.entries(s))
-            .find(([name]) => name === serviceName)[1]
-            .additionalServices.find(s => Object.keys(s)[0] === additionalServiceName)[additionalServiceName]
-          cost += service.price
-        }
-      })
-
-      return cost
-    }
-
-    setTotalCost(calculateCost())
-  }, [serviceSelections, unitInputs, markupPrices, additionalServicesSelected])
-
-  const servicesCalculatorProps = {
+  const viewProps = useMemo(() => ({
     totalCost,
-    toggleMainService,
-    toggleAdditionalService,
-    setUnitInputs,
-    unitInputs,
-    additionalServicesSelected,
-    serviceSelections,
-    markupPrices,
-    setMarkupPrices,
-  }
+    onToggleMain,
+    onToggleAdditional,
+    onUnitInputChange,
+    unitInputs: state.unitInputs,
+    additionalServicesSelected: state.additionalServicesSelected,
+    serviceSelections: state.serviceSelections,
+    markupPrices: state.markupPrices,
+    onMarkupChange,
+  }), [totalCost, onToggleMain, onToggleAdditional, onUnitInputChange, state, onMarkupChange])
 
-  return (
-    <View
-      {...servicesCalculatorProps}
-    />
-  )
+  return <View {...viewProps} />
 }
